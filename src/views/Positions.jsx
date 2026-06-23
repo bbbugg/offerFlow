@@ -355,7 +355,7 @@ export default function Positions() {
                     className="w-4 h-4 rounded border-white/20 bg-black/40 accent-offer-primary cursor-pointer"
                   />
                 </th>
-                <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">公司</th>
+                <th className="min-w-[240px] px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">公司</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">岗位</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">状态</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">城市</th>
