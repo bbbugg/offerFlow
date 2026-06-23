@@ -10,9 +10,6 @@ export async function POST(request) {
     if (!username || !password) {
       return NextResponse.json({ error: '用户名和密码不能为空' }, { status: 400 })
     }
-    if (username === 'user') {
-      return NextResponse.json({ error: '用户名已被注册' }, { status: 409 })
-    }
     if (username.length < 2 || username.length > 20) {
       return NextResponse.json({ error: '用户名长度需在 2-20 个字符之间' }, { status: 400 })
     }
