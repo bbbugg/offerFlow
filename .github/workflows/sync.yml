@@ -2,80 +2,40 @@ name: Upstream Sync
 
 permissions:
   contents: write
-  issues: write
   actions: write
 
 on:
-  # 每24小时运行一次
   schedule:
     - cron: '0 0 * * *'
-  # 允许手动触发
   workflow_dispatch:
 
 jobs:
   sync_latest_from_upstream:
     name: Sync latest commits from upstream repo
     runs-on: ubuntu-latest
-    # 确保这是一个 fork 仓库
-    # if: ${{ github.event.repository.fork }}
 
     steps:
       - uses: actions/checkout@v5
         with:
-          token: ${{ secrets.MY_PAT }}  # 使用 PAT 确保后续 git 操作有权限
-          ref: main  # 明确检出 main 分支
-          fetch-depth: 0  # 获取完整历史，便于 merge 操作
+          token: ${{ secrets.MY_PAT }}
+          ref: main
+          fetch-depth: 0
 
-      # 步骤2: 清理之前可能存在的失败通知 Issue
-      - name: Clean issue notice
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'close-issues'
-          labels: '🚨 Sync Fail'
-
-      # 配置 Git 用户信息
       - name: Setup Git User
         run: |
           git config --global user.name "bbbugg"
           git config --global user.email "daming20120101@163.com"
 
-      # 手动同步上游变更（使用 merge 策略）
       - name: Manual Sync upstream changes
         run: |
-          set -e  # 严格模式：任何命令失败即退出
-          # 添加上游 remote（如果已存在则忽略）
+          set -e
           git remote add upstream https://github.com/xuuuu-cpu/offerFlow-llm-feature.git || true
-          # 获取上游最新变更
           git fetch upstream main
-          # 切换到目标分支
           git checkout main
-          # 显式 merge（--no-ff 强制创建 merge commit，-m 自定义消息）
           git merge upstream/main --no-ff -m "Action: 自动同步上游代码"
-          # 检查是否有冲突（unmerged paths）
           if git diff --name-only --diff-filter=U | grep -q . ; then
             echo "Merge conflict detected in main branch. Files need manual resolution:"
-            git diff --name-only --diff-filter=U  # 输出冲突文件，便于日志查看
-            exit 1  # 明确失败，触发 issue
+            git diff --name-only --diff-filter=U
+            exit 1
           fi
-          # 无冲突：已自动 commit
-
-          # 推送目标分支（精确 ref，确保 --force-with-lease 安全）
           git push origin main --force-with-lease=main:origin/main
-
-      # 步骤4: 如果同步失败，创建一个 Issue 进行提醒
-      - name: Create issue on sync failure
-        if: failure()
-        uses: actions-cool/issues-helper@v3
-        with:
-          actions: 'create-issue'
-          title: '🚨 同步失败 | Sync Fail'
-          labels: '🚨 Sync Fail'
-          # 关键修改点 4: 更新失败提示信息
-          body: |
-            自动同步上游仓库 [xuuuu-cpu/offerFlow-llm-feature](${upstream_repo_url}) 时发生错误。
-
-            这可能是因为上游仓库的 workflow 文件发生了变更，导致 GitHub 自动暂停了计划任务。
-
-            请检查 Actions 日志以获取详细错误信息，并考虑手动同步一次来解决问题。
-
-            [upstream_repo_url]: https://github.com/xuuuu-cpu/offerFlow-llm-feature
