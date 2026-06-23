@@ -20,15 +20,15 @@ export default function BottomNav() {
   const isActive = (key) => pathname === '/' + key
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-offer-card/95 backdrop-blur-md border-t border-theme-border flex lg:hidden">
-      <div className="flex items-center justify-around w-full overflow-x-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-theme-border bg-offer-card/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_18px_rgba(0,0,0,0.06)] backdrop-blur-md lg:hidden">
+      <div className="flex w-full items-center justify-start overflow-x-auto overscroll-x-contain">
         {navItems.map((item) => {
           const active = isActive(item.key)
           return (
             <button
               key={item.key}
               onClick={() => router.push('/' + item.key)}
-              className={`bottom-nav-btn flex flex-col items-center gap-0.5 py-1.5 px-2 min-w-0 flex-1 ${
+              className={`bottom-nav-btn flex min-w-[52px] flex-1 flex-col items-center gap-0.5 px-1 py-2 ${
                 active ? 'text-offer-primary' : 'text-offer-muted'
               }`}
             >

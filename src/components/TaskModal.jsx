@@ -83,14 +83,14 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
         <ModalHeader title={task ? '编辑事项' : '新建事项'} onClose={onClose} />
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-5 pt-6 pb-7 space-y-4" onFocus={handleFocusIn}>
+        <div className="flex-1 space-y-4 overflow-y-auto p-4 pb-6 pt-5 md:p-5 md:pb-7 md:pt-6" onFocus={handleFocusIn}>
           <Field label="标题 *">
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="事项标题"
               autoFocus
               className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <Field label="类型">
               <select value={type} onChange={(e) => setType(e.target.value)}
                 className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
@@ -114,7 +114,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
               className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <Field label="开始时间">
               <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)}
                 className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
@@ -142,7 +142,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-5 border-t border-slate-200 dark:border-white/10">
+        <div className="flex justify-end gap-3 border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
           <button onClick={onClose}
             className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium">取消</button>
           <button onClick={handleSave}

@@ -175,14 +175,14 @@ export default function Board() {
   }
 
   return (
-    <div className="h-full flex flex-col px-6 py-6">
+    <div className="flex h-full min-w-0 flex-col px-0 py-2 md:px-6 md:py-6">
       <div className="mb-5">
-        <h1 className="text-3xl font-bold tracking-tight text-white">投递看板</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">投递看板</h1>
         <p className="text-sm text-gray-400 dark:text-white/45 mt-1">用看板管理你的投递进度 — 拖拽卡片到其他列来更新状态</p>
       </div>
 
       {/* Kanban Columns */}
-      <div className="flex-1 flex gap-5 overflow-x-auto pb-4 min-h-0">
+      <div className="flex min-h-0 flex-1 snap-x snap-mandatory gap-3 overflow-x-auto pb-4 md:snap-none md:gap-5">
         {COLUMNS.map((col) => {
           const colJobs = jobs.filter((j) => j.status === col.key)
           const isDragOver = dragOverColumn === col.key
@@ -190,7 +190,7 @@ export default function Board() {
           return (
             <div
               key={col.key}
-              className="flex-1 min-w-[240px] max-w-[300px] flex flex-col"
+              className="flex min-w-[85vw] max-w-[85vw] flex-none snap-start flex-col sm:min-w-[320px] sm:max-w-[320px] md:min-w-[240px] md:max-w-[300px] md:flex-1"
               onDragOver={(e) => handleDragOver(e, col.key)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.key)}
@@ -340,7 +340,7 @@ function Card({ job, resumeMap, menuOpen, onToggleMenu, onCloseMenu, onClick, on
       <button
         ref={actionBtnRef}
         onClick={onToggleMenu}
-        className="absolute top-3 right-3 w-6 h-6 rounded-lg flex items-center justify-center text-gray-500 dark:text-white/45 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100"
+        className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-lg text-gray-500 opacity-100 transition-all hover:bg-white/10 hover:text-white dark:text-white/45 md:opacity-0 md:group-hover:opacity-100"
       >
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />

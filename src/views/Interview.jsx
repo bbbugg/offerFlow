@@ -72,17 +72,17 @@ export default function Interview() {
   }
 
   return (
-    <div className="px-6 py-6">
+    <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
       <div className="mb-5">
-        <h1 className="text-3xl font-bold tracking-tight text-white">面试复盘</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">面试复盘</h1>
         <p className="text-sm text-gray-400 dark:text-white/45 mt-1">记录和回顾每场面试，持续进步</p>
       </div>
 
       {/* Toolbar */}
-      <div className="card-modern p-5 mb-5">
-        <div className="flex items-center gap-3 flex-wrap">
+      <div className="card-modern mb-5 p-4 md:p-5">
+        <div className="flex flex-col items-stretch gap-3 md:flex-row md:flex-wrap md:items-center">
           {/* Search */}
-          <div className="relative flex-1 max-w-xs">
+          <div className="relative w-full min-w-0 md:max-w-xs md:flex-1">
             <svg className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-white/45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -118,7 +118,7 @@ export default function Interview() {
           </div>
 
           <button onClick={() => setTrendOpen(true)}
-            className="btn-secondary h-9 px-4 rounded-lg text-sm font-medium flex items-center gap-1.5 border border-purple-400/30 text-purple-300 hover:text-white hover:border-purple-400/60 transition-all">
+            className="btn-secondary h-10 w-full rounded-lg border border-purple-400/30 px-4 text-sm font-medium text-purple-300 transition-all hover:border-purple-400/60 hover:text-white md:h-9 md:w-auto">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
@@ -126,7 +126,7 @@ export default function Interview() {
           </button>
 
           <button onClick={handleNew}
-            className="btn-gradient h-9 px-4 rounded-lg text-white text-sm font-medium flex items-center gap-1.5 ml-auto">
+            className="btn-gradient h-10 w-full rounded-lg px-4 text-sm font-medium text-white md:ml-auto md:h-9 md:w-auto">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
@@ -146,7 +146,7 @@ export default function Interview() {
           const tags = r.tags || []
           return (
             <div key={r.id}
-              className="card-modern overflow-visible card-hover group flex flex-col px-6 pt-6 pb-7 min-h-[220px]">
+              className="card-modern card-hover group flex min-h-[220px] flex-col overflow-visible px-4 pb-5 pt-4 md:px-6 md:pb-7 md:pt-6">
               {/* Top */}
               <div className="flex-1 flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-3">
@@ -191,7 +191,7 @@ export default function Interview() {
               </div>
 
               {/* Bottom stats + action */}
-              <div className="mt-auto flex items-center justify-between border-t border-white/[0.06] pt-4">
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-4 md:flex-nowrap">
                 <div className="flex items-center gap-3 text-sm text-offer-muted/80">
                   <span className="flex items-center gap-1"><span className="font-semibold text-theme-secondary">{(r.questions || []).length}</span> 题</span>
                   <span className="w-px h-3.5 bg-white/10" />
@@ -246,7 +246,7 @@ function TagCloud({ reviews, tagFilter, setTagFilter }) {
 
   return (
     <div className="card-modern p-4 mb-5">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="mb-3 flex flex-wrap items-center gap-2 md:flex-nowrap">
         <h3 className="text-xs font-semibold text-offer-muted uppercase tracking-wider">弱项标签分析</h3>
         <span className="text-[10px] text-offer-muted/50 bg-white/[0.03] px-2 py-0.5 rounded-full">
           {tagFreq.length} 个弱项标签 · {reviews.filter((r) => (r.negativeTags || r.tags || []).length > 0).length} 场面试

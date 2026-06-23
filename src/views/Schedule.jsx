@@ -186,15 +186,15 @@ export default function Schedule() {
   const doneCount = filtered.filter((t) => t.done).length
 
   return (
-    <div className="px-6 py-6">
+    <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
       <div className="mb-5">
-        <h1 className="text-3xl font-bold tracking-tight text-white">日程待办</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">日程待办</h1>
         <p className="text-sm text-gray-400 dark:text-white/45 mt-1">管理你的求职日程和任务</p>
       </div>
 
       {/* Toolbar */}
-      <div className="card-modern p-5 mb-5">
-        <div className="flex items-center gap-3 flex-wrap">
+      <div className="card-modern mb-5 p-4 md:p-5">
+        <div className="flex flex-col items-stretch gap-3 md:flex-row md:flex-wrap md:items-center">
           {/* View toggle */}
           <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => setViewMode('list')}
@@ -211,9 +211,9 @@ export default function Schedule() {
             ))}
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex w-full items-center gap-2 md:ml-auto md:w-auto">
             <button onClick={() => handleDateClick(today)}
-              className="btn-gradient h-9 px-4 rounded-lg text-white text-sm font-medium flex items-center gap-1.5">
+              className="btn-gradient h-10 w-full rounded-lg px-4 text-sm font-medium text-white md:h-9 md:w-auto">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
@@ -226,7 +226,7 @@ export default function Schedule() {
       {viewMode === 'list' ? (
         <div className="space-y-4">
           {/* Today */}
-          <div className="card-modern p-5">
+          <div className="card-modern p-4 md:p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-white">今天</h2>
               <span className="text-sm text-gray-500 dark:text-white/45">{today}</span>
@@ -236,7 +236,7 @@ export default function Schedule() {
           </div>
 
           {/* Next 7 Days */}
-          <div className="card-modern p-5">
+          <div className="card-modern p-4 md:p-5">
             <h2 className="text-base font-semibold text-white mb-4">未来 7 天</h2>
             <div className="space-y-5">
               {next7Days.map(({ date, tasks: dayTasks }) => (
@@ -261,7 +261,7 @@ export default function Schedule() {
 
           {/* Done */}
           {doneCount > 0 && (
-            <div className="card-modern p-5">
+            <div className="card-modern p-4 md:p-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-semibold text-white">已完成</h2>
                 <span className="text-sm text-gray-500 dark:text-white/45">{doneCount} 项</span>
@@ -291,7 +291,7 @@ export default function Schedule() {
         </div>
       ) : (
         /* Month View */
-        <div className="card-modern p-5">
+        <div className="card-modern overflow-x-auto p-4 md:overflow-visible md:p-5">
           {/* Navigation */}
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => navigateMonth(-1)}
@@ -310,14 +310,14 @@ export default function Schedule() {
           </div>
 
           {/* Weekday headers */}
-          <div className="grid grid-cols-7 mb-1">
+          <div className="mb-1 grid min-w-[560px] grid-cols-7 md:min-w-0">
             {['日', '一', '二', '三', '四', '五', '六'].map((d) => (
               <div key={d} className="text-center text-xs text-offer-muted py-2 font-medium">{d}</div>
             ))}
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-7 border-t border-l border-white/5">
+          <div className="grid min-w-[560px] grid-cols-7 border-l border-t border-white/5 md:min-w-0">
             {monthData.map((cell, i) => (
               <div key={i} onClick={() => cell && handleDateClick(cell.dateStr)}
                 className={`min-h-[95px] border-r border-b border-white/5 p-1.5 cursor-pointer transition-colors hover:bg-white/[0.04] ${cell?.isToday ? 'bg-offer-primary/10 border-offer-primary/30' : ''}`}>
@@ -365,7 +365,7 @@ function TaskCards({ tasks, jobMap, compact, onToggle, onEdit, onDelete }) {
         const job = t.jobId ? jobMap[t.jobId] : null
         return (
           <div key={t.id}
-            className="flex items-center gap-3 p-4 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-offer-primary/30 transition-all group">
+            className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3 transition-all hover:border-offer-primary/30 hover:bg-white/[0.04] md:p-4">
             {/* Checkbox */}
             <button onClick={() => onToggle(t.id)}
               className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${t.done ? 'border-offer-primary bg-offer-primary' : 'border-offer-muted hover:border-offer-accent'}`}>
@@ -388,7 +388,7 @@ function TaskCards({ tasks, jobMap, compact, onToggle, onEdit, onDelete }) {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+            <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
               <button onClick={() => onEdit(t)}
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

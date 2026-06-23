@@ -222,7 +222,7 @@ export default function Positions() {
   return (
     <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
       <div className="mb-5">
-        <h1 className="text-3xl font-bold tracking-tight text-white">岗位库</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">岗位库</h1>
         <p className="text-sm text-gray-400 dark:text-white/45 mt-1">管理所有投递岗位，共 {jobs.length} 个记录</p>
       </div>
 

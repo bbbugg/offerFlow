@@ -811,3 +811,19 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
 .ai-dots span:nth-child(3) {
   animation-delay: 0.4s;
 }
+
+@media (max-width: 767px) {
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .modal-panel {
+    max-width: calc(100vw - 1rem) !important;
+    max-height: calc(100dvh - 1rem) !important;
+    margin-inline: 0 !important;
+  }
+
+  .card-hover:hover {
+    transform: none;
+  }
+}

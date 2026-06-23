@@ -167,8 +167,8 @@ export default function ResumeModal({ open, resume, onClose }) {
           <ModalHeader title={resume ? '编辑简历' : '上传简历'} onClose={onClose} />
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-5 pt-6 pb-7 space-y-4" onFocus={handleFocusIn}>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="flex-1 space-y-4 overflow-y-auto p-4 pb-6 pt-5 md:p-5 md:pb-7 md:pt-6" onFocus={handleFocusIn}>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField label="简历名称 *">
                 <input value={form.name} onChange={set('name')} placeholder="例如：通用技术简历" className="min-h-[40px] w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
               </FormField>
@@ -177,7 +177,7 @@ export default function ResumeModal({ open, resume, onClose }) {
               </FormField>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField label="适用岗位方向">
                 <input value={form.target} onChange={set('target')} placeholder="例如：后端/全栈" className="min-h-[40px] w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
               </FormField>
@@ -236,7 +236,7 @@ export default function ResumeModal({ open, resume, onClose }) {
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-3 p-5 border-t border-slate-200 dark:border-white/10">
+          <div className="flex justify-end gap-3 border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
             <button onClick={onClose} disabled={saving} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium">取消</button>
             <button onClick={handleSave} disabled={saving} className="btn-gradient px-5 py-2 rounded-xl text-sm font-medium text-white">
               {saving ? '保存中...' : (resume ? '保存修改' : '上传简历')}

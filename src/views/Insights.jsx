@@ -238,10 +238,10 @@ export default function Insights() {
   }, [jobs, timeFilter, resumes, tasks, reviews])
 
   return (
-    <div className="px-6 py-6">
-      <div className="flex items-start justify-between mb-5">
+    <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
+      <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">数据洞察</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-950 dark:text-white md:text-3xl">数据洞察</h1>
           <p className="text-sm text-slate-600 dark:text-white/45 mt-1">用数据驱动你的求职策略</p>
         </div>
         {/* Time Range Filter */}
@@ -254,7 +254,7 @@ export default function Insights() {
       </div>
 
       {/* ===== Core Metrics ===== */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5 mb-8">
+      <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-4 md:gap-5">
         <MetricCard label="总投递数" value={data.appliedCount} sub={`共 ${data.total} 个记录`} />
         <MetricCard label="活跃流程" value={data.activeCount} sub="进行中" />
         <MetricCard label="收到回复" value={data.repliedCount} sub={`${data.replyRate}% 回复率`} />
@@ -266,7 +266,7 @@ export default function Insights() {
       </div>
 
       {/* ===== Conversion Rates ===== */}
-      <div className="card-modern p-6 mb-8">
+      <div className="card-modern mb-6 p-4 md:mb-8 md:p-6">
         <h2 className="text-lg font-semibold text-white mb-5">基础转化率</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           <RateBar label="回复率" value={data.replyRate} color="from-cyan-500 to-blue-500" />
@@ -278,7 +278,7 @@ export default function Insights() {
       {/* ===== Funnel + Channel ===== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 mb-8">
         {/* Funnel */}
-        <div className="card-modern p-6 min-h-[380px]">
+        <div className="card-modern min-h-[340px] p-4 md:min-h-[380px] md:p-6">
           <h2 className="text-lg font-semibold text-white mb-5">求职漏斗</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data.funnel} margin={{ top: 5, right: 10, left: -15, bottom: 5 }} barSize={36} maxBarSize={50}>
@@ -297,7 +297,7 @@ export default function Insights() {
         </div>
 
         {/* Channel */}
-        <div className="card-modern p-6 min-h-[380px]">
+        <div className="card-modern min-h-[340px] p-4 md:min-h-[380px] md:p-6">
           <h2 className="text-lg font-semibold text-white mb-5">渠道效果</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -335,7 +335,7 @@ export default function Insights() {
 
       {/* ===== Resume Version Analysis ===== */}
       {data.resumeStats.length > 0 && (
-        <div className="card-modern p-6 mb-8">
+        <div className="card-modern mb-6 p-4 md:mb-8 md:p-6">
           <h2 className="text-lg font-semibold text-white mb-5">简历版本效果</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -374,7 +374,7 @@ export default function Insights() {
       )}
 
       {/* ===== City Distribution ===== */}
-      <div className="card-modern p-6 mb-8 min-h-[380px]">
+      <div className="card-modern mb-6 min-h-[340px] p-4 md:mb-8 md:min-h-[380px] md:p-6">
         <h2 className="text-lg font-semibold text-white mb-5">投递城市分布</h2>
         {data.cityDistribution.length > 0 ? (
           <ResponsiveContainer width="100%" height={Math.max(200, data.cityDistribution.length * 44 + 20)}>
@@ -402,7 +402,7 @@ export default function Insights() {
 
       {/* ===== Weakness Tags ===== */}
       {data.tagsData.length > 0 && (
-        <div className="card-modern p-6 mb-8 min-h-[380px]">
+        <div className="card-modern mb-6 min-h-[340px] p-4 md:mb-8 md:min-h-[380px] md:p-6">
           <h2 className="text-lg font-semibold text-white mb-5">面试薄弱项统计</h2>
           <ResponsiveContainer width="100%" height={Math.max(180, data.tagsData.length * 36 + 20)}>
             <BarChart data={data.tagsData} layout="vertical" margin={{ top: 5, right: 40, left: 80, bottom: 5 }} barSize={22}>
@@ -446,7 +446,7 @@ export default function Insights() {
 
 function MetricCard({ label, value, sub, accent, onClick }) {
   return (
-    <div onClick={onClick} className={`card-modern p-6 relative overflow-visible min-h-[148px] flex flex-col justify-between ${onClick ? 'cursor-pointer card-hover' : ''}`}>
+    <div onClick={onClick} className={`card-modern relative flex min-h-[128px] flex-col justify-between overflow-visible p-4 md:min-h-[148px] md:p-6 ${onClick ? 'cursor-pointer card-hover' : ''}`}>
       <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/[0.02] to-transparent rounded-bl-full" />
       <div className="space-y-2">
         <p className="text-offer-muted text-sm font-medium leading-6 tracking-wide">{label}</p>

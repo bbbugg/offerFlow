@@ -449,7 +449,7 @@ export default function ReviewModal({ open, review, onClose }) {
         <ModalHeader title={isEdit ? '编辑复盘' : '新建复盘'} onClose={onClose} />
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-5 pt-6 pb-7 space-y-6" onFocus={handleFocusIn}>
+        <div className="flex-1 space-y-6 overflow-y-auto p-4 pb-6 pt-5 md:p-5 md:pb-7 md:pt-6" onFocus={handleFocusIn}>
           {/* ===== 基本信息 ===== */}
           <Section title="基本信息">
             <div className="space-y-4">
@@ -471,7 +471,7 @@ export default function ReviewModal({ open, review, onClose }) {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <Field label="面试轮次">
                   <select value={round} onChange={(e) => setRound(e.target.value)}
                     className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
@@ -486,7 +486,7 @@ export default function ReviewModal({ open, review, onClose }) {
                 </Field>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <Field label="面试时间">
                   <input type="date" value={interviewDate} onChange={(e) => setInterviewDate(e.target.value)}
                     className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
@@ -497,7 +497,7 @@ export default function ReviewModal({ open, review, onClose }) {
                 </Field>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <Field label="面试结果">
                   <select value={result} onChange={(e) => setResult(e.target.value)}
                     className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
@@ -578,7 +578,7 @@ export default function ReviewModal({ open, review, onClose }) {
                       <textarea value={q.myAnswer} onChange={(e) => updateQuestion(q.id, 'myAnswer', e.target.value)} rows={2} placeholder="你的回答..."
                         className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 resize-none" />
                     </Field>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                       <Field label="回答满意度">
                         <div className="flex items-center gap-1 h-9">
                           <StarRating value={q.satisfaction} onChange={(v) => updateQuestion(q.id, 'satisfaction', v)} />
@@ -667,7 +667,7 @@ export default function ReviewModal({ open, review, onClose }) {
                         </div>
                       ))}
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                       <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}
                         className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
                         {FILE_CATEGORIES.map((c) => <option key={c} className="bg-gray-950">{c}</option>)}
@@ -743,7 +743,7 @@ export default function ReviewModal({ open, review, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-5 border-t border-slate-200 dark:border-white/10 shrink-0">
+        <div className="flex shrink-0 justify-end gap-3 border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
           <button onClick={onClose}
             className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium">取消</button>
           <button onClick={handleSave}

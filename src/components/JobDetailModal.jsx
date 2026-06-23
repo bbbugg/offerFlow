@@ -115,7 +115,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
         </ModalHeader>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-5 pt-6 pb-7 space-y-5">
+        <div className="flex-1 space-y-5 overflow-y-auto p-4 pb-6 pt-5 md:p-5 md:pb-7 md:pt-6">
           {/* Basic Info */}
           <section>
             <h3 className="text-xs font-semibold text-white/45 uppercase tracking-wider mb-3">基本信息</h3>
@@ -272,7 +272,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between p-5 border-t border-slate-200 dark:border-white/10 shrink-0">
+        <div className="flex shrink-0 items-center justify-between border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
           <button
             onClick={() => { onClose(); onDelete(job) }}
             className="btn-danger text-sm text-slate-500 dark:text-offer-muted hover:text-red-400 transition-colors flex items-center gap-1.5"

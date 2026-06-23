@@ -90,20 +90,20 @@ export default function Navbar() {
   const avatarLetter = user?.username ? user.username[0].toUpperCase() : 'U'
 
   return (
-    <header className="h-16 bg-offer-card border-b border-theme-border flex items-center justify-between px-6 shrink-0">
+    <header className="h-16 shrink-0 border-b border-theme-border bg-offer-card px-4 md:px-6 flex items-center justify-between">
       {/* Left: Logo */}
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 md:gap-3">
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-offer-primary to-offer-accent flex items-center justify-center text-white font-bold text-sm">
           O
         </div>
-        <span className="text-theme-text font-bold text-lg tracking-tight">OfferFlow</span>
+        <span className="hidden text-lg font-bold tracking-tight text-theme-text min-[400px]:inline">OfferFlow</span>
       </div>
 
       {/* Center: Search */}
-      <div className="flex-1 max-w-md mx-6">
+      <div className="mx-2 w-10 flex-none sm:mx-4 sm:w-auto sm:max-w-md sm:flex-1 md:mx-6">
         <div className="relative">
           <svg
-            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-theme-muted"
+            className="pointer-events-none absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 text-theme-muted sm:left-4 sm:translate-x-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -120,16 +120,16 @@ export default function Navbar() {
             placeholder="搜索岗位、公司、关键词..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="min-h-[40px] w-full rounded-xl border border-theme-border bg-theme-card py-2.5 !pl-12 pr-4 text-sm text-theme-text placeholder:text-theme-muted outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20"
+            className="min-h-[40px] w-full rounded-xl border border-theme-border bg-theme-card p-0 text-transparent placeholder:text-transparent outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 sm:py-2.5 sm:!pl-12 sm:pr-4 sm:text-sm sm:text-theme-text sm:placeholder:text-theme-muted"
           />
         </div>
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 md:gap-3">
         <button
           onClick={toggleTheme}
-          className="h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200
+          className="h-9 w-9 rounded-full md:h-10 md:w-10 flex items-center justify-center transition-all duration-200
             dark:border-white/25 dark:bg-white/[0.12] dark:text-white/80 dark:shadow-lg dark:shadow-black/20
             dark:hover:bg-white/[0.2] dark:hover:text-white dark:hover:scale-105
             border-slate-300 bg-white text-slate-600 shadow-sm

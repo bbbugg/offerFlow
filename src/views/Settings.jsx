@@ -106,13 +106,13 @@ export default function Settings() {
   }
 
   return (
-    <div className="max-w-3xl">
+    <div className="min-w-0 max-w-3xl py-2 md:py-0">
       <h1 className="text-2xl font-bold text-white mb-1">设置</h1>
       <p className="text-offer-muted text-sm mb-6">管理你的账户和应用设置</p>
 
       <div className="space-y-4">
         {/* Personal Info */}
-        <div className="card-modern p-5">
+        <div className="card-modern p-4 md:p-5">
           <h2 className="text-white font-semibold mb-4">个人资料</h2>
           <div className="space-y-4">
             {[
@@ -133,7 +133,7 @@ export default function Settings() {
         </div>
 
         {/* Preferences */}
-        <div className="card-modern p-5">
+        <div className="card-modern p-4 md:p-5">
           <h2 className="text-white font-semibold mb-4">偏好设置</h2>
           <div className="space-y-4">
             {[
@@ -154,7 +154,7 @@ export default function Settings() {
         </div>
 
         {/* Notifications */}
-        <div className="card-modern p-5">
+        <div className="card-modern p-4 md:p-5">
           <h2 className="text-white font-semibold mb-4">通知设置</h2>
           <div className="space-y-4">
             {[
@@ -168,7 +168,7 @@ export default function Settings() {
                 </div>
                 <button
                   onClick={() => setForm((prev) => ({ ...prev, [t.key]: !prev[t.key] }))}
-                  className={`w-11 h-6 rounded-full transition-all relative ${form[t.key] ? 'bg-offer-primary' : 'bg-slate-200 dark:bg-white/10'}`}
+                  className={`relative ml-3 h-6 w-11 shrink-0 rounded-full transition-all md:ml-0 ${form[t.key] ? 'bg-offer-primary' : 'bg-slate-200 dark:bg-white/10'}`}
                 >
                   <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-all ${form[t.key] ? 'left-6' : 'left-1'}`} />
                 </button>
@@ -178,7 +178,7 @@ export default function Settings() {
         </div>
 
         {/* AI 模型配置 */}
-        <div className="card-modern p-5">
+        <div className="card-modern p-4 md:p-5">
           <h2 className="text-white font-semibold mb-4">AI 模型配置</h2>
           <p className="text-xs text-offer-muted mb-4">配置你的 AI 面试分析模型。支持任何 OpenAI 兼容的 API。配置后会自动生效。</p>
 

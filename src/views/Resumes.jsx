@@ -83,17 +83,17 @@ export default function Resumes() {
   }
 
   return (
-    <div className="px-6 py-6">
+    <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
       <div className="mb-5">
-        <h1 className="text-3xl font-bold tracking-tight text-white">简历舱</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">简历舱</h1>
         <p className="text-sm text-gray-400 dark:text-white/45 mt-1">管理你的简历版本，精准匹配不同岗位</p>
       </div>
 
       {/* Toolbar */}
-      <div className="card-modern p-5 mb-5">
-        <div className="flex items-center gap-3">
+      <div className="card-modern mb-5 p-4 md:p-5">
+        <div className="flex flex-col items-stretch gap-3 md:flex-row md:items-center">
           {/* Search */}
-          <div className="relative flex-1 max-w-xs">
+          <div className="relative w-full min-w-0 md:max-w-xs md:flex-1">
             <svg className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-white/45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -123,7 +123,7 @@ export default function Resumes() {
 
           <button
             onClick={() => { setEditingResume(null); setModalOpen(true) }}
-            className="btn-gradient h-9 px-4 rounded-lg text-white text-sm font-medium flex items-center gap-1.5 ml-auto"
+            className="btn-gradient h-10 w-full rounded-lg px-4 text-sm font-medium text-white md:ml-auto md:h-9 md:w-auto"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -134,7 +134,7 @@ export default function Resumes() {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filtered.map((r) => {
           const s = statsMap[r.id] || {}
           return (
@@ -143,7 +143,7 @@ export default function Resumes() {
               className="card-modern overflow-hidden card-hover group"
             >
               {/* Top section */}
-              <div className="p-5 pb-3">
+              <div className="p-4 pb-3 md:p-5 md:pb-3">
                 <div className="flex items-start gap-3 mb-3">
                   <div className={`w-10 h-14 rounded-xl flex items-center justify-center text-[11px] font-bold shrink-0 border ${
                     r.format === 'PDF' ? 'bg-red-500/10 text-red-400 border-red-500/20'

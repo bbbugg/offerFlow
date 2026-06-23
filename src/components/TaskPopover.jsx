@@ -49,7 +49,7 @@ export default function TaskPopover({ open, tasks, jobs }) {
   if (!open) return null
 
   return (
-    <div data-popover-content className="absolute right-0 top-full mt-2 w-[380px] z-50 animate-fade-in origin-top-right">
+    <div data-popover-content className="fixed left-4 right-4 top-16 z-50 mt-2 w-auto origin-top-right animate-fade-in md:absolute md:left-auto md:right-0 md:top-full md:w-[380px]">
       <div className="rounded-xl bg-white dark:bg-[#13151A] border border-slate-200 dark:border-white/[0.08] shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden">
         {/* Header */}
         <div className="px-4 py-3 border-b border-slate-100 dark:border-white/[0.06]">

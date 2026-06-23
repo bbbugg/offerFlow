@@ -170,7 +170,7 @@ export default function ReviewDetailModal({ open, review, onClose, onEdit, onDel
         </ModalHeader>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-5 pt-6 pb-7 space-y-6" onFocus={handleFocusIn}>
+        <div className="flex-1 space-y-6 overflow-y-auto p-4 pb-6 pt-5 md:p-5 md:pb-7 md:pt-6" onFocus={handleFocusIn}>
 
           {/* Info */}
           <div>
@@ -344,7 +344,7 @@ export default function ReviewDetailModal({ open, review, onClose, onEdit, onDel
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-5 border-t border-slate-200 dark:border-white/10 shrink-0">
+        <div className="flex shrink-0 items-center justify-between border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
           <button onClick={() => { onClose(); onDelete(review) }}
             className="btn-danger text-sm text-slate-500 dark:text-offer-muted hover:text-red-400 transition-colors flex items-center gap-1.5">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

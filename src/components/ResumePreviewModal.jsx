@@ -117,7 +117,7 @@ export default function ResumePreviewModal({ open, resume, onClose }) {
         </div>
 
         {/* Preview Area */}
-        <div className="flex-1 overflow-y-auto p-5">
+        <div className="flex-1 overflow-y-auto p-4 md:p-5">
           {loading ? (
             <div className="rounded-2xl p-6 border border-white/5 min-h-[300px] flex items-center justify-center">
               <p className="text-slate-500 dark:text-offer-muted text-sm">正在加载文件...</p>
@@ -176,7 +176,7 @@ export default function ResumePreviewModal({ open, resume, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-5 border-t border-slate-200 dark:border-white/10">
+        <div className="flex justify-end gap-3 border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
           {objectUrl && (
             <button
               onClick={handleDownload}

@@ -36,18 +36,18 @@ export default function Dashboard() {
   const upcomingTasks = tasks.filter((t) => !t.done).slice(0, 4)
 
   return (
-    <div className="px-6 py-6 max-w-5xl">
+    <div className="max-w-5xl min-w-0 px-0 py-2 md:px-6 md:py-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-white">仪表盘</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">仪表盘</h1>
         <p className="text-sm text-gray-400 dark:text-white/45 mt-1">欢迎回来，这是你的求职总览</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-4 md:gap-4">
         {stats.map((s, i) => (
-          <div key={i} className="card-modern p-5 card-hover">
-            <p className="text-gray-400 dark:text-white/45 text-sm mb-2">{s.label}</p>
-            <p className={`text-3xl font-bold bg-gradient-to-r ${s.color} bg-clip-text text-transparent`}>
+          <div key={i} className="card-modern card-hover p-4 md:p-5">
+            <p className="mb-2 text-xs text-gray-400 dark:text-white/45 md:text-sm">{s.label}</p>
+            <p className={`text-2xl font-bold md:text-3xl bg-gradient-to-r ${s.color} bg-clip-text text-transparent`}>
               {s.value}
             </p>
           </div>
@@ -57,7 +57,7 @@ export default function Dashboard() {
       {/* Two columns */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Recent Activity */}
-        <div className="card-modern p-5">
+        <div className="card-modern p-4 md:p-5">
           <h2 className="text-base font-semibold text-white mb-4">最近动态</h2>
           <div className="space-y-3">
             {timelineEvents.length > 0 ? timelineEvents.map((e, i) => (
@@ -77,7 +77,7 @@ export default function Dashboard() {
         </div>
 
         {/* Upcoming */}
-        <div className="card-modern p-5">
+        <div className="card-modern p-4 md:p-5">
           <h2 className="text-base font-semibold text-white mb-4">待办事项</h2>
           <div className="space-y-3">
             {upcomingTasks.length > 0 ? upcomingTasks.map((t) => (
