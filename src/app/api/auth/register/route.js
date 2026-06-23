@@ -3,12 +3,23 @@ import bcrypt from 'bcryptjs'
 import prisma from '@/lib/prisma'
 import { signToken, cookieOptions } from '@/lib/jwt'
 
+function getAllowedRegisterUsernames() {
+  return (process.env.REGISTER_ALLOWED_USERNAMES || '')
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean)
+}
+
 export async function POST(request) {
   try {
-    const { username, password } = await request.json()
+    const { username: rawUsername, password } = await request.json()
+    const username = typeof rawUsername === 'string' ? rawUsername.trim() : ''
 
     if (!username || !password) {
       return NextResponse.json({ error: '用户名和密码不能为空' }, { status: 400 })
+    }
+    if (!getAllowedRegisterUsernames().includes(username)) {
+      return NextResponse.json({ error: '该用户名不在允许注册列表中' }, { status: 403 })
     }
     if (username.length < 2 || username.length > 20) {
       return NextResponse.json({ error: '用户名长度需在 2-20 个字符之间' }, { status: 400 })

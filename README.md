@@ -79,7 +79,7 @@ npm run db:sqlite
 cp .env.example .env          # macOS/Linux
 copy .env.example .env         # Windows
 
-# 5. 编辑 .env，修改 JWT_SECRET 为随机字符串
+# 5. 编辑 .env，修改 JWT_SECRET，并设置允许注册的用户名 REGISTER_ALLOWED_USERNAMES
 
 # 6. 启动
 npm run dev
@@ -104,10 +104,10 @@ docker compose logs -f app
 - `offerflow-data`：SQLite 数据库，默认文件为 `/app/data/dev.db`
 - `offerflow-uploads`：面试复盘上传文件
 
-环境变量在运行时注入即可。最少建议设置 `JWT_SECRET`：
+环境变量在运行时注入即可。最少建议设置 `JWT_SECRET` 和允许注册的用户名：
 
 ```bash
-JWT_SECRET=your-random-secret docker compose up -d
+JWT_SECRET=your-random-secret REGISTER_ALLOWED_USERNAMES=alice,bob docker compose up -d
 ```
 
 如果不用 compose，也可以直接运行镜像：
@@ -117,6 +117,7 @@ docker run -d \
   --name offerflow \
   -p 3000:3000 \
   -e JWT_SECRET=your-random-secret \
+  -e REGISTER_ALLOWED_USERNAMES=alice,bob \
   -v offerflow-data:/app/data \
   -v offerflow-uploads:/app/public/uploads \
   ghcr.io/<owner>/<repo>:latest
