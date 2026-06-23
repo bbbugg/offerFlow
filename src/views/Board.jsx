@@ -34,7 +34,10 @@ export default function Board() {
 
   // Drag state
   const [dragOverColumn, setDragOverColumn] = useState(null)
+  const [activeColumn, setActiveColumn] = useState(COLUMNS[0].key)
   const dragJobId = useRef(null)
+  const columnsContainerRef = useRef(null)
+  const columnRefs = useRef({})
 
   // Modal states
   const [detailJobId, setDetailJobId] = useState(null)
@@ -97,6 +100,37 @@ export default function Board() {
   const handleDragEnd = () => {
     setDragOverColumn(null)
     dragJobId.current = null
+  }
+
+  const jumpToColumn = (columnKey, navButton) => {
+    const container = columnsContainerRef.current
+    const column = columnRefs.current[columnKey]
+    if (!container || !column) return
+
+    container.scrollTo({
+      left: column.offsetLeft - container.offsetLeft,
+      behavior: 'smooth',
+    })
+    navButton?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    setActiveColumn(columnKey)
+  }
+
+  const handleColumnsScroll = () => {
+    const container = columnsContainerRef.current
+    if (!container) return
+
+    let closestColumn = COLUMNS[0].key
+    let closestDistance = Number.POSITIVE_INFINITY
+    COLUMNS.forEach(({ key }) => {
+      const column = columnRefs.current[key]
+      if (!column) return
+      const distance = Math.abs(column.offsetLeft - container.offsetLeft - container.scrollLeft)
+      if (distance < closestDistance) {
+        closestDistance = distance
+        closestColumn = key
+      }
+    })
+    setActiveColumn((current) => current === closestColumn ? current : closestColumn)
   }
 
   // ---- Actions ----
@@ -175,14 +209,40 @@ export default function Board() {
   }
 
   return (
-    <div className="flex h-full min-w-0 flex-col px-0 py-2 md:px-6 md:py-6">
-      <div className="mb-5">
+    <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-0 py-2 md:px-6 md:py-6">
+      <div className="mb-4 shrink-0 md:mb-5">
         <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">投递看板</h1>
         <p className="text-sm text-gray-400 dark:text-white/45 mt-1">用看板管理你的投递进度 — 拖拽卡片到其他列来更新状态</p>
       </div>
 
+      {/* Column navigator */}
+      <div className="card-modern mb-3 shrink-0 overflow-x-auto p-2">
+        <div className="flex w-max items-center gap-1.5">
+          {COLUMNS.map((col) => {
+            const isActive = activeColumn === col.key
+            return (
+              <button
+                key={col.key}
+                onClick={(e) => jumpToColumn(col.key, e.currentTarget)}
+                className={`whitespace-nowrap rounded-lg border px-3 py-2 text-xs font-semibold transition-all ${col.headerColor} ${
+                  isActive
+                    ? `${col.bgColor} border-current shadow-sm ring-1 ring-current/20`
+                    : 'border-theme-border bg-theme-card hover:bg-theme-hover'
+                }`}
+              >
+                {col.key}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       {/* Kanban Columns */}
-      <div className="flex min-h-0 flex-1 snap-x snap-mandatory gap-3 overflow-x-auto pb-4 md:snap-none md:gap-5">
+      <div
+        ref={columnsContainerRef}
+        onScroll={handleColumnsScroll}
+        className="flex min-h-0 flex-1 snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden pb-3 md:snap-none md:gap-5 md:pb-4"
+      >
         {COLUMNS.map((col) => {
           const colJobs = jobs.filter((j) => j.status === col.key)
           const isDragOver = dragOverColumn === col.key
@@ -190,14 +250,15 @@ export default function Board() {
           return (
             <div
               key={col.key}
-              className="flex min-w-[85vw] max-w-[85vw] flex-none snap-start flex-col sm:min-w-[320px] sm:max-w-[320px] md:min-w-[240px] md:max-w-[300px] md:flex-1"
+              ref={(node) => { columnRefs.current[col.key] = node }}
+              className="flex min-h-0 w-full min-w-full max-w-full flex-none snap-start flex-col md:w-auto md:min-w-[240px] md:max-w-[300px] md:flex-1"
               onDragOver={(e) => handleDragOver(e, col.key)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.key)}
             >
-              <div className={`bg-white/[0.02] rounded-2xl border-t-2 ${col.color} ${isDragOver ? 'border-x border-b border-offer-accent bg-offer-primary/5' : 'border-x border-b border-white/10'} flex flex-col flex-1 transition-colors shadow-sm`}>
+              <div className={`min-h-0 overflow-hidden bg-white/[0.02] rounded-2xl border-t-2 ${col.color} ${isDragOver ? 'border-x border-b border-offer-accent bg-offer-primary/5' : 'border-x border-b border-white/10'} flex flex-col flex-1 transition-colors shadow-sm`}>
                 {/* Column Header */}
-                <div className="flex items-center justify-between px-4 pt-3 pb-2">
+                <div className="flex shrink-0 items-center justify-between px-4 pb-2 pt-3">
                   <div className="flex items-center gap-2">
                     <span className={`text-sm font-semibold ${col.headerColor}`}>{col.key}</span>
                     <span className="inline-flex min-w-6 h-6 items-center justify-center rounded-full border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-white/80">{colJobs.length}</span>
@@ -214,7 +275,7 @@ export default function Board() {
                 </div>
 
                 {/* Cards */}
-                <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3 min-h-[100px]">
+                <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pb-4">
                   {colJobs.map((job) => (
                     <Card
                       key={job.id}
