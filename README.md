@@ -87,6 +87,67 @@ npm run dev
 
 浏览器打开 http://localhost:3000 即可使用。
 
+### Docker 部署
+
+Docker 部署默认使用 SQLite，适合个人服务器、NAS 或单机长期运行。
+
+```bash
+# 构建并启动
+docker compose up -d --build
+
+# 查看日志
+docker compose logs -f app
+```
+
+启动后访问 http://localhost:3000。`docker-compose.yml` 会创建两个持久化卷：
+
+- `offerflow-data`：SQLite 数据库，默认文件为 `/app/data/dev.db`
+- `offerflow-uploads`：面试复盘上传文件
+
+环境变量在运行时注入即可。最少建议设置 `JWT_SECRET`：
+
+```bash
+JWT_SECRET=your-random-secret docker compose up -d
+```
+
+如果不用 compose，也可以直接运行镜像：
+
+```bash
+docker run -d \
+  --name offerflow \
+  -p 3000:3000 \
+  -e JWT_SECRET=your-random-secret \
+  -v offerflow-data:/app/data \
+  -v offerflow-uploads:/app/public/uploads \
+  ghcr.io/<owner>/<repo>:latest
+```
+
+默认 `PRISMA_DB_PUSH=true`，容器启动时会执行 `prisma db push` 初始化/同步表结构。
+
+使用已发布镜像时，将 compose 中 `app` 服务的 `build` 段删除，并保留：
+
+```yaml
+app:
+  image: ghcr.io/<owner>/<repo>:latest
+  restart: unless-stopped
+```
+
+### Docker 镜像自动打包
+
+仓库已添加 `.github/workflows/docker-publish.yml`，逻辑与 `gemini-balance` 的 Docker workflow 保持一致：
+
+- `push`：构建并推送镜像到 GitHub Container Registry
+- `pull_request` 到 `main`：只构建验证，不推送
+- `workflow_dispatch`：支持手动触发
+- 多架构：`linux/amd64`、`linux/arm64`
+- 标签：分支名、语义化版本 tag、默认分支的 `latest`
+
+镜像地址格式：
+
+```text
+ghcr.io/<GitHub 用户或组织>/<仓库名>:latest
+```
+
 ### AI 面试分析配置
 
 在「设置 → AI 模型配置」中填入你的 LLM API Key：
@@ -215,6 +276,7 @@ npm run dev
 ```
 offerFlow-LLM/
 ├── prisma/              # 数据库模型（SQLite / PostgreSQL 双 schema）
+├── docker/              # Docker 启动脚本
 ├── src/
 │   ├── app/             # Next.js App Router
 │   │   ├── api/         # 后端 API（认证、CRUD、AI 分析）
@@ -226,6 +288,8 @@ offerFlow-LLM/
 │   ├── store/           # 全局状态管理（Context）
 │   └── utils/           # 工具函数（IndexedDB 存储）
 ├── setup.bat            # Windows 快速部署脚本
+├── Dockerfile           # Docker 生产镜像
+├── docker-compose.yml   # Docker Compose 部署
 └── .env.example         # 环境变量模板
 ```
 
