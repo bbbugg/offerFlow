@@ -99,7 +99,10 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}
+    >
       <div className="modal-panel border w-full max-w-lg mx-4 max-h-[85vh] min-h-0 flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
         <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1">
         <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
@@ -295,7 +298,10 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
 
       {/* ===== Task Form Sub-dialog ===== */}
       {showTaskForm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onClick={() => setShowTaskForm(false)}>
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50"
+          onMouseDown={(e) => { if (e.target === e.currentTarget) setShowTaskForm(false) }}
+        >
           <div className="modal-panel w-full max-w-sm mx-4 shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
             <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col">
             <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col">
@@ -342,7 +348,10 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
 
       {/* ===== Review Form Sub-dialog ===== */}
       {showReviewForm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onClick={() => setShowReviewForm(false)}>
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50"
+          onMouseDown={(e) => { if (e.target === e.currentTarget) setShowReviewForm(false) }}
+        >
           <div className="modal-panel w-full max-w-md mx-4 shadow-2xl shadow-black/40 max-h-[85vh]" onClick={(e) => e.stopPropagation()}>
             <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col overflow-hidden">
             <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col overflow-hidden max-h-[calc(85vh-24px)]">

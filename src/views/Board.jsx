@@ -272,7 +272,14 @@ export default function Board() {
 
       {/* Follow-up Dialog */}
       {followUpJob && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={() => { setFollowUpJob(null); setFollowUpText('') }}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
+          onMouseDown={(e) => {
+            if (e.target !== e.currentTarget) return
+            setFollowUpJob(null)
+            setFollowUpText('')
+          }}
+        >
           <div className="modal-panel border rounded-2xl w-full max-w-sm mx-4 shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
             <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col">
             <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col">
