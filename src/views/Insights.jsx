@@ -38,17 +38,9 @@ function getCityDistribution(jobs) {
     cityMap[city] = (cityMap[city] || 0) + 1
   })
 
-  let entries = Object.entries(cityMap)
+  return Object.entries(cityMap)
     .map(([city, count]) => ({ city, count }))
     .sort((a, b) => b.count - a.count)
-
-  if (entries.length > 10) {
-    const top10 = entries.slice(0, 10)
-    const otherCount = entries.slice(10).reduce((sum, item) => sum + item.count, 0)
-    entries = [...top10, { city: '其他', count: otherCount }]
-  }
-
-  return entries
 }
 
 const CustomChartTooltip = ({ active, payload, label }) => {
