@@ -220,17 +220,17 @@ export default function Positions() {
     (cityFilter !== '全部' ? 1 : 0) + (priorityFilter !== '全部' ? 1 : 0)
 
   return (
-    <div className="px-6 py-6">
+    <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
       <div className="mb-5">
         <h1 className="text-3xl font-bold tracking-tight text-white">岗位库</h1>
         <p className="text-sm text-gray-400 dark:text-white/45 mt-1">管理所有投递岗位，共 {jobs.length} 个记录</p>
       </div>
 
       {/* ===== Toolbar ===== */}
-      <div className="card-modern p-5 mb-5 space-y-4">
+      <div className="card-modern mb-5 min-w-0 space-y-4 p-4 md:p-5">
         {/* Row 1: Search + Add + Batch delete + Export */}
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-xs">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="relative w-full min-w-0 md:max-w-xs md:flex-1">
             <svg className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-white/45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -243,8 +243,8 @@ export default function Positions() {
             />
           </div>
 
-          <div className="flex gap-2 ml-auto">
-            <button onClick={openAdd} className="btn-gradient">
+          <div className="grid w-full grid-cols-3 gap-2 md:ml-auto md:flex md:w-auto">
+            <button onClick={openAdd} className="btn-gradient min-w-0 whitespace-nowrap px-2 md:px-4">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
@@ -253,7 +253,7 @@ export default function Positions() {
 
             <button
               onClick={handleBatchDelete}
-              className={`btn-danger px-4 py-2.5 text-sm ${selectedIds.size > 0 ? '' : 'opacity-50'}`}
+              className={`btn-danger min-w-0 whitespace-nowrap px-2 py-2.5 text-sm md:px-4 ${selectedIds.size > 0 ? '' : 'opacity-50'}`}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -261,7 +261,7 @@ export default function Positions() {
               删除{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
             </button>
 
-            <button onClick={handleExport} className="btn-secondary">
+            <button onClick={handleExport} className="btn-secondary min-w-0 whitespace-nowrap px-2 md:px-4">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -271,7 +271,7 @@ export default function Positions() {
         </div>
 
         {/* Row 2: Filters */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex min-w-0 flex-col items-stretch gap-3 md:flex-row md:flex-wrap md:items-center">
           {/* Status filter */}
           <div className="flex flex-wrap items-center gap-2">
             {STATUS_OPTIONS.map((s) => (
@@ -289,13 +289,13 @@ export default function Positions() {
             ))}
           </div>
 
-          <div className="w-px h-6 bg-theme-border" />
+          <div className="h-px w-full bg-theme-border md:h-6 md:w-px" />
 
           {/* Channel dropdown */}
           <select
             value={channelFilter}
             onChange={(e) => setChannelFilter(e.target.value)}
-            className="min-h-[40px] rounded-xl border border-theme-border bg-theme-card px-4 py-2.5 text-sm font-medium text-theme-text outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
+            className="min-h-[40px] w-full min-w-0 cursor-pointer appearance-none rounded-xl border border-theme-border bg-theme-card px-4 py-2.5 text-sm font-medium text-theme-text outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 md:w-auto"
           >
             {channels.map((c) => (
               <option key={c} value={c} className="bg-theme-card text-theme-text">{c === '全部' ? '全部渠道' : c}</option>
@@ -306,7 +306,7 @@ export default function Positions() {
           <select
             value={cityFilter}
             onChange={(e) => setCityFilter(e.target.value)}
-            className="min-h-[40px] rounded-xl border border-theme-border bg-theme-card px-4 py-2.5 text-sm font-medium text-theme-text outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
+            className="min-h-[40px] w-full min-w-0 cursor-pointer appearance-none rounded-xl border border-theme-border bg-theme-card px-4 py-2.5 text-sm font-medium text-theme-text outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 md:w-auto"
           >
             {cities.map((c) => (
               <option key={c} value={c} className="bg-theme-card text-theme-text">{c === '全部' ? '全部城市' : c}</option>
