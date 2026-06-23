@@ -49,10 +49,7 @@ function LoginForm() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12">
-      <GlowCard
-        style={{ '--glow-bg': 'rgba(255, 255, 255, 0.88)' }}
-        className="w-full max-w-[420px] bg-white/80 backdrop-blur-xl dark:bg-[rgba(20,20,25,0.65)] border border-slate-200/70 dark:border-white/[0.08] shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] rounded-2xl p-8 sm:p-10"
-      >
+      <GlowCard className="w-full max-w-[420px] [--glow-bg:rgba(255,255,255,0.88)] dark:[--glow-bg:rgba(20,20,25,0.65)] bg-white/80 backdrop-blur-xl dark:bg-[rgba(20,20,25,0.65)] border border-slate-200/70 dark:border-white/[0.08] shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] rounded-2xl p-8 sm:p-10">
         <div className="glow-content">
           {/* Brand logo */}
           <div className="text-center mb-8">
