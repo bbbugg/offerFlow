@@ -3,7 +3,7 @@ export default function ModalHeader({ title, onClose, children }) {
   return (
     <div className="relative flex w-full items-center justify-center px-5 py-4 border-b border-slate-200 dark:border-white/10 shrink-0">
       {children ? (
-        <div className="mx-auto flex min-w-0 max-w-[calc(100%-4rem)] items-center justify-center gap-2 text-center">
+        <div className="mx-auto flex w-full min-w-0 max-w-[calc(100%-4rem)] items-center justify-center gap-2 text-center">
           {children}
         </div>
       ) : (

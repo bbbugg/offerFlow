@@ -36,6 +36,8 @@ export default function Board() {
   const [dragOverColumn, setDragOverColumn] = useState(null)
   const [activeColumn, setActiveColumn] = useState(COLUMNS[0].key)
   const dragJobId = useRef(null)
+  const columnNavRef = useRef(null)
+  const navButtonRefs = useRef({})
   const columnsContainerRef = useRef(null)
   const columnRefs = useRef({})
 
@@ -102,7 +104,23 @@ export default function Board() {
     dragJobId.current = null
   }
 
-  const jumpToColumn = (columnKey, navButton) => {
+  const keepNavButtonVisible = (columnKey, behavior = 'smooth') => {
+    const nav = columnNavRef.current
+    const button = navButtonRefs.current[columnKey]
+    if (!nav || !button) return
+
+    const navRect = nav.getBoundingClientRect()
+    const buttonRect = button.getBoundingClientRect()
+    const edgePadding = 8
+
+    if (buttonRect.left < navRect.left + edgePadding) {
+      nav.scrollBy({ left: buttonRect.left - navRect.left - edgePadding, behavior })
+    } else if (buttonRect.right > navRect.right - edgePadding) {
+      nav.scrollBy({ left: buttonRect.right - navRect.right + edgePadding, behavior })
+    }
+  }
+
+  const jumpToColumn = (columnKey) => {
     const container = columnsContainerRef.current
     const column = columnRefs.current[columnKey]
     if (!container || !column) return
@@ -111,7 +129,7 @@ export default function Board() {
       left: column.offsetLeft - container.offsetLeft,
       behavior: 'smooth',
     })
-    navButton?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    keepNavButtonVisible(columnKey)
     setActiveColumn(columnKey)
   }
 
@@ -130,7 +148,11 @@ export default function Board() {
         closestColumn = key
       }
     })
-    setActiveColumn((current) => current === closestColumn ? current : closestColumn)
+    setActiveColumn((current) => {
+      if (current === closestColumn) return current
+      requestAnimationFrame(() => keepNavButtonVisible(closestColumn))
+      return closestColumn
+    })
   }
 
   // ---- Actions ----
@@ -216,14 +238,15 @@ export default function Board() {
       </div>
 
       {/* Column navigator */}
-      <div className="card-modern mb-3 shrink-0 overflow-x-auto p-2">
+      <div ref={columnNavRef} className="card-modern mb-3 shrink-0 overflow-x-auto p-2">
         <div className="flex w-max items-center gap-1.5">
           {COLUMNS.map((col) => {
             const isActive = activeColumn === col.key
             return (
               <button
                 key={col.key}
-                onClick={(e) => jumpToColumn(col.key, e.currentTarget)}
+                ref={(node) => { navButtonRefs.current[col.key] = node }}
+                onClick={() => jumpToColumn(col.key)}
                 className={`whitespace-nowrap rounded-lg border px-3 py-2 text-xs font-semibold transition-all ${col.headerColor} ${
                   isActive
                     ? `${col.bgColor} border-current shadow-sm ring-1 ring-current/20`

@@ -108,9 +108,9 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
         <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Header */}
         <ModalHeader onClose={onClose}>
-          <div className="flex flex-col items-center min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
-              <h2 className="truncate text-base font-semibold leading-normal text-slate-950 dark:text-white">{job.companyName}</h2>
+          <div className="flex w-full min-w-0 flex-col items-center">
+            <div className="flex w-full min-w-0 items-start justify-center gap-2">
+              <h2 className="min-w-0 flex-1 break-words text-center text-base font-semibold leading-normal text-slate-950 [overflow-wrap:anywhere] dark:text-white">{job.companyName}</h2>
               <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium shrink-0 ${statusColors[job.status] || 'bg-slate-50 text-slate-700 dark:text-slate-300 border-slate-200'}`}>{job.status}</span>
             </div>
             <p className="truncate text-sm font-medium leading-normal text-slate-600 dark:text-slate-300">{job.jobTitle}</p>
