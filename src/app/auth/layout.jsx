@@ -1,28 +1,31 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import SplashScreen from '@/components/SplashScreen'
 
 export default function AuthLayout({ children }) {
-  // Read sessionStorage synchronously on first render to prevent flash.
-  // Server-side: catch block returns false (splash visible).
-  // Client re-entry with flag: returns true (splash hidden — no flash).
-  // After logout (flag cleared): returns false (splash visible).
-  const [splashDone, setSplashDone] = useState(() => {
+  const [splashDone, setSplashDone] = useState(false)
+
+  useEffect(() => {
     try {
-      return sessionStorage.getItem('offerflow_splash_shown') === 'true'
+      if (sessionStorage.getItem('offerflow_splash_shown') === 'true') {
+        setSplashDone(true)
+      }
     } catch {
-      return false
     }
-  })
+  }, [])
 
   const handleEnter = useCallback(() => {
     sessionStorage.setItem('offerflow_splash_shown', 'true')
+    document.documentElement.dataset.offerflowSplashShown = 'true'
     setSplashDone(true)
   }, [])
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-offer-dark light-ambient-container">
+    <div
+      data-offerflow-auth-shell
+      className={`relative min-h-screen flex items-center justify-center bg-offer-dark light-ambient-container ${splashDone ? 'overflow-x-hidden' : 'overflow-hidden'}`}
+    >
       {/* Ambient glow — top-left purple */}
       <div className="pointer-events-none fixed -top-[280px] -left-[160px] w-[700px] h-[700px] opacity-80 dark:opacity-100"
         style={{ background: 'radial-gradient(circle, rgba(126,87,194,0.12) 0%, transparent 65%)' }}
@@ -41,6 +44,7 @@ export default function AuthLayout({ children }) {
 
       {/* Auth content with fade-in */}
       <div
+        data-offerflow-auth-content
         className={`
           w-full transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)]
           ${splashDone ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}

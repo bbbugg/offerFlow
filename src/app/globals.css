@@ -150,6 +150,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html[data-offerflow-splash-shown="true"] [data-offerflow-splash] {
+  display: none;
+}
+
+html[data-offerflow-splash-shown="true"] [data-offerflow-auth-shell] {
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 ::-webkit-scrollbar {
   width: 6px;
 }

@@ -15,9 +15,16 @@ function getInitialTheme() {
 }
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(getInitialTheme)
+  const [theme, setTheme] = useState('dark')
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
+    setTheme(getInitialTheme())
+    setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
     try { localStorage.setItem('app-theme', theme) } catch {}
     const root = document.documentElement
     if (theme === 'dark') {
@@ -25,7 +32,7 @@ export function ThemeProvider({ children }) {
     } else {
       root.classList.remove('dark')
     }
-  }, [theme])
+  }, [hydrated, theme])
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))

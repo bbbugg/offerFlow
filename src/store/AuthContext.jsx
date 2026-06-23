@@ -61,6 +61,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('offerFlow_reviews')
     // Reset SplashScreen so it shows again on next auth visit
     sessionStorage.removeItem('offerflow_splash_shown')
+    delete document.documentElement.dataset.offerflowSplashShown
     setUser(null)
   }, [])
 

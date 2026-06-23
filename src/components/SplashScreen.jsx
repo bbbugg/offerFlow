@@ -7,10 +7,11 @@ export default function SplashScreen({ entered, onEnter }) {
   const isDark = theme === 'dark'
   const enteredRef = useRef(false)
   const [mounted, setMounted] = useState(false)
+  const [shouldRender, setShouldRender] = useState(() => !entered)
 
   // Freeze exit class on first entry so theme toggles don't replay the animation
   const exitClassRef = useRef(null)
-  if (entered && !exitClassRef.current) {
+  if (entered && shouldRender && !exitClassRef.current) {
     exitClassRef.current = isDark
       ? 'splash-exit-dark pointer-events-none'
       : '-translate-y-full opacity-0 pointer-events-none'
@@ -23,12 +24,29 @@ export default function SplashScreen({ entered, onEnter }) {
   }, [onEnter])
 
   useEffect(() => {
-    // Staggered entrance animation on mount
     const frame = requestAnimationFrame(() => {
       setMounted(true)
     })
+    return () => cancelAnimationFrame(frame)
+  }, [])
 
-    if (entered) return
+  useEffect(() => {
+    if (!entered) {
+      setShouldRender(true)
+      return
+    }
+
+    if (!shouldRender) return
+
+    const timeout = window.setTimeout(() => {
+      setShouldRender(false)
+    }, isDark ? 1400 : 1000)
+
+    return () => window.clearTimeout(timeout)
+  }, [entered, isDark, shouldRender])
+
+  useEffect(() => {
+    if (entered || !shouldRender) return
 
     const handleWheel = (e) => {
       if (e.deltaY > 10) handleEnter()
@@ -45,15 +63,17 @@ export default function SplashScreen({ entered, onEnter }) {
     window.addEventListener('touchstart', handleTouchStart, { passive: true })
     window.addEventListener('touchend', handleTouchEnd, { passive: true })
     return () => {
-      cancelAnimationFrame(frame)
       window.removeEventListener('wheel', handleWheel)
       window.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('touchend', handleTouchEnd)
     }
-  }, [entered, handleEnter])
+  }, [entered, handleEnter, shouldRender])
+
+  if (!shouldRender) return null
 
   return (
     <div
+      data-offerflow-splash
       className={`
         fixed inset-0 z-50 flex h-screen w-screen flex-col items-center justify-center overflow-hidden
         bg-cover bg-center bg-no-repeat
