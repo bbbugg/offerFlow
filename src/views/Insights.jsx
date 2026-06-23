@@ -380,7 +380,7 @@ export default function Insights() {
           <ResponsiveContainer width="100%" height={Math.max(200, data.cityDistribution.length * 44 + 20)}>
             <BarChart data={data.cityDistribution} layout="vertical" margin={{ top: 5, right: 60, left: 60, bottom: 5 }} barSize={28}>
               <CartesianGrid stroke="rgba(255,255,255,0.05)" horizontal={false} />
-              <XAxis type="number" tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <XAxis type="number" allowDecimals={false} tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis dataKey="city" type="category" tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} width={60} />
               <Tooltip
                 content={<CustomChartTooltip />}
