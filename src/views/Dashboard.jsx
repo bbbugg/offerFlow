@@ -1,5 +1,32 @@
 'use client'
-import { useApp } from '../store/AppContext'
+import { useApp, isAppliedJob } from '../store/AppContext'
+
+function parseLocalDate(value) {
+  if (!value) return null
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value
+  }
+
+  if (typeof value === 'string') {
+    const dateOnly = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+    if (dateOnly) {
+      const [, year, month, day] = dateOnly
+      return new Date(Number(year), Number(month) - 1, Number(day))
+    }
+  }
+
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function getWeekStart(date) {
+  const start = new Date(date)
+  start.setHours(0, 0, 0, 0)
+  const day = start.getDay()
+  start.setDate(start.getDate() + (day === 0 ? -6 : 1 - day))
+  return start
+}
 
 export default function Dashboard() {
   const { jobs, tasks, reviews } = useApp()
@@ -7,13 +34,13 @@ export default function Dashboard() {
   const activeJobs = jobs.filter((j) => !['已结束', 'Offer'].includes(j.status))
   const interviewJobs = jobs.filter((j) => (j.interviewRounds || []).length > 0 || ['一面中', '二面中', '三面中', '终面中'].includes(j.status))
   const offerJobs = jobs.filter((j) => j.status === 'Offer')
+  const weekStart = getWeekStart(new Date())
+  const nextWeekStart = new Date(weekStart)
+  nextWeekStart.setDate(nextWeekStart.getDate() + 7)
   const weekJobs = jobs.filter((j) => {
-    if (!j.appliedDate) return false
-    const d = new Date(j.appliedDate)
-    const now = new Date('2026-05-12')
-    const weekAgo = new Date(now)
-    weekAgo.setDate(weekAgo.getDate() - 7)
-    return d >= weekAgo
+    if (!isAppliedJob(j)) return false
+    const appliedDate = parseLocalDate(j.appliedDate)
+    return appliedDate && appliedDate >= weekStart && appliedDate < nextWeekStart
   })
   const passRate = jobs.length > 0
     ? Math.round((jobs.filter((j) => j.status !== '已结束').length / jobs.length) * 100) + '%'
