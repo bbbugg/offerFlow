@@ -29,6 +29,26 @@ function calcDays(dateStr) {
   return diff >= 0 ? diff : '-'
 }
 
+function getAppliedDateTimestamp(job) {
+  if (!job.appliedDate) return 0
+  const timestamp = new Date(job.appliedDate).getTime()
+  return Number.isNaN(timestamp) ? 0 : timestamp
+}
+
+function getCreatedTimestamp(job) {
+  const timestamp = new Date(job.createdAt || job.updatedAt || 0).getTime()
+  return Number.isNaN(timestamp) ? 0 : timestamp
+}
+
+function compareJobRecency(a, b) {
+  return getAppliedDateTimestamp(b) - getAppliedDateTimestamp(a)
+    || getCreatedTimestamp(b) - getCreatedTimestamp(a)
+}
+
+function getMostRecentJob(jobs) {
+  return jobs.reduce((best, job) => (compareJobRecency(job, best) < 0 ? job : best), jobs[0])
+}
+
 export default function Positions() {
   const { jobs, resumes, addToast, deleteJob } = useApp()
 
@@ -89,17 +109,14 @@ export default function Positions() {
     })
     return Object.entries(groups)
       .sort(([, a], [, b]) => {
-        const aMax = Math.max(...a.map(j => new Date(j.appliedDate || 0).getTime()))
-        const bMax = Math.max(...b.map(j => new Date(j.appliedDate || 0).getTime()))
-        if (aMax !== bMax) return bMax - aMax
+        const recency = compareJobRecency(getMostRecentJob(a), getMostRecentJob(b))
+        if (recency !== 0) return recency
         return b[0].companyName?.localeCompare(a[0].companyName || '') || 0
       })
       .map(([company, jobs]) => ({
         company,
         jobs: jobs.sort((a, b) => {
-          const aDate = a.appliedDate || ''
-          const bDate = b.appliedDate || ''
-          return bDate.localeCompare(aDate) || a.jobTitle?.localeCompare(b.jobTitle || '') || 0
+          return compareJobRecency(a, b) || a.jobTitle?.localeCompare(b.jobTitle || '') || 0
         }),
       }))
   }, [filteredJobs])
