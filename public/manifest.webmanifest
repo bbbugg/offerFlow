@@ -1,0 +1,17 @@
+{
+  "name": "OfferFlow",
+  "short_name": "OfferFlow",
+  "description": "求职全流程管理工具",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08060d",
+  "theme_color": "#7E57C2",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
