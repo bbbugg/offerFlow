@@ -160,12 +160,12 @@ export default function ReviewDetailModal({ open, review, onClose, onEdit, onDel
         <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Header */}
         <ModalHeader onClose={onClose}>
-          <div className="flex flex-col items-center min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
-              <h2 className="truncate text-base font-semibold leading-normal text-slate-950 dark:text-white">{liveReview.companyName}</h2>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium border shrink-0 ${resultStyle(liveReview.result)}`}>{liveReview.result}</span>
+          <div className="flex w-full min-w-0 flex-col items-center">
+            <div className="relative w-full min-w-0">
+              <h2 className="w-full break-words px-[4.5rem] text-center text-base font-semibold leading-normal text-slate-950 [overflow-wrap:anywhere] dark:text-white">{liveReview.companyName}</h2>
+              <span className={`absolute right-0 top-0 inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-medium ${resultStyle(liveReview.result)}`}>{liveReview.result}</span>
             </div>
-            <p className="truncate text-sm font-medium leading-normal text-slate-600 dark:text-slate-300">{liveReview.jobTitle} · {liveReview.round} · {liveReview.interviewType}</p>
+            <p className="w-full break-words text-center text-sm font-medium leading-normal text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">{liveReview.jobTitle} · {liveReview.round} · {liveReview.interviewType}</p>
           </div>
         </ModalHeader>
 
