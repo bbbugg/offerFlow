@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useApp } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
@@ -64,12 +64,16 @@ function Select({ label, value, onChange, options }) {
 export default function JobModal({ open, job, onClose, initialStatus }) {
   const { resumes, addToast, addJob, updateJob } = useApp()
   const [form, setForm] = useState(emptyForm)
+  const [saving, setSaving] = useState(false)
+  const savingRef = useRef(false)
 
   useEffect(() => {
     if (open) {
       const base = job ? { ...emptyForm, ...job } : { ...emptyForm }
       if (!job && initialStatus) base.status = initialStatus
       setForm(base)
+      setSaving(false)
+      savingRef.current = false
     }
   }, [open, job, initialStatus])
 
@@ -86,16 +90,29 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
   }, [open, onClose])
 
   const handleSave = async () => {
+    if (savingRef.current) return
     if (!form.companyName.trim() || !form.jobTitle.trim()) {
       addToast('公司名称和岗位名称为必填项', 'error')
       return
     }
 
+    savingRef.current = true
+    setSaving(true)
     if (job) {
-      await updateJob(job.id, form)
+      const savedJob = await updateJob(job.id, form)
+      if (!savedJob) {
+        savingRef.current = false
+        setSaving(false)
+        return
+      }
       addToast('岗位已更新', 'success')
     } else {
-      await addJob({ ...form, timeline: [] })
+      const savedJob = await addJob({ ...form, timeline: [] })
+      if (!savedJob) {
+        savingRef.current = false
+        setSaving(false)
+        return
+      }
       addToast('岗位已新增', 'success')
     }
     onClose()
@@ -180,9 +197,10 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
           </button>
           <button
             onClick={handleSave}
-            className="btn-gradient px-5 py-2 rounded-xl text-sm font-medium text-white"
+            disabled={saving}
+            className="btn-gradient px-5 py-2 rounded-xl text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {job ? '保存修改' : '新增岗位'}
+            {saving ? '保存中...' : job ? '保存修改' : '新增岗位'}
           </button>
         </div>
         </div>

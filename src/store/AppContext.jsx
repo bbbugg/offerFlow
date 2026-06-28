@@ -246,39 +246,50 @@ export function AppProvider({ children }) {
     })
   }, [])
 
+  const reloadJobs = useCallback(async () => {
+    const nextJobs = migrateJobs(await apiFetch('/api/jobs'))
+    setJobsRaw(nextJobs)
+    saveToStorage('offerFlow_jobs', nextJobs)
+    return nextJobs
+  }, [])
+
   // ---- Async CRUD methods ----
 
   // Jobs
   const addJob = useCallback(async (formData) => {
     try {
       const result = await apiFetch('/api/jobs', { method: 'POST', body: JSON.stringify(formData) })
-      const newJob = syncInterviewRounds({ ...formData, ...result.job })
-      setJobs((prev) => [...prev, newJob])
-      return newJob
+      await reloadJobs()
+      return result.job
     } catch (err) {
       addToast(err.message, 'error')
+      return null
     }
-  }, [setJobs, addToast])
+  }, [reloadJobs, addToast])
 
   const updateJob = useCallback(async (id, patch) => {
     try {
-      await apiFetch('/api/jobs', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
-      setJobs((prev) => prev.map((j) => j.id === id ? syncInterviewRounds({ ...j, ...patch }) : j))
+      const result = await apiFetch('/api/jobs', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
+      await reloadJobs()
+      return result.job
     } catch (err) {
       addToast(err.message, 'error')
+      return null
     }
-  }, [setJobs, addToast])
+  }, [reloadJobs, addToast])
 
   const deleteJob = useCallback(async (ids) => {
     const idList = Array.isArray(ids) ? ids : [ids]
     if (!idList.length) return
     try {
-      await apiFetch('/api/jobs', { method: 'DELETE', body: JSON.stringify({ ids: idList }) })
-      setJobs((prev) => prev.filter((j) => !idList.includes(j.id)))
+      const result = await apiFetch('/api/jobs', { method: 'DELETE', body: JSON.stringify({ ids: idList }) })
+      await reloadJobs()
+      return result.deletedIds || idList
     } catch (err) {
       addToast(err.message, 'error')
+      return []
     }
-  }, [setJobs, addToast])
+  }, [reloadJobs, addToast])
 
   // Resumes
   const addResume = useCallback(async (formData) => {
