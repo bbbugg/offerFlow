@@ -221,18 +221,18 @@ body {
   justify-content: center;
   gap: 0.5rem;
   border-radius: 0.75rem;
-  border: 1px solid rgba(239,68,68,0.25);
+  border: 1px solid #EF4444;
   background: rgba(239,68,68,0.08);
   padding: 0.625rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #FCA5A5;
+  color: #EF4444;
   transition: all 0.15s ease;
 }
 .btn-danger:hover {
   background: rgba(239,68,68,0.15);
-  border-color: rgba(239,68,68,0.40);
-  color: #FECACA;
+  border-color: #DC2626;
+  color: #DC2626;
 }
 
 /* ===== Card hover: subtle lift with border ===== */
