@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
 
+function getBeijingDateString() {
+  return new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)
+}
+
 export async function GET() {
   const user = await getAuthUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -19,19 +23,21 @@ export async function POST(request) {
 
   const body = await request.json()
   const { companyName, jobTitle, status, city, salaryRange, workMode, channel, priority, appliedDate, jobLink, jdText, resumeId, contactName, contactInfo, nextAction, notes, endReason, interviewRounds, timeline } = body
+  const normalizedStatus = status || '感兴趣'
+  const normalizedAppliedDate = appliedDate?.trim() || (normalizedStatus === '已投递' ? getBeijingDateString() : '')
 
   const job = await prisma.job.create({
     data: {
       userId: user.id,
       companyName: companyName || '',
       jobTitle: jobTitle || '',
-      status: status || '感兴趣',
+      status: normalizedStatus,
       city: city || '',
       salaryRange: salaryRange || '',
       workMode: workMode || '',
       channel: channel || '',
       priority: priority || '中',
-      appliedDate: appliedDate || '',
+      appliedDate: normalizedAppliedDate,
       jobLink: jobLink || '',
       jdText: jdText || '',
       resumeId: resumeId || null,
