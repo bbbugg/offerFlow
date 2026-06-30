@@ -8,12 +8,13 @@ const STATUS_OPTIONS = ['感兴趣', '准备投递', '已投递', 'OA / 笔试',
 const WORK_MODE_OPTIONS = ['onsite', 'remote', 'hybrid']
 const CHANNEL_OPTIONS = ['', '内推', '官网投递', '猎头', '招聘平台', '校园招聘', '其他']
 const PRIORITY_OPTIONS = ['高', '中', '低']
+const END_REASON_OPTIONS = ['', '被拒绝', '岗位关闭', '自己放弃', '流程太慢', '薪资不匹配', '地点不合适', '手动标记', '其他']
 
 const emptyForm = {
   companyName: '', jobTitle: '', status: '感兴趣', city: '', salaryRange: '',
   workMode: 'onsite', channel: '', priority: '中', appliedDate: '',
   jobLink: '', jdText: '', resumeId: '', contactName: '', contactInfo: '',
-  nextAction: '', notes: '',
+  nextAction: '', notes: '', endReason: '',
 }
 
 // Stable helper components defined OUTSIDE JobModal to prevent remount on every render
@@ -54,7 +55,7 @@ function Select({ label, value, onChange, options }) {
         className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
       >
         {options.map((opt) => (
-          <option key={opt} value={opt} className="bg-gray-950 text-white">{opt}</option>
+          <option key={opt || 'empty'} value={opt} className="bg-gray-950 text-white">{opt || '请选择'}</option>
         ))}
       </select>
     </div>
@@ -81,6 +82,14 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }, [])
 
+  const handleStatusChange = useCallback((value) => {
+    setForm((prev) => ({
+      ...prev,
+      status: value,
+      endReason: value === '已结束' ? prev.endReason : '',
+    }))
+  }, [])
+
   // ESC close
   useEffect(() => {
     if (!open) return
@@ -93,6 +102,10 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
     if (savingRef.current) return
     if (!form.companyName.trim() || !form.jobTitle.trim()) {
       addToast('公司名称和岗位名称为必填项', 'error')
+      return
+    }
+    if (form.status === '已结束' && !form.endReason) {
+      addToast('请选择结束原因', 'error')
       return
     }
 
@@ -148,8 +161,12 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
             <Input label="公司名称 *" value={form.companyName} onChange={(e) => handleChange('companyName', e.target.value)} placeholder="例如：ByteDance" />
             <Input label="岗位名称 *" value={form.jobTitle} onChange={(e) => handleChange('jobTitle', e.target.value)} placeholder="例如：高级后端工程师" />
 
-            <Select label="当前状态" value={form.status} onChange={(e) => handleChange('status', e.target.value)} options={STATUS_OPTIONS} />
+            <Select label="当前状态" value={form.status} onChange={(e) => handleStatusChange(e.target.value)} options={STATUS_OPTIONS} />
             <Input label="城市" value={form.city} onChange={(e) => handleChange('city', e.target.value)} placeholder="例如：北京" />
+
+            {form.status === '已结束' && (
+              <Select label="结束原因" value={form.endReason} onChange={(e) => handleChange('endReason', e.target.value)} options={END_REASON_OPTIONS} />
+            )}
 
             <Input label="薪资范围" value={form.salaryRange} onChange={(e) => handleChange('salaryRange', e.target.value)} placeholder="例如：30K-50K" />
             <Select label="工作模式" value={form.workMode} onChange={(e) => handleChange('workMode', e.target.value)} options={WORK_MODE_OPTIONS} />

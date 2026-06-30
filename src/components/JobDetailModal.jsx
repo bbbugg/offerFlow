@@ -15,6 +15,8 @@ const STATUS_ACTIONS = [
   { status: '已结束', label: '已结束', color: 'border-red-200 text-red-700 dark:text-red-300 bg-red-50 hover:bg-red-100' },
 ]
 
+const END_REASON_OPTIONS = ['被拒绝', '岗位关闭', '自己放弃', '流程太慢', '薪资不匹配', '地点不合适', '手动标记', '其他']
+
 const statusColors = {
   '感兴趣': 'bg-blue-50 text-blue-700 dark:text-blue-300 border-blue-200',
   '准备投递': 'bg-amber-50 text-amber-700 dark:text-amber-300 border-amber-200',
@@ -39,9 +41,11 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
   // Sub-dialog state
   const [showTaskForm, setShowTaskForm] = useState(false)
   const [showReviewForm, setShowReviewForm] = useState(false)
+  const [showEndForm, setShowEndForm] = useState(false)
 
   const [taskForm, setTaskForm] = useState({ title: '', type: '其他', date: todayStr(), startTime: '', notes: '' })
   const [reviewForm, setReviewForm] = useState({ interviewDate: todayStr(), round: '一面', interviewType: '技术面', result: '待定', duration: '', interviewerInfo: '', rating: 3, note: '', strengths: '', weaknesses: '' })
+  const [endReason, setEndReason] = useState('手动标记')
 
   // ESC close
   useEffect(() => {
@@ -62,9 +66,15 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
     await updateJob(jobId, {
       status: newStatus,
       timeline: [...(existing.timeline || []), { date: todayStr(), action: `标记为 ${label}`, detail: `从 ${existing.status} 更新为 ${newStatus}` }],
-      endReason: newStatus === '已结束' && !existing.endReason ? '手动标记' : existing.endReason,
+      endReason: newStatus === '已结束' ? endReason : '',
     })
     addToast(`已标记为「${label}」`, 'success')
+    setShowEndForm(false)
+  }
+
+  const openEndForm = () => {
+    setEndReason(job.endReason || '手动标记')
+    setShowEndForm(true)
   }
 
   // ---- Create task ----
@@ -233,7 +243,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
                   .map((a) => (
                     <button
                       key={a.status}
-                      onClick={() => changeStatus(a.status, a.label)}
+                      onClick={() => a.status === '已结束' ? openEndForm() : changeStatus(a.status, a.label)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${a.color}`}
                     >
                       {a.label}
@@ -252,6 +262,28 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
                   新建复盘
                 </button>
               </div>
+              {showEndForm && (
+                <div className="mt-3 rounded-xl border border-red-500/15 bg-red-500/5 p-3">
+                  <label className="mb-1 block text-xs text-white/45">结束原因</label>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <select
+                      value={endReason}
+                      onChange={(e) => setEndReason(e.target.value)}
+                      className="min-h-[40px] flex-1 rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20"
+                    >
+                      {END_REASON_OPTIONS.map((reason) => (
+                        <option key={reason} value={reason} className="bg-gray-950 text-white">{reason}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => changeStatus('已结束', '已结束')}
+                      className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-400"
+                    >
+                      确认结束
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
           )}
 
