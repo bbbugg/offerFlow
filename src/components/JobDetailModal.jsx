@@ -34,6 +34,68 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
+const URL_REGEX = /(?:https?:\/\/|www\.)[^\s<>"']+/gi
+
+function countChar(value, char) {
+  return [...value].filter((item) => item === char).length
+}
+
+function splitTrailingPunctuation(value) {
+  const pairs = { ')': '(', ']': '[', '}': '{', '）': '（', '】': '【' }
+  const trailingChars = new Set(['.', ',', ';', ':', '!', '?', '，', '。', '；', '：', '！', '？', '、', ')', ']', '}', '）', '】'])
+  let linkText = value
+  let trailing = ''
+
+  while (linkText.length > 0) {
+    const lastChar = linkText.at(-1)
+    if (!trailingChars.has(lastChar)) break
+    const openingChar = pairs[lastChar]
+    if (openingChar && countChar(linkText, openingChar) >= countChar(linkText, lastChar)) break
+    trailing = lastChar + trailing
+    linkText = linkText.slice(0, -1)
+  }
+
+  return { linkText, trailing }
+}
+
+function LinkifiedText({ text }) {
+  const value = String(text || '')
+  const parts = []
+  let lastIndex = 0
+
+  value.replace(URL_REGEX, (match, offset) => {
+    const { linkText, trailing } = splitTrailingPunctuation(match)
+    if (!linkText) return match
+
+    if (offset > lastIndex) {
+      parts.push(value.slice(lastIndex, offset))
+    }
+
+    const href = linkText.startsWith('http') ? linkText : `https://${linkText}`
+    parts.push(
+      <a
+        key={`${linkText}-${offset}`}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="break-all text-offer-accent underline decoration-offer-accent/40 underline-offset-2 transition-colors hover:text-offer-primary"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {linkText}
+      </a>
+    )
+    if (trailing) parts.push(trailing)
+    lastIndex = offset + match.length
+    return match
+  })
+
+  if (lastIndex < value.length) {
+    parts.push(value.slice(lastIndex))
+  }
+
+  return parts
+}
+
 export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete }) {
   const { jobs, resumes, addToast, updateJob, addTask, addReview } = useApp()
   const job = jobs.find((j) => j.id === jobId)
@@ -180,7 +242,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
           {job.notes && (
             <section>
               <h3 className="text-xs font-semibold text-white/45 uppercase tracking-wider mb-2">备注</h3>
-              <div className="text-sm text-white/90 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 leading-relaxed dark:bg-white/[0.02] dark:border-white/[0.06]">{job.notes}</div>
+              <div className="text-sm text-white/90 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 leading-relaxed whitespace-pre-wrap dark:bg-white/[0.02] dark:border-white/[0.06]"><LinkifiedText text={job.notes} /></div>
             </section>
           )}
 
@@ -188,7 +250,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
           {job.jdText && (
             <section>
               <h3 className="text-xs font-semibold text-white/45 uppercase tracking-wider mb-2">JD 原文</h3>
-              <div className="text-sm text-white/65 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 leading-relaxed whitespace-pre-wrap dark:bg-white/[0.02] dark:border-white/[0.06]">{job.jdText}</div>
+              <div className="text-sm text-white/65 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 leading-relaxed whitespace-pre-wrap dark:bg-white/[0.02] dark:border-white/[0.06]"><LinkifiedText text={job.jdText} /></div>
             </section>
           )}
 
