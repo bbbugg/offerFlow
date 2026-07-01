@@ -45,7 +45,7 @@ function Input({ label, value, onChange, placeholder, type = 'text', large, ...r
   )
 }
 
-function Select({ label, value, onChange, options }) {
+function Select({ label, value, onChange, options, placeholder = '请选择' }) {
   return (
     <div>
       <label className="text-sm text-offer-muted block mb-1">{label}</label>
@@ -55,7 +55,7 @@ function Select({ label, value, onChange, options }) {
         className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
       >
         {options.map((opt) => (
-          <option key={opt || 'empty'} value={opt} className="bg-gray-950 text-white">{opt || '请选择'}</option>
+          <option key={opt || 'empty'} value={opt} className="bg-gray-950 text-white">{opt || placeholder}</option>
         ))}
       </select>
     </div>
@@ -165,7 +165,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
             <Input label="城市" value={form.city} onChange={(e) => handleChange('city', e.target.value)} placeholder="例如：北京" />
 
             {form.status === '已结束' && (
-              <Select label="结束原因" value={form.endReason} onChange={(e) => handleChange('endReason', e.target.value)} options={END_REASON_OPTIONS} />
+              <Select label="结束原因" value={form.endReason} onChange={(e) => handleChange('endReason', e.target.value)} options={END_REASON_OPTIONS} placeholder="请选择原因" />
             )}
 
             <Input label="薪资范围" value={form.salaryRange} onChange={(e) => handleChange('salaryRange', e.target.value)} placeholder="例如：30K-50K" />

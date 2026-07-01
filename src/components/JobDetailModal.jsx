@@ -55,6 +55,19 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
     return () => window.removeEventListener('keydown', handler)
   }, [open, onClose])
 
+  useEffect(() => {
+    if (open) return
+    setShowTaskForm(false)
+    setShowReviewForm(false)
+    setShowEndForm(false)
+    setEndReason('手动标记')
+  }, [open])
+
+  useEffect(() => {
+    setShowEndForm(false)
+    setEndReason('手动标记')
+  }, [jobId])
+
   if (!open || !job) return null
 
   const resumeName = resumes.find((r) => r.id === job.resumeId)
@@ -269,7 +282,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
                     <select
                       value={endReason}
                       onChange={(e) => setEndReason(e.target.value)}
-                      className="min-h-[40px] flex-1 rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20"
+                      className="min-h-[40px] flex-1 appearance-none rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 pr-10 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20"
                     >
                       {END_REASON_OPTIONS.map((reason) => (
                         <option key={reason} value={reason} className="bg-gray-950 text-white">{reason}</option>

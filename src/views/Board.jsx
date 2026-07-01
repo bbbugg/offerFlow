@@ -87,14 +87,16 @@ export default function Board() {
     if (!job || job.status === targetStatus) return
 
     const timeline = job.timeline || []
-    await updateJob(jobId, {
+    const patch = {
       status: targetStatus,
       timeline: [...timeline, {
         date: new Date().toISOString().slice(0, 10),
         action: '状态变更',
         detail: `从 ${job.status} 更新为 ${targetStatus}`,
       }],
-    })
+    }
+    patch.endReason = targetStatus === '已结束' ? '手动标记' : ''
+    await updateJob(jobId, patch)
     addToast(`状态已更新`, 'success')
     dragJobId.current = null
   }
@@ -200,6 +202,7 @@ export default function Board() {
     const timeline = job.timeline || []
     await updateJob(job.id, {
       status: newStatus,
+      endReason: newStatus === '已结束' ? '手动标记' : '',
       timeline: [...timeline, {
         date: new Date().toISOString().slice(0, 10),
         action: `标记为 ${label}`,
