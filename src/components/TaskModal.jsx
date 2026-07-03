@@ -76,14 +76,14 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onClose}>
-      <div className="modal-panel border w-full max-w-md mx-4 max-h-[85vh] min-h-0 flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-panel border w-full max-w-md min-w-0 mx-4 max-h-[85vh] min-h-0 flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
         <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1">
         <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
         {/* Header */}
         <ModalHeader title={task ? '编辑事项' : '新建事项'} onClose={onClose} />
 
         {/* Body */}
-        <div className="flex-1 space-y-4 overflow-y-auto p-4 pb-6 pt-5 md:p-5 md:pb-7 md:pt-6" onFocus={handleFocusIn}>
+        <div className="flex-1 min-w-0 space-y-4 overflow-y-auto overflow-x-hidden p-4 pb-6 pt-5 md:p-5 md:pb-7 md:pt-6" onFocus={handleFocusIn}>
           <Field label="标题 *">
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="事项标题"
               autoFocus
@@ -93,7 +93,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <Field label="类型">
               <select value={type} onChange={(e) => setType(e.target.value)}
-                className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
+                className="min-h-[40px] w-full min-w-0 max-w-full truncate rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
                 {['面试', 'OA / 笔试', 'Deadline', 'Follow-up', '准备任务', '其他'].map((o) => (
                   <option key={o} className="bg-gray-950">{o}</option>
                 ))}
@@ -101,7 +101,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
             </Field>
             <Field label="优先级">
               <select value={priority} onChange={(e) => setPriority(e.target.value)}
-                className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
+                className="min-h-[40px] w-full min-w-0 max-w-full truncate rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
                 {['高', '中', '低'].map((o) => (
                   <option key={o} className="bg-gray-950">{o}</option>
                 ))}
@@ -127,7 +127,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
 
           <Field label="关联岗位">
             <select value={jobId} onChange={(e) => setJobId(e.target.value)}
-              className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
+              className="min-h-[40px] w-full min-w-0 max-w-full truncate rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
               <option value="" className="bg-gray-950">不关联</option>
               {activeJobs.map((j) => (
                 <option key={j.id} value={j.id} className="bg-gray-950">{j.companyName} - {j.jobTitle}</option>
@@ -157,7 +157,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
 
 function Field({ label, children }) {
   return (
-    <div>
+    <div className="min-w-0">
       <label className="text-xs text-slate-600 dark:text-offer-muted block mb-1.5">{label}</label>
       {children}
     </div>
