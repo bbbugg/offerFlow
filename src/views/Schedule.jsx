@@ -291,7 +291,7 @@ export default function Schedule() {
         </div>
       ) : (
         /* Month View */
-        <div className="card-modern overflow-x-auto p-4 md:overflow-visible md:p-5">
+        <div className="card-modern min-w-0 overflow-hidden p-3 md:p-5">
           {/* Navigation */}
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => navigateMonth(-1)}
@@ -310,32 +310,32 @@ export default function Schedule() {
           </div>
 
           {/* Weekday headers */}
-          <div className="mb-1 grid min-w-[560px] grid-cols-7 md:min-w-0">
+          <div className="mb-1 grid w-full min-w-0 grid-cols-7">
             {['日', '一', '二', '三', '四', '五', '六'].map((d) => (
               <div key={d} className="text-center text-xs text-offer-muted py-2 font-medium">{d}</div>
             ))}
           </div>
 
           {/* Grid */}
-          <div className="grid min-w-[560px] grid-cols-7 border-l border-t border-white/5 md:min-w-0">
+          <div className="grid w-full min-w-0 grid-cols-7 border-l border-t border-white/5">
             {monthData.map((cell, i) => (
               <div key={i} onClick={() => cell && handleDateClick(cell.dateStr)}
-                className={`min-h-[95px] border-r border-b border-white/5 p-1.5 cursor-pointer transition-colors hover:bg-white/[0.04] ${cell?.isToday ? 'bg-offer-primary/10 border-offer-primary/30' : ''}`}>
+                className={`min-w-0 min-h-[70px] border-r border-b border-white/5 p-1 cursor-pointer transition-colors hover:bg-white/[0.04] md:min-h-[95px] md:p-1.5 ${cell?.isToday ? 'bg-offer-primary/10 border-offer-primary/30' : ''}`}>
                 {cell && (
                   <>
-                    <div className={`text-xs mb-1 w-6 h-6 flex items-center justify-center rounded-full ${cell.isToday ? 'bg-offer-primary text-white font-bold' : 'text-offer-muted'}`}>
+                    <div className={`mb-1 flex h-5 w-5 items-center justify-center rounded-full text-[11px] md:h-6 md:w-6 md:text-xs ${cell.isToday ? 'bg-offer-primary text-white font-bold' : 'text-offer-muted'}`}>
                       {cell.day}
                     </div>
                     <div className="space-y-0.5">
                       {cell.tasks.slice(0, 3).map((t) => (
                         <div key={t.id} onClick={(e) => { e.stopPropagation(); handleEdit(t) }}
-                          className={`flex items-center gap-1 px-1 py-0.5 rounded text-[10px] leading-tight truncate ${t.done ? 'opacity-40' : ''} ${TYPE_STYLE[t.type] || 'bg-gray-500/10 text-gray-400 dark:text-white/45 border-gray-500/20'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${TYPE_DOT[t.type] || 'bg-gray-500'}`} />
-                          <span className="truncate">{t.title}</span>
+                          className={`flex min-w-0 items-center gap-0.5 rounded px-0.5 py-0.5 text-[9px] leading-tight md:gap-1 md:px-1 md:text-[10px] ${t.done ? 'opacity-40' : ''} ${TYPE_STYLE[t.type] || 'bg-gray-500/10 text-gray-400 dark:text-white/45 border-gray-500/20'}`}>
+                          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${TYPE_DOT[t.type] || 'bg-gray-500'}`} />
+                          <span className="min-w-0 truncate">{t.title}</span>
                         </div>
                       ))}
                       {cell.tasks.length > 3 && (
-                        <div className="text-[10px] text-offer-muted/60 px-1">+{cell.tasks.length - 3} 更多</div>
+                        <div className="truncate px-0.5 text-[9px] text-offer-muted/60 md:px-1 md:text-[10px]">+{cell.tasks.length - 3} 更多</div>
                       )}
                     </div>
                   </>
