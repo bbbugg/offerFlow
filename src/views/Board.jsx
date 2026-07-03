@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef } from 'react'
-import { useApp } from '../store/AppContext'
+import { useApp, canSelectInterviewStatus } from '../store/AppContext'
 import JobModal from '../components/JobModal'
 import JobDetailModal from '../components/JobDetailModal'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -85,6 +85,11 @@ export default function Board() {
     if (!jobId) return
     const job = jobs.find((j) => j.id === jobId)
     if (!job || job.status === targetStatus) return
+    if (!canSelectInterviewStatus(job, targetStatus)) {
+      addToast('请按面试轮次顺序推进', 'error')
+      dragJobId.current = null
+      return
+    }
 
     const timeline = job.timeline || []
     const patch = {

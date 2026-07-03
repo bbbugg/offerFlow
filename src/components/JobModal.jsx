@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useApp } from '../store/AppContext'
+import { useApp, canSelectInterviewStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 
@@ -54,9 +54,13 @@ function Select({ label, value, onChange, options, placeholder = '请选择' }) 
         onChange={onChange}
         className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
       >
-        {options.map((opt) => (
-          <option key={opt || 'empty'} value={opt} className="bg-gray-950 text-white">{opt || placeholder}</option>
-        ))}
+        {options.map((option) => {
+          const opt = typeof option === 'string' ? option : option.value
+          const disabled = typeof option === 'string' ? false : option.disabled
+          return (
+            <option key={opt || 'empty'} value={opt} disabled={disabled} className="bg-gray-950 text-white disabled:text-slate-500">{opt || placeholder}</option>
+          )
+        })}
       </select>
     </div>
   )
@@ -71,7 +75,9 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
   useEffect(() => {
     if (open) {
       const base = job ? { ...emptyForm, ...job } : { ...emptyForm }
-      if (!job && initialStatus) base.status = initialStatus
+      if (!job && initialStatus) {
+        base.status = canSelectInterviewStatus(base, initialStatus) ? initialStatus : '一面中'
+      }
       setForm(base)
       setSaving(false)
       savingRef.current = false
@@ -83,12 +89,16 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
   }, [])
 
   const handleStatusChange = useCallback((value) => {
+    if (!canSelectInterviewStatus(form, value)) {
+      addToast('请按面试轮次顺序推进', 'error')
+      return
+    }
     setForm((prev) => ({
       ...prev,
       status: value,
       endReason: value === '已结束' ? prev.endReason : '',
     }))
-  }, [])
+  }, [addToast, form])
 
   // ESC close
   useEffect(() => {
@@ -144,6 +154,11 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
 
   if (!open) return null
 
+  const statusOptions = STATUS_OPTIONS.map((status) => ({
+    value: status,
+    disabled: !canSelectInterviewStatus(form, status),
+  }))
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
@@ -161,7 +176,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
             <Input label="公司名称 *" value={form.companyName} onChange={(e) => handleChange('companyName', e.target.value)} placeholder="例如：ByteDance" />
             <Input label="岗位名称 *" value={form.jobTitle} onChange={(e) => handleChange('jobTitle', e.target.value)} placeholder="例如：高级后端工程师" />
 
-            <Select label="当前状态" value={form.status} onChange={(e) => handleStatusChange(e.target.value)} options={STATUS_OPTIONS} />
+            <Select label="当前状态" value={form.status} onChange={(e) => handleStatusChange(e.target.value)} options={statusOptions} />
             <Input label="城市" value={form.city} onChange={(e) => handleChange('city', e.target.value)} placeholder="例如：北京" />
 
             {form.status === '已结束' && (

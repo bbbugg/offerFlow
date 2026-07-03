@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useApp } from '../store/AppContext'
+import { useApp, canSelectInterviewStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 
@@ -138,6 +138,10 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
   const changeStatus = async (newStatus, label) => {
     const existing = jobs.find((j) => j.id === jobId)
     if (!existing) return
+    if (!canSelectInterviewStatus(existing, newStatus)) {
+      addToast('请按面试轮次顺序推进', 'error')
+      return
+    }
     await updateJob(jobId, {
       status: newStatus,
       timeline: [...(existing.timeline || []), { date: todayStr(), action: `标记为 ${label}`, detail: `从 ${existing.status} 更新为 ${newStatus}` }],
@@ -315,15 +319,20 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
               <div className="flex flex-wrap gap-2">
                 {STATUS_ACTIONS
                   .filter((a) => a.status !== job.status)
-                  .map((a) => (
+                  .map((a) => {
+                    const disabled = !canSelectInterviewStatus(job, a.status)
+                    return (
                     <button
                       key={a.status}
+                      disabled={disabled}
                       onClick={() => a.status === '已结束' ? openEndForm() : changeStatus(a.status, a.label)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${a.color}`}
+                      title={disabled ? '请先推进上一轮面试' : undefined}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${disabled ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/35' : a.color}`}
                     >
                       {a.label}
                     </button>
-                  ))}
+                    )
+                  })}
                 <button
                   onClick={() => setShowTaskForm(true)}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-all"
