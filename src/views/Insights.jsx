@@ -3,7 +3,7 @@ import { useMemo, useState, useEffect } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
-import { useApp, isAppliedJob, isRepliedJob, hasInterviewExperience, getInterviewRoundCount, isOfferJob, getResumeStats } from '../store/AppContext'
+import { useApp, isAppliedJob, isRepliedJob, hasOaExperience, hasInterviewExperience, getInterviewRoundCount, isOfferJob, getResumeStats } from '../store/AppContext'
 import ModalHeader from '../components/ModalHeader'
 import GlowCard from '../components/GlowCard'
 
@@ -120,7 +120,7 @@ export default function Insights() {
     const appliedCount = applied.length
     const active = filteredJobs.filter((j) => ['已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中'].includes(j.status))
     const replied = filteredJobs.filter(isRepliedJob)
-    const oaJobs = filteredJobs.filter((j) => j.status === 'OA / 笔试')
+    const oaJobs = filteredJobs.filter(hasOaExperience)
     const interviewed = filteredJobs.filter(hasInterviewExperience)
     const totalRoundCount = filteredJobs.reduce((sum, j) => sum + getInterviewRoundCount(j), 0)
     const offers = filteredJobs.filter(isOfferJob)

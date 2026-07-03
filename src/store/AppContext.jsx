@@ -31,6 +31,14 @@ export function isRepliedJob(job) {
   return false
 }
 
+export function hasOaExperience(job) {
+  if (job.status === 'OA / 笔试') return true
+  return (job.timeline || []).some((item) => {
+    const text = `${item.action || ''} ${item.detail || ''}`
+    return text.includes('OA') || text.includes('笔试')
+  })
+}
+
 export function hasInterviewExperience(job) {
   if (Array.isArray(job.interviewRounds) && job.interviewRounds.length > 0) return true
   return INTERVIEW_STATUSES.includes(job.status) || job.status === 'Offer'

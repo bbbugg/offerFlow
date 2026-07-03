@@ -66,6 +66,10 @@ function Select({ label, value, onChange, options, placeholder = '请选择' }) 
   )
 }
 
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
+
 export default function JobModal({ open, job, onClose, initialStatus }) {
   const { resumes, addToast, addJob, updateJob } = useApp()
   const [form, setForm] = useState(emptyForm)
@@ -89,7 +93,8 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
   }, [])
 
   const handleStatusChange = useCallback((value) => {
-    if (!canSelectInterviewStatus(form, value)) {
+    const statusBasis = job || emptyForm
+    if (!canSelectInterviewStatus(statusBasis, value)) {
       addToast('请按面试轮次顺序推进', 'error')
       return
     }
@@ -98,7 +103,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
       status: value,
       endReason: value === '已结束' ? prev.endReason : '',
     }))
-  }, [addToast, form])
+  }, [addToast, job])
 
   // ESC close
   useEffect(() => {
@@ -118,11 +123,26 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
       addToast('请选择结束原因', 'error')
       return
     }
+    if (!canSelectInterviewStatus(job || emptyForm, form.status)) {
+      addToast('请按面试轮次顺序推进', 'error')
+      return
+    }
 
     savingRef.current = true
     setSaving(true)
     if (job) {
-      const savedJob = await updateJob(job.id, form)
+      const patch = { ...form }
+      if (job.status !== form.status) {
+        patch.timeline = [
+          ...(job.timeline || []),
+          {
+            date: todayStr(),
+            action: '状态变更',
+            detail: `从 ${job.status} 更新为 ${form.status}`,
+          },
+        ]
+      }
+      const savedJob = await updateJob(job.id, patch)
       if (!savedJob) {
         savingRef.current = false
         setSaving(false)
@@ -154,9 +174,10 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
 
   if (!open) return null
 
+  const statusBasis = job || emptyForm
   const statusOptions = STATUS_OPTIONS.map((status) => ({
     value: status,
-    disabled: !canSelectInterviewStatus(form, status),
+    disabled: !canSelectInterviewStatus(statusBasis, status),
   }))
 
   return (
