@@ -240,11 +240,6 @@ export default function Board() {
 
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-0 py-2 md:px-6 md:py-6">
-      <div className="mb-4 shrink-0 md:mb-5">
-        <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">投递看板</h1>
-        <p className="text-sm text-gray-400 dark:text-white/45 mt-1">用看板管理你的投递进度 — 拖拽卡片到其他列来更新状态</p>
-      </div>
-
       {/* Column navigator */}
       <div ref={columnNavRef} className="card-modern mb-3 shrink-0 overflow-x-auto p-2">
         <div className="flex w-max items-center gap-1.5">
