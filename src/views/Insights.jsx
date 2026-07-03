@@ -120,6 +120,7 @@ export default function Insights() {
     const appliedCount = applied.length
     const active = filteredJobs.filter((j) => ['已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中'].includes(j.status))
     const replied = filteredJobs.filter(isRepliedJob)
+    const oaJobs = filteredJobs.filter((j) => j.status === 'OA / 笔试')
     const interviewed = filteredJobs.filter(hasInterviewExperience)
     const totalRoundCount = filteredJobs.reduce((sum, j) => sum + getInterviewRoundCount(j), 0)
     const offers = filteredJobs.filter(isOfferJob)
@@ -143,7 +144,7 @@ export default function Insights() {
     const funnel = [
       { name: '总投递', value: appliedCount, fill: '#7E57C2' },
       { name: '收到回复', value: replied.length, fill: '#9575DE' },
-      { name: 'OA / 笔试', value: filteredJobs.filter((j) => ['OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer'].includes(j.status)).length, fill: '#4FC3F7' },
+      { name: 'OA / 笔试', value: oaJobs.length, fill: '#4FC3F7' },
       { name: '面试', value: interviewed.length, fill: '#2196F3' },
       { name: 'Offer', value: offers.length, fill: '#4CAF50' },
     ]
