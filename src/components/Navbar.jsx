@@ -4,7 +4,11 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from '../store/ThemeContext'
 import { useAuth } from '../store/AuthContext'
 import { useApp } from '../store/AppContext'
+import ConfirmDialog from './ConfirmDialog'
+import JobDetailModal from './JobDetailModal'
+import JobModal from './JobModal'
 import TaskPopover from './TaskPopover'
+import TaskModal from './TaskModal'
 
 function formatLocalDate(date) {
   const year = date.getFullYear()
@@ -17,11 +21,17 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
   const { user, logout } = useAuth()
-  const { addToast, tasks, jobs } = useApp()
+  const { addToast, tasks, jobs, deleteJob } = useApp()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [popoverOpen, setPopoverOpen] = useState(false)
+  const [editingTask, setEditingTask] = useState(null)
+  const [taskModalOpen, setTaskModalOpen] = useState(false)
+  const [detailJobId, setDetailJobId] = useState(null)
+  const [editingJob, setEditingJob] = useState(null)
+  const [jobModalOpen, setJobModalOpen] = useState(false)
+  const [deletingJob, setDeletingJob] = useState(null)
   const menuRef = useRef(null)
   const avatarRef = useRef(null)
   const bellRef = useRef(null)
@@ -92,6 +102,30 @@ export default function Navbar() {
 
   const handleNotification = () => {
     setPopoverOpen((prev) => !prev)
+  }
+
+  const openTask = (task) => {
+    setPopoverOpen(false)
+    setEditingTask(task)
+    setTaskModalOpen(true)
+  }
+
+  const openJob = (jobId) => {
+    setPopoverOpen(false)
+    setDetailJobId(jobId)
+  }
+
+  const handleEditFromDetail = (job) => {
+    setEditingJob(job)
+    setJobModalOpen(true)
+  }
+
+  const confirmDeleteJob = async () => {
+    if (!deletingJob) return
+    await deleteJob(deletingJob.id)
+    setDetailJobId(null)
+    setDeletingJob(null)
+    addToast('岗位已删除', 'success')
   }
 
   const avatarLetter = user?.username ? user.username[0].toUpperCase() : 'U'
@@ -179,6 +213,8 @@ export default function Navbar() {
             open={popoverOpen}
             tasks={tasks}
             jobs={jobs}
+            onTaskClick={openTask}
+            onJobClick={openJob}
           />
         </div>
 
@@ -230,6 +266,30 @@ export default function Navbar() {
           )}
         </div>
       </div>
+      <TaskModal
+        open={taskModalOpen}
+        task={editingTask}
+        onClose={() => { setTaskModalOpen(false); setEditingTask(null) }}
+      />
+      <JobDetailModal
+        open={!!detailJobId}
+        jobId={detailJobId}
+        onClose={() => setDetailJobId(null)}
+        onEdit={handleEditFromDetail}
+        onDelete={(job) => setDeletingJob(job)}
+      />
+      <JobModal
+        open={jobModalOpen}
+        job={editingJob}
+        onClose={() => { setJobModalOpen(false); setEditingJob(null) }}
+      />
+      <ConfirmDialog
+        open={!!deletingJob}
+        title="确认删除"
+        message={`确定要删除「${deletingJob?.companyName || ''} - ${deletingJob?.jobTitle || ''}」这条岗位记录吗？此操作不可恢复。`}
+        onConfirm={confirmDeleteJob}
+        onCancel={() => setDeletingJob(null)}
+      />
     </header>
   )
 }

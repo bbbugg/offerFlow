@@ -22,7 +22,7 @@ function formatLocalDate(date) {
   return `${year}-${month}-${day}`
 }
 
-export default function TaskPopover({ open, tasks, jobs }) {
+export default function TaskPopover({ open, tasks, jobs, onTaskClick, onJobClick }) {
   const jobMap = useMemo(() => {
     const map = {}
     jobs.forEach((j) => { map[j.id] = j })
@@ -103,12 +103,15 @@ export default function TaskPopover({ open, tasks, jobs }) {
                           </div>
 
                           {/* Content */}
-                          <div className="flex-1 min-w-0">
+                          <div
+                            className="flex-1 min-w-0 cursor-pointer"
+                            onClick={() => onTaskClick?.(t)}
+                          >
                             <p
                               className={`text-sm truncate ${
                                 t.done
                                   ? 'text-offer-muted line-through'
-                                  : 'text-slate-900 dark:text-white'
+                                  : 'text-slate-900 transition-colors hover:text-offer-primary dark:text-white'
                               }`}
                             >
                               {t.title}
@@ -123,9 +126,16 @@ export default function TaskPopover({ open, tasks, jobs }) {
                                 {t.type}
                               </span>
                               {job && (
-                                <span className="text-xs text-offer-accent/70 truncate max-w-[140px]">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    onJobClick?.(job.id)
+                                  }}
+                                  className="max-w-[140px] cursor-pointer truncate text-xs text-offer-accent/70 transition-colors hover:text-offer-primary hover:underline"
+                                  title={job.companyName}
+                                >
                                   {job.companyName}
-                                </span>
+                                </button>
                               )}
                             </div>
                             <span className={`text-[10px] mt-0.5 inline-block ${t.done ? 'text-green-500' : 'text-offer-muted/60'}`}>
