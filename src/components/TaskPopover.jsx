@@ -15,6 +15,13 @@ function formatShort(dateStr) {
   return `${d.getMonth() + 1}/${d.getDate()}`
 }
 
+function formatLocalDate(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export default function TaskPopover({ open, tasks, jobs }) {
   const jobMap = useMemo(() => {
     const map = {}
@@ -24,11 +31,11 @@ export default function TaskPopover({ open, tasks, jobs }) {
 
   const dayList = useMemo(() => {
     const days = []
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i <= 3; i++) {
       const d = new Date()
       d.setDate(d.getDate() + i)
-      const dateStr = d.toISOString().slice(0, 10)
-      const label = i === 0 ? '今天' : i === 1 ? '明天' : '后天'
+      const dateStr = formatLocalDate(d)
+      const label = i === 0 ? '今天' : i === 1 ? '明天' : i === 2 ? '后天' : '3 天后'
       days.push({ dateStr, label })
     }
     return days
@@ -39,7 +46,7 @@ export default function TaskPopover({ open, tasks, jobs }) {
       dateStr,
       label,
       tasks: tasks
-        .filter((t) => t.date === dateStr)
+        .filter((t) => !t.done && t.date === dateStr)
         .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || '')),
     }))
   }, [tasks, dayList])

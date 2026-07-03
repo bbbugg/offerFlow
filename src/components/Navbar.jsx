@@ -6,6 +6,13 @@ import { useAuth } from '../store/AuthContext'
 import { useApp } from '../store/AppContext'
 import TaskPopover from './TaskPopover'
 
+function formatLocalDate(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
@@ -42,10 +49,10 @@ export default function Navbar() {
   }, [menuOpen])
 
   const hasUpcomingTasks = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = formatLocalDate(new Date())
     const end = new Date()
     end.setDate(end.getDate() + 3)
-    const endStr = end.toISOString().slice(0, 10)
+    const endStr = formatLocalDate(end)
     return tasks.some((t) => !t.done && t.date >= today && t.date <= endStr)
   }, [tasks])
 
