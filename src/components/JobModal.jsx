@@ -95,7 +95,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
   const handleStatusChange = useCallback((value) => {
     const statusBasis = job || emptyForm
     if (!canSelectInterviewStatus(statusBasis, value)) {
-      addToast('请按面试轮次顺序推进', 'error')
+      addToast('面试状态只能按轮次向后推进', 'error')
       return
     }
     setForm((prev) => ({
@@ -124,7 +124,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
       return
     }
     if (!canSelectInterviewStatus(job || emptyForm, form.status)) {
-      addToast('请按面试轮次顺序推进', 'error')
+      addToast('面试状态只能按轮次向后推进', 'error')
       return
     }
 

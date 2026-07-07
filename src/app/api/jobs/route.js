@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
+import { canSelectInterviewStatus } from '@/lib/jobStatus'
 
 function getBeijingDateString() {
   return new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -70,6 +71,10 @@ export async function PUT(request) {
 
   // Convert empty resumeId to null to avoid FK issues
   if (data.resumeId === '') data.resumeId = null
+
+  if (data.status && !canSelectInterviewStatus(existing, data.status)) {
+    return NextResponse.json({ error: '面试状态只能按轮次向后推进，不能退回前面的面试轮次' }, { status: 400 })
+  }
 
   const job = await prisma.job.update({
     where: { id },

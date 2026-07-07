@@ -86,7 +86,7 @@ export default function Board() {
     const job = jobs.find((j) => j.id === jobId)
     if (!job || job.status === targetStatus) return
     if (!canSelectInterviewStatus(job, targetStatus)) {
-      addToast('请按面试轮次顺序推进', 'error')
+      addToast('面试状态只能按轮次向后推进', 'error')
       dragJobId.current = null
       return
     }

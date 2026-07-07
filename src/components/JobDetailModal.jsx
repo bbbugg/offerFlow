@@ -139,7 +139,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
     const existing = jobs.find((j) => j.id === jobId)
     if (!existing) return
     if (!canSelectInterviewStatus(existing, newStatus)) {
-      addToast('请按面试轮次顺序推进', 'error')
+      addToast('面试状态只能按轮次向后推进', 'error')
       return
     }
     await updateJob(jobId, {
@@ -326,7 +326,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
                       key={a.status}
                       disabled={disabled}
                       onClick={() => a.status === '已结束' ? openEndForm() : changeStatus(a.status, a.label)}
-                      title={disabled ? '请先推进上一轮面试' : undefined}
+                      title={disabled ? '面试状态只能按轮次向后推进' : undefined}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${disabled ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/35' : a.color}`}
                     >
                       {a.label}

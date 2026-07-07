@@ -5,12 +5,9 @@ import { generateMockData, defaultSettings } from './mockData'
 import { deleteReviewAttachmentsByReviewId } from '../utils/reviewAttachmentStore'
 import Toast from '../components/Toast'
 import { useAuth } from './AuthContext'
+import { ROUND_ORDER, STATUS_ROUND_MAP, INTERVIEW_STATUS_ORDER, canSelectInterviewStatus } from '../lib/jobStatus'
 
 const AppContext = createContext(null)
-
-const ROUND_ORDER = ['一面', '二面', '三面', '终面']
-const STATUS_ROUND_MAP = { '一面中': '一面', '二面中': '二面', '三面中': '三面', '终面中': '终面' }
-const INTERVIEW_STATUS_ORDER = ['一面中', '二面中', '三面中', '终面中']
 
 // ---- Centralized statistics helpers ----
 
@@ -58,19 +55,7 @@ export function getInterviewRoundCount(job) {
   return getFallbackInterviewRounds(job).length
 }
 
-export function canSelectInterviewStatus(job, targetStatus) {
-  const targetIndex = INTERVIEW_STATUS_ORDER.indexOf(targetStatus)
-  if (targetIndex === -1) return true
-
-  const currentIndex = INTERVIEW_STATUS_ORDER.indexOf(job.status)
-  const rounds = Array.isArray(job.interviewRounds) ? job.interviewRounds : []
-  const roundIndex = rounds.reduce((highest, round) => {
-    const status = Object.entries(STATUS_ROUND_MAP).find(([, label]) => label === round.round)?.[0]
-    return Math.max(highest, INTERVIEW_STATUS_ORDER.indexOf(status))
-  }, -1)
-
-  return targetIndex <= Math.max(currentIndex, roundIndex) + 1
-}
+export { canSelectInterviewStatus }
 
 export function isOfferJob(job) {
   return job.status === 'Offer'
