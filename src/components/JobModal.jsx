@@ -20,7 +20,7 @@ const emptyForm = {
 // Stable helper components defined OUTSIDE JobModal to prevent remount on every render
 function Input({ label, value, onChange, placeholder, type = 'text', large, ...rest }) {
   return (
-    <div className={large ? 'col-span-2' : ''}>
+    <div className={large ? 'min-w-0 md:col-span-2' : 'min-w-0'}>
       <label className="text-sm text-offer-muted block mb-1">{label}</label>
       {large && type === 'textarea' ? (
         <textarea
@@ -47,12 +47,12 @@ function Input({ label, value, onChange, placeholder, type = 'text', large, ...r
 
 function Select({ label, value, onChange, options, placeholder = '请选择' }) {
   return (
-    <div>
+    <div className="min-w-0">
       <label className="text-sm text-offer-muted block mb-1">{label}</label>
       <select
         value={value}
         onChange={onChange}
-        className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
+        className="min-h-[40px] w-full rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
       >
         {options.map((option) => {
           const opt = typeof option === 'string' ? option : option.value
@@ -193,7 +193,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-4 pb-6 pt-5 md:p-5 md:pb-7 md:pt-6" onFocus={handleFocusIn}>
-          <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
+          <div className="grid min-w-0 grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
             <Input label="公司名称 *" value={form.companyName} onChange={(e) => handleChange('companyName', e.target.value)} placeholder="例如：ByteDance" />
             <Input label="岗位名称 *" value={form.jobTitle} onChange={(e) => handleChange('jobTitle', e.target.value)} placeholder="例如：高级后端工程师" />
 
@@ -214,12 +214,12 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
             <Input label="岗位链接" value={form.jobLink} onChange={(e) => handleChange('jobLink', e.target.value)} placeholder="https://..." />
 
             {/* Resume selector */}
-            <div>
+            <div className="min-w-0">
               <label className="text-sm text-offer-muted block mb-1">关联简历</label>
               <select
                 value={form.resumeId}
                 onChange={(e) => handleChange('resumeId', e.target.value)}
-                className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
+                className="min-h-[40px] w-full rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
               >
                 <option value="" className="bg-gray-950 text-offer-muted">不关联</option>
                 {resumes.map((r) => (
