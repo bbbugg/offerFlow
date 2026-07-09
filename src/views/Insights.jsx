@@ -193,13 +193,6 @@ export default function Insights() {
       const rounds = j.interviewRounds
       if (Array.isArray(rounds) && rounds.length > 0) {
         rounds.forEach((r) => { if (r.round in roundCounts) roundCounts[r.round]++ })
-      } else {
-        const s = j.status
-        if (s === '一面中') roundCounts['一面']++
-        else if (s === '二面中') { roundCounts['一面']++; roundCounts['二面']++ }
-        else if (s === '三面中') { roundCounts['一面']++; roundCounts['二面']++; roundCounts['三面']++ }
-        else if (s === '终面中') { roundCounts['一面']++; roundCounts['二面']++; roundCounts['三面']++; roundCounts['终面']++ }
-        else if (s === 'Offer') roundCounts['一面']++
       }
     })
     const roundPassRates = [

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
-import { canSelectInterviewStatus } from '@/lib/jobStatus'
+import { canSelectInterviewStatus, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
 
 function getBeijingDateString() {
   return new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -26,6 +26,7 @@ export async function POST(request) {
   const { companyName, jobTitle, status, city, salaryRange, workMode, channel, priority, appliedDate, jobLink, jdText, resumeId, contactName, contactInfo, nextAction, notes, endReason, interviewRounds, timeline } = body
   const normalizedStatus = status || '感兴趣'
   const normalizedAppliedDate = appliedDate?.trim() || (normalizedStatus === '已投递' ? getBeijingDateString() : '')
+  const normalizedInterviewRounds = syncInterviewRoundsForStatus({ interviewRounds: interviewRounds || [] }, normalizedStatus)
 
   const job = await prisma.job.create({
     data: {
@@ -47,7 +48,7 @@ export async function POST(request) {
       nextAction: nextAction || '',
       notes: notes || '',
       endReason: endReason || '',
-      interviewRounds: interviewRounds || [],
+      interviewRounds: normalizedInterviewRounds,
       timeline: timeline || [],
     },
   })
@@ -76,9 +77,18 @@ export async function PUT(request) {
     return NextResponse.json({ error: '面试状态只能按轮次向后推进，不能退回前面的面试轮次' }, { status: 400 })
   }
 
+  const updateData = { ...data }
+  if (updateData.status) {
+    updateData.interviewRounds = syncInterviewRoundsForStatus({
+      ...existing,
+      ...updateData,
+      interviewRounds: updateData.interviewRounds ?? existing.interviewRounds,
+    }, updateData.status)
+  }
+
   const job = await prisma.job.update({
     where: { id },
-    data,
+    data: updateData,
   })
 
   return NextResponse.json({ job })

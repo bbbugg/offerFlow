@@ -2,6 +2,21 @@ export const ROUND_ORDER = ['一面', '二面', '三面', '终面']
 export const STATUS_ROUND_MAP = { '一面中': '一面', '二面中': '二面', '三面中': '三面', '终面中': '终面' }
 export const INTERVIEW_STATUS_ORDER = ['一面中', '二面中', '三面中', '终面中']
 
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function createInterviewRound(round, status) {
+  return {
+    id: crypto.randomUUID(),
+    round,
+    status,
+    date: todayStr(),
+    result: '',
+    notes: '',
+  }
+}
+
 function getRoundStatusIndex(round) {
   const status = Object.entries(STATUS_ROUND_MAP).find(([, label]) => label === round.round)?.[0]
   return INTERVIEW_STATUS_ORDER.indexOf(status)
@@ -25,4 +40,37 @@ export function canSelectInterviewStatus(job, targetStatus) {
   if (targetIndex < progressIndex) return false
 
   return targetIndex <= progressIndex + 1
+}
+
+export function syncInterviewRoundsForStatus(job, targetStatus = job?.status) {
+  const targetRound = STATUS_ROUND_MAP[targetStatus]
+  const rounds = Array.isArray(job?.interviewRounds)
+    ? job.interviewRounds.map((round) => ({ ...round }))
+    : []
+
+  if (!targetRound) return rounds
+
+  const targetIndex = ROUND_ORDER.indexOf(targetRound)
+  for (let i = 0; i <= targetIndex; i++) {
+    const roundLabel = ROUND_ORDER[i]
+    const expectedStatus = i < targetIndex ? '已通过' : '进行中'
+    const existing = rounds.find((round) => round.round === roundLabel)
+
+    if (!existing) {
+      rounds.push(createInterviewRound(roundLabel, expectedStatus))
+    } else if (i < targetIndex && (!existing.status || existing.status === '进行中')) {
+      existing.status = '已通过'
+    } else if (i === targetIndex && !existing.status) {
+      existing.status = '进行中'
+    }
+  }
+
+  return rounds.sort((a, b) => {
+    const ai = ROUND_ORDER.indexOf(a.round)
+    const bi = ROUND_ORDER.indexOf(b.round)
+    if (ai === -1 && bi === -1) return 0
+    if (ai === -1) return 1
+    if (bi === -1) return -1
+    return ai - bi
+  })
 }

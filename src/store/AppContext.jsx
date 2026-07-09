@@ -5,7 +5,7 @@ import { generateMockData, defaultSettings } from './mockData'
 import { deleteReviewAttachmentsByReviewId } from '../utils/reviewAttachmentStore'
 import Toast from '../components/Toast'
 import { useAuth } from './AuthContext'
-import { ROUND_ORDER, STATUS_ROUND_MAP, INTERVIEW_STATUS_ORDER, canSelectInterviewStatus } from '../lib/jobStatus'
+import { canSelectInterviewStatus } from '../lib/jobStatus'
 
 const AppContext = createContext(null)
 
@@ -13,7 +13,6 @@ const AppContext = createContext(null)
 
 export const APPLIED_STATUSES = ['已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
 export const REPLIED_STATUSES = ['OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer']
-export const INTERVIEW_STATUSES = ['一面中', '二面中', '三面中', '终面中']
 
 export function isAppliedJob(job) {
   return APPLIED_STATUSES.includes(job.status)
@@ -37,22 +36,15 @@ export function hasOaExperience(job) {
 }
 
 export function hasInterviewExperience(job) {
-  if (Array.isArray(job.interviewRounds) && job.interviewRounds.length > 0) return true
-  return INTERVIEW_STATUSES.includes(job.status) || job.status === 'Offer'
+  return getInterviewRounds(job).length > 0
 }
 
-export function getFallbackInterviewRounds(job) {
-  if (Array.isArray(job.interviewRounds) && job.interviewRounds.length > 0) return job.interviewRounds
-  if (job.status === '一面中') return [{ round: '一面', status: '进行中' }]
-  if (job.status === '二面中') return [{ round: '一面', status: '已通过' }, { round: '二面', status: '进行中' }]
-  if (job.status === '三面中') return [{ round: '一面', status: '已通过' }, { round: '二面', status: '已通过' }, { round: '三面', status: '进行中' }]
-  if (job.status === '终面中') return [{ round: '一面', status: '已通过' }, { round: '二面', status: '已通过' }, { round: '三面', status: '已通过' }, { round: '终面', status: '进行中' }]
-  if (job.status === 'Offer') return [{ round: '一面', status: '已通过' }]
-  return []
+export function getInterviewRounds(job) {
+  return Array.isArray(job.interviewRounds) ? job.interviewRounds : []
 }
 
 export function getInterviewRoundCount(job) {
-  return getFallbackInterviewRounds(job).length
+  return getInterviewRounds(job).length
 }
 
 export { canSelectInterviewStatus }
@@ -75,49 +67,13 @@ export function getResumeStats(resumeId, jobs) {
   }
 }
 
-export function syncInterviewRounds(job) {
-  const rounds = [...(job.interviewRounds || [])]
-  const status = job.status
-  const targetRound = STATUS_ROUND_MAP[status]
-
-  if (targetRound && !rounds.some(r => r.round === targetRound)) {
-    rounds.push({
-      id: crypto.randomUUID(),
-      round: targetRound,
-      status: '进行中',
-      date: new Date().toISOString().slice(0, 10),
-      result: '',
-      notes: '',
-    })
-  }
-
-  if (targetRound && ['二面中', '三面中', '终面中'].includes(status)) {
-    const currentIdx = ROUND_ORDER.indexOf(targetRound)
-    for (let i = 0; i < currentIdx; i++) {
-      const prev = rounds.find(r => r.round === ROUND_ORDER[i])
-      if (prev && prev.status === '进行中') {
-        prev.status = '已通过'
-      }
-    }
-  }
-
-  if (status === 'Offer') {
-    for (let i = ROUND_ORDER.length - 1; i >= 0; i--) {
-      const found = rounds.find(r => r.round === ROUND_ORDER[i] && r.status === '进行中')
-      if (found) { found.status = '已通过'; break }
-    }
-  }
-
-  return { ...job, interviewRounds: rounds }
-}
-
 function migrateJobs(jobs) {
   return jobs.map((j) => {
     let updated = { ...j }
     if (updated.status === '面试中') {
       updated.status = '一面中'
     }
-    return syncInterviewRounds(updated)
+    return updated
   })
 }
 
