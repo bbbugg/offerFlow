@@ -8,7 +8,6 @@ import ModalHeader from '../components/ModalHeader'
 import GlowCard from '../components/GlowCard'
 
 const TIME_RANGES = ['全部', '最近 7 天', '最近 30 天', '最近 90 天']
-const ROUND_STATUS_MAP = { '一面': '一面中', '二面': '二面中', '三面': '三面中', '终面': '终面中' }
 
 
 function makeTimeFilter(range) {
@@ -190,7 +189,7 @@ export default function Insights() {
 
     // Per-round stats for detail modal
     const roundCounts = { '一面': 0, '二面': 0, '三面': 0, '终面': 0 }
-    const roundNextCounts = { '一面': 0, '二面': 0, '三面': 0, '终面': 0 }
+    const roundPassedCounts = { '一面': 0, '二面': 0, '三面': 0, '终面': 0 }
     filteredJobs.forEach((j) => {
       const rounds = Array.isArray(j.interviewRounds)
         ? j.interviewRounds.filter((r) => r.round in roundCounts)
@@ -198,23 +197,21 @@ export default function Insights() {
       if (rounds.length === 0) return
 
       rounds.forEach((r) => {
-        const isCurrentRound = j.status === ROUND_STATUS_MAP[r.round]
-
         roundCounts[r.round]++
-        if (j.status !== '已结束' && !isCurrentRound) {
-          roundNextCounts[r.round]++
+        if (r.status === '已通过') {
+          roundPassedCounts[r.round]++
         }
       })
     })
     const roundPassRates = [
-      { round: '一面', count: roundCounts['一面'], nextCount: roundNextCounts['一面'],
-        passRate: roundCounts['一面'] > 0 ? roundNextCounts['一面'] / roundCounts['一面'] : 0 },
-      { round: '二面', count: roundCounts['二面'], nextCount: roundNextCounts['二面'],
-        passRate: roundCounts['二面'] > 0 ? roundNextCounts['二面'] / roundCounts['二面'] : 0 },
-      { round: '三面', count: roundCounts['三面'], nextCount: roundNextCounts['三面'],
-        passRate: roundCounts['三面'] > 0 ? roundNextCounts['三面'] / roundCounts['三面'] : 0 },
-      { round: '终面', count: roundCounts['终面'], nextCount: roundNextCounts['终面'],
-        passRate: roundCounts['终面'] > 0 ? roundNextCounts['终面'] / roundCounts['终面'] : 0 },
+      { round: '一面', count: roundCounts['一面'], passedCount: roundPassedCounts['一面'],
+        passRate: roundCounts['一面'] > 0 ? roundPassedCounts['一面'] / roundCounts['一面'] : 0 },
+      { round: '二面', count: roundCounts['二面'], passedCount: roundPassedCounts['二面'],
+        passRate: roundCounts['二面'] > 0 ? roundPassedCounts['二面'] / roundCounts['二面'] : 0 },
+      { round: '三面', count: roundCounts['三面'], passedCount: roundPassedCounts['三面'],
+        passRate: roundCounts['三面'] > 0 ? roundPassedCounts['三面'] / roundCounts['三面'] : 0 },
+      { round: '终面', count: roundCounts['终面'], passedCount: roundPassedCounts['终面'],
+        passRate: roundCounts['终面'] > 0 ? roundPassedCounts['终面'] / roundCounts['终面'] : 0 },
     ]
     const offerConversionRate = interviewed.length > 0 ? offers.length / interviewed.length : 0
 
@@ -502,10 +499,10 @@ function InterviewDetailModal({ open, onClose, stats, jobs, offerCount }) {
   if (!open) return null
 
   const roundInfo = [
-    { round: '一面', count: stats.roundCounts['一面'], nextCount: stats.roundPassRates[0].nextCount, passRate: stats.roundPassRates[0].passRate },
-    { round: '二面', count: stats.roundCounts['二面'], nextCount: stats.roundPassRates[1].nextCount, passRate: stats.roundPassRates[1].passRate },
-    { round: '三面', count: stats.roundCounts['三面'], nextCount: stats.roundPassRates[2].nextCount, passRate: stats.roundPassRates[2].passRate },
-    { round: '终面', count: stats.roundCounts['终面'], nextCount: stats.roundPassRates[3].nextCount, passRate: stats.roundPassRates[3].passRate },
+    { round: '一面', count: stats.roundCounts['一面'], passedCount: stats.roundPassRates[0].passedCount, passRate: stats.roundPassRates[0].passRate },
+    { round: '二面', count: stats.roundCounts['二面'], passedCount: stats.roundPassRates[1].passedCount, passRate: stats.roundPassRates[1].passRate },
+    { round: '三面', count: stats.roundCounts['三面'], passedCount: stats.roundPassRates[2].passedCount, passRate: stats.roundPassRates[2].passRate },
+    { round: '终面', count: stats.roundCounts['终面'], passedCount: stats.roundPassRates[3].passedCount, passRate: stats.roundPassRates[3].passRate },
   ]
 
   return (
@@ -538,7 +535,7 @@ function InterviewDetailModal({ open, onClose, stats, jobs, offerCount }) {
                 <div key={r.round} className="card-glow bg-slate-50 border border-slate-200 rounded-xl p-4 dark:bg-white/[0.02] dark:border-white/[0.06]">
                   <p className="text-sm text-slate-900 dark:text-white font-medium mb-2">{r.round}</p>
                   <p className="text-lg font-bold text-slate-900 dark:text-white">{r.count} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">次</span></p>
-                  <p className="text-xs text-slate-500 dark:text-white/45 mt-1">进入下一轮: {r.nextCount}</p>
+                  <p className="text-xs text-slate-500 dark:text-white/45 mt-1">已通过: {r.passedCount}</p>
                   <div className="mt-2 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
                     <div className="h-full rounded-full bg-gradient-to-r from-offer-primary to-offer-accent transition-all" style={{ width: `${Math.min(r.passRate * 100, 100)}%` }} />
                   </div>
