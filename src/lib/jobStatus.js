@@ -1,10 +1,17 @@
+import { formatLocalDate } from './dateUtils'
+
+export const APPLIED_STATUSES = ['已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
 export const ROUND_ORDER = ['一面', '二面', '三面', '终面']
 export const STATUS_ROUND_MAP = { '一面中': '一面', '二面中': '二面', '三面中': '三面', '终面中': '终面' }
 export const INTERVIEW_STATUS_ORDER = ['一面中', '二面中', '三面中', '终面中']
 const CANCELED_END_REASONS = new Set(['岗位关闭', '自己放弃', '流程太慢', '薪资不匹配', '地点不合适'])
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10)
+  return formatLocalDate()
+}
+
+export function statusImpliesApplied(status) {
+  return APPLIED_STATUSES.includes(status)
 }
 
 function createInterviewRound(round, status) {

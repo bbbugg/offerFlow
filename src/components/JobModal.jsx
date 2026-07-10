@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useApp, canSelectInterviewStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
+import { formatBeijingDate, formatLocalDate } from '../lib/dateUtils'
+import { statusImpliesApplied } from '../lib/jobStatus'
 
 const STATUS_OPTIONS = ['感兴趣', '准备投递', '已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
 const WORK_MODE_OPTIONS = ['onsite', 'remote', 'hybrid']
@@ -66,10 +68,6 @@ function Select({ label, value, onChange, options, placeholder = '请选择' }) 
   )
 }
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10)
-}
-
 export default function JobModal({ open, job, onClose, initialStatus }) {
   const { resumes, addToast, addJob, updateJob } = useApp()
   const [form, setForm] = useState(emptyForm)
@@ -102,6 +100,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
       ...prev,
       status: value,
       endReason: value === '已结束' ? prev.endReason : '',
+      appliedDate: statusImpliesApplied(value) && !prev.appliedDate ? formatBeijingDate() : prev.appliedDate,
     }))
   }, [addToast, job])
 
@@ -130,15 +129,19 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
 
     savingRef.current = true
     setSaving(true)
+    const payload = {
+      ...form,
+      appliedDate: statusImpliesApplied(form.status) && !form.appliedDate ? formatBeijingDate() : form.appliedDate,
+    }
     if (job) {
-      const patch = { ...form }
-      if (job.status !== form.status) {
+      const patch = { ...payload }
+      if (job.status !== payload.status) {
         patch.timeline = [
           ...(job.timeline || []),
           {
-            date: todayStr(),
+            date: formatLocalDate(),
             action: '状态变更',
-            detail: `从 ${job.status} 更新为 ${form.status}`,
+            detail: `从 ${job.status} 更新为 ${payload.status}`,
           },
         ]
       }
@@ -150,7 +153,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
       }
       addToast('岗位已更新', 'success')
     } else {
-      const savedJob = await addJob({ ...form, timeline: [] })
+      const savedJob = await addJob({ ...payload, timeline: [] })
       if (!savedJob) {
         savingRef.current = false
         setSaving(false)

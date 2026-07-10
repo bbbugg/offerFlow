@@ -4,6 +4,7 @@ import { useApp } from '../store/AppContext'
 import { saveResumeFile } from '../utils/resumeFileStore'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
+import { formatLocalDate } from '../lib/dateUtils'
 
 const LANG_OPTIONS = ['中文', 'English', '中英文']
 const FORMAT_OPTIONS = ['PDF', 'DOC', 'DOCX']
@@ -96,7 +97,7 @@ export default function ResumeModal({ open, resume, onClose }) {
 
     try {
       const resumeId = resume ? resume.id : crypto.randomUUID()
-      const now = new Date().toISOString().slice(0, 10)
+      const now = formatLocalDate()
 
       // Build resume metadata — preserve existing file fields when editing without re-upload
       let resumeData = {

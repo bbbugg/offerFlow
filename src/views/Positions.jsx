@@ -4,6 +4,7 @@ import { useApp } from '../store/AppContext'
 import JobModal from '../components/JobModal'
 import JobDetailModal from '../components/JobDetailModal'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { formatLocalDate, getElapsedLocalDays, parseLocalDate } from '../lib/dateUtils'
 
 const STATUS_OPTIONS = ['全部', '感兴趣', '准备投递', '已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
 const PRIORITY_OPTIONS = ['全部', '高', '中', '低']
@@ -21,17 +22,9 @@ const statusColors = {
   '已结束': 'bg-red-500/[0.15] text-red-700 dark:text-red-300 border-red-500/30',
 }
 
-function calcDays(dateStr) {
-  if (!dateStr) return '-'
-  const d = new Date(dateStr)
-  const now = new Date('2026-05-12')
-  const diff = Math.floor((now - d) / (1000 * 60 * 60 * 24))
-  return diff >= 0 ? diff : '-'
-}
-
 function getAppliedDateTimestamp(job) {
   if (!job.appliedDate) return 0
-  const timestamp = new Date(job.appliedDate).getTime()
+  const timestamp = parseLocalDate(job.appliedDate)?.getTime() ?? 0
   return Number.isNaN(timestamp) ? 0 : timestamp
 }
 
@@ -226,7 +219,7 @@ export default function Positions() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `岗位库_${new Date().toISOString().slice(0, 10)}.csv`
+    a.download = `岗位库_${formatLocalDate()}.csv`
     a.click()
     URL.revokeObjectURL(url)
     addToast(`已导出 ${filteredJobs.length} 条记录`, 'success')
@@ -388,7 +381,7 @@ export default function Positions() {
             <tbody>
               {groupedJobs.map(({ company, jobs }) =>
                 jobs.map((j, idx) => {
-                  const days = calcDays(j.appliedDate)
+                  const days = getElapsedLocalDays(j.appliedDate)
                   return (
                     <tr
                       key={j.id}
@@ -428,7 +421,7 @@ export default function Positions() {
                       <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap">{j.channel || '-'}</td>
                       <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap">{j.appliedDate || '-'}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {days !== '-' ? (
+                        {days !== null ? (
                           <span className={`font-medium ${days <= 7 ? 'text-emerald-400' : days <= 14 ? 'text-amber-400' : 'text-gray-300 dark:text-white/65'}`}>{days} 天</span>
                         ) : (
                           <span className="text-gray-500 dark:text-white/45">-</span>

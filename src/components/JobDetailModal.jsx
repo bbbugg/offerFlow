@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import { useApp, canSelectInterviewStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
+import { formatBeijingDate, formatLocalDate, getElapsedLocalDays } from '../lib/dateUtils'
+import { statusImpliesApplied } from '../lib/jobStatus'
 
 const STATUS_ACTIONS = [
   { status: '已投递', label: '已投递', color: 'border-cyan-200 text-cyan-700 dark:text-cyan-300 bg-cyan-50 hover:bg-cyan-100' },
@@ -28,10 +30,6 @@ const statusColors = {
   '终面中': 'bg-pink-50 text-pink-700 dark:text-pink-300 border-pink-200',
   'Offer': 'bg-emerald-50 text-emerald-700 dark:text-emerald-300 border-emerald-200',
   '已结束': 'bg-red-50 text-red-700 dark:text-red-300 border-red-200',
-}
-
-function todayStr() {
-  return new Date().toISOString().slice(0, 10)
 }
 
 const URL_REGEX = /(?:https?:\/\/|www\.)[^\s<>"']+/gi
@@ -105,8 +103,8 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [showEndForm, setShowEndForm] = useState(false)
 
-  const [taskForm, setTaskForm] = useState({ title: '', type: '其他', date: todayStr(), startTime: '', notes: '' })
-  const [reviewForm, setReviewForm] = useState({ interviewDate: todayStr(), round: '一面', interviewType: '技术面', result: '待定', duration: '', interviewerInfo: '', rating: 3, note: '', strengths: '', weaknesses: '' })
+  const [taskForm, setTaskForm] = useState({ title: '', type: '其他', date: formatLocalDate(), startTime: '', notes: '' })
+  const [reviewForm, setReviewForm] = useState({ interviewDate: formatLocalDate(), round: '一面', interviewType: '技术面', result: '待定', duration: '', interviewerInfo: '', rating: 3, note: '', strengths: '', weaknesses: '' })
   const [endReason, setEndReason] = useState('手动标记')
 
   // ESC close
@@ -133,6 +131,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
   if (!open || !job) return null
 
   const resumeName = resumes.find((r) => r.id === job.resumeId)
+  const waitingDays = getElapsedLocalDays(job.appliedDate)
 
   // ---- Status change ----
   const changeStatus = async (newStatus, label) => {
@@ -142,11 +141,15 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
       addToast('面试状态只能按轮次向后推进', 'error')
       return
     }
-    await updateJob(jobId, {
+    const patch = {
       status: newStatus,
-      timeline: [...(existing.timeline || []), { date: todayStr(), action: `标记为 ${label}`, detail: `从 ${existing.status} 更新为 ${newStatus}` }],
+      timeline: [...(existing.timeline || []), { date: formatLocalDate(), action: `标记为 ${label}`, detail: `从 ${existing.status} 更新为 ${newStatus}` }],
       endReason: newStatus === '已结束' ? endReason : '',
-    })
+    }
+    if (statusImpliesApplied(newStatus) && !existing.appliedDate) {
+      patch.appliedDate = formatBeijingDate()
+    }
+    await updateJob(jobId, patch)
     addToast(`已标记为「${label}」`, 'success')
     setShowEndForm(false)
   }
@@ -165,7 +168,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
       jobId, notes: taskForm.notes,
     })
     addToast('日程已创建', 'success')
-    setTaskForm({ title: '', type: '其他', date: todayStr(), startTime: '', notes: '' })
+    setTaskForm({ title: '', type: '其他', date: formatLocalDate(), startTime: '', notes: '' })
     setShowTaskForm(false)
   }
 
@@ -183,7 +186,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
       questions: [], tags: [], improvements: [],
     })
     addToast('复盘记录已创建', 'success')
-    setReviewForm({ interviewDate: todayStr(), round: '一面', interviewType: '技术面', result: '待定', duration: '', interviewerInfo: '', rating: 3, note: '', strengths: '', weaknesses: '' })
+    setReviewForm({ interviewDate: formatLocalDate(), round: '一面', interviewType: '技术面', result: '待定', duration: '', interviewerInfo: '', rating: 3, note: '', strengths: '', weaknesses: '' })
     setShowReviewForm(false)
   }
 
@@ -218,7 +221,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
               <InfoRow label="投递渠道" value={job.channel || '-'} />
               <InfoRow label="优先级" value={job.priority || '-'} />
               <InfoRow label="投递日期" value={job.appliedDate || '-'} />
-              <InfoRow label="等待天数" value={job.appliedDate ? `${Math.floor((new Date() - new Date(job.appliedDate)) / (1000 * 60 * 60 * 24))} 天` : '-'} />
+              <InfoRow label="等待天数" value={waitingDays !== null ? `${waitingDays} 天` : '-'} />
               <InfoRow label="关联简历" value={resumeName ? `${resumeName.name} (${resumeName.version})` : '-'} />
             </div>
           </section>

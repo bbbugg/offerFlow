@@ -5,13 +5,12 @@ import { generateMockData, defaultSettings } from './mockData'
 import { deleteReviewAttachmentsByReviewId } from '../utils/reviewAttachmentStore'
 import Toast from '../components/Toast'
 import { useAuth } from './AuthContext'
-import { canSelectInterviewStatus } from '../lib/jobStatus'
+import { APPLIED_STATUSES, canSelectInterviewStatus } from '../lib/jobStatus'
 
 const AppContext = createContext(null)
 
 // ---- Centralized statistics helpers ----
 
-export const APPLIED_STATUSES = ['已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
 export const REPLIED_STATUSES = ['OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer']
 const REPLIED_END_REASONS = ['被拒绝', '岗位关闭', '其他']
 

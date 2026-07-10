@@ -7,6 +7,8 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import ModalHeader from '../components/ModalHeader'
 import GlowCard from '../components/GlowCard'
 import ActionMenuPortal from '../components/ActionMenuPortal'
+import { formatBeijingDate, formatLocalDate, getElapsedLocalDays } from '../lib/dateUtils'
+import { statusImpliesApplied } from '../lib/jobStatus'
 
 const COLUMNS = [
   { key: '感兴趣', color: 'border-t-blue-500/40', headerColor: 'text-blue-400', bgColor: 'bg-blue-500/10' },
@@ -20,14 +22,6 @@ const COLUMNS = [
   { key: 'Offer', color: 'border-t-emerald-500/40', headerColor: 'text-emerald-400', bgColor: 'bg-emerald-500/10' },
   { key: '已结束', color: 'border-t-red-500/40', headerColor: 'text-red-400', bgColor: 'bg-red-500/10' },
 ]
-
-function calcDays(dateStr) {
-  if (!dateStr) return '-'
-  const d = new Date(dateStr)
-  const now = new Date()
-  const diff = Math.floor((now - d) / (1000 * 60 * 60 * 24))
-  return diff >= 0 ? diff : 0
-}
 
 export default function Board() {
   const { jobs, resumes, addToast, updateJob, deleteJob } = useApp()
@@ -95,10 +89,13 @@ export default function Board() {
     const patch = {
       status: targetStatus,
       timeline: [...timeline, {
-        date: new Date().toISOString().slice(0, 10),
+        date: formatLocalDate(),
         action: '状态变更',
         detail: `从 ${job.status} 更新为 ${targetStatus}`,
       }],
+    }
+    if (statusImpliesApplied(targetStatus) && !job.appliedDate) {
+      patch.appliedDate = formatBeijingDate()
     }
     patch.endReason = targetStatus === '已结束' ? '手动标记' : ''
     await updateJob(jobId, patch)
@@ -205,15 +202,19 @@ export default function Board() {
     if (e) e.stopPropagation()
     setMenuJobId(null)
     const timeline = job.timeline || []
-    await updateJob(job.id, {
+    const patch = {
       status: newStatus,
       endReason: newStatus === '已结束' ? '手动标记' : '',
       timeline: [...timeline, {
-        date: new Date().toISOString().slice(0, 10),
+        date: formatLocalDate(),
         action: `标记为 ${label}`,
         detail: newStatus === '已结束' ? '' : '',
       }],
-    })
+    }
+    if (statusImpliesApplied(newStatus) && !job.appliedDate) {
+      patch.appliedDate = formatBeijingDate()
+    }
+    await updateJob(job.id, patch)
     addToast(`已标记为「${label}」`, 'success')
   }
 
@@ -401,7 +402,7 @@ export default function Board() {
 
 /* ---- Card Component (stable, outside Board) ---- */
 function Card({ job, resumeMap, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, onDragEnd, onEditFromMenu, onDelete, onMarkOffer, onMarkEnded, onFollowUp }) {
-  const days = calcDays(job.appliedDate)
+  const days = getElapsedLocalDays(job.appliedDate)
   const resumeName = job.resumeId && resumeMap[job.resumeId]
   const actionBtnRef = useRef(null)
 
@@ -462,7 +463,7 @@ function Card({ job, resumeMap, menuOpen, onToggleMenu, onCloseMenu, onClick, on
       </div>
 
       <div className="flex items-center justify-between mt-2 text-[11px] text-offer-muted">
-        <span>{job.appliedDate ? `${calcDays(job.appliedDate)} 天` : '-'}</span>
+        <span>{days !== null ? `${days} 天` : '-'}</span>
         {resumeName && <span className="truncate max-w-[80px]" title={resumeName.name}>{resumeName.name}</span>}
       </div>
 

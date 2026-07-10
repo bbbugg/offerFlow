@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react'
 import { useApp } from '../store/AppContext'
 import TaskModal from '../components/TaskModal'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { formatLocalDate, parseLocalDate } from '../lib/dateUtils'
 
 const TYPE_STYLE = {
   '面试': 'bg-blue-50 text-blue-700 dark:text-blue-400 border-blue-200',
@@ -29,15 +30,15 @@ const PRIORITY_CLASS = {
 }
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10)
+  return formatLocalDate()
 }
 
 function isSameLocalDate(dateStr1, dateStr2) {
   try {
-    const a = new Date(dateStr1)
-    const b = new Date(dateStr2)
+    const a = parseLocalDate(dateStr1)
+    const b = dateStr2 instanceof Date ? dateStr2 : parseLocalDate(dateStr2)
     return (
-      !isNaN(a.getTime()) && !isNaN(b.getTime()) &&
+      a && b &&
       a.getFullYear() === b.getFullYear() &&
       a.getMonth() === b.getMonth() &&
       a.getDate() === b.getDate()
@@ -99,7 +100,7 @@ export default function Schedule() {
     for (let i = 1; i <= 7; i++) {
       const d = new Date()
       d.setDate(d.getDate() + i)
-      const dateStr = d.toISOString().slice(0, 10)
+      const dateStr = formatLocalDate(d)
       const dayTasks = filtered
         .filter((t) => t.date === dateStr && !t.done)
         .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))

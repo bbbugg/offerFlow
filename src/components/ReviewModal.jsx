@@ -5,6 +5,7 @@ import { saveReviewAttachment, deleteReviewAttachment } from '../utils/reviewAtt
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 import AiResultPanel from './AiResultPanel'
+import { formatLocalDate } from '../lib/dateUtils'
 
 // 从 localStorage 读取用户自定义的 LLM 配置
 function getLlmConfigFromStorage() {
@@ -154,7 +155,7 @@ export default function ReviewModal({ open, review, onClose }) {
       setJobTitle('')
       setRound('一面')
       setInterviewType('技术面')
-      setInterviewDate(new Date().toISOString().slice(0, 10))
+      setInterviewDate(formatLocalDate())
       setDuration('')
       setResult('待定')
       setInterviewerInfo('')
@@ -258,7 +259,7 @@ export default function ReviewModal({ open, review, onClose }) {
           storageKey: `${rid}:${attId}`,
           fileCategory: selectedCategory,
           description: attachmentDescription,
-          uploadDate: new Date().toISOString().slice(0, 10),
+          uploadDate: formatLocalDate(),
         })
       } catch (err) {
         console.error('[review attachment save failed]', file.name, err)
@@ -374,7 +375,7 @@ export default function ReviewModal({ open, review, onClose }) {
       hasFile: true,
       fileCategory: '复盘文档',
       description: 'AI 分析源文件',
-      uploadDate: new Date().toISOString().slice(0, 10),
+      uploadDate: formatLocalDate(),
       isSourceForAi: true,
     }
     setAttachments((prev) => [...prev, sourceAtt])

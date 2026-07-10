@@ -6,6 +6,7 @@ import {
 import { useApp, isAppliedJob, isRepliedJob, hasOaExperience, hasInterviewExperience, getInterviewRoundCount, isOfferJob, getResumeStats } from '../store/AppContext'
 import ModalHeader from '../components/ModalHeader'
 import GlowCard from '../components/GlowCard'
+import { parseLocalDate } from '../lib/dateUtils'
 
 const TIME_RANGES = ['全部', '最近 7 天', '最近 30 天', '最近 90 天']
 
@@ -14,16 +15,13 @@ function makeTimeFilter(range) {
   if (range === '全部') return () => true
   const now = new Date()
   const days = { '最近 7 天': 7, '最近 30 天': 30, '最近 90 天': 90 }[range]
-  const cutoff = new Date(now)
+  const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   cutoff.setDate(cutoff.getDate() - days)
   return (j) => {
     const date = j.appliedDate || j.createdAt
-    return date ? new Date(date) >= cutoff : true
+    const parsed = parseLocalDate(date)
+    return parsed ? parsed >= cutoff : true
   }
-}
-
-function todayStr() {
-  return new Date().toISOString().slice(0, 10)
 }
 
 function getJobCity(job) {

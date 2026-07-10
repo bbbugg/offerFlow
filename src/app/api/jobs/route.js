@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
-import { canSelectInterviewStatus, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
+import { canSelectInterviewStatus, statusImpliesApplied, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
+import { formatBeijingDate } from '@/lib/dateUtils'
 
 function getBeijingDateString() {
-  return new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  return formatBeijingDate()
 }
 
 export async function GET() {
@@ -25,7 +26,7 @@ export async function POST(request) {
   const body = await request.json()
   const { companyName, jobTitle, status, city, salaryRange, workMode, channel, priority, appliedDate, jobLink, jdText, resumeId, contactName, contactInfo, nextAction, notes, endReason, interviewRounds, timeline } = body
   const normalizedStatus = status || '感兴趣'
-  const normalizedAppliedDate = appliedDate?.trim() || (normalizedStatus === '已投递' ? getBeijingDateString() : '')
+  const normalizedAppliedDate = appliedDate?.trim() || (statusImpliesApplied(normalizedStatus) ? getBeijingDateString() : '')
   const normalizedInterviewRounds = syncInterviewRoundsForStatus({ interviewRounds: interviewRounds || [] }, normalizedStatus)
 
   const job = await prisma.job.create({
@@ -78,6 +79,9 @@ export async function PUT(request) {
   }
 
   const updateData = { ...data }
+  if (updateData.status && statusImpliesApplied(updateData.status) && !existing.appliedDate && !updateData.appliedDate) {
+    updateData.appliedDate = getBeijingDateString()
+  }
   if (updateData.status || updateData.endReason || updateData.interviewRounds) {
     const nextStatus = updateData.status ?? existing.status
     updateData.interviewRounds = syncInterviewRoundsForStatus({
