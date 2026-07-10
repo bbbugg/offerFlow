@@ -13,6 +13,7 @@ const AppContext = createContext(null)
 
 export const APPLIED_STATUSES = ['已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
 export const REPLIED_STATUSES = ['OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer']
+const REPLIED_END_REASONS = ['被拒绝', '岗位关闭', '其他']
 
 export function isAppliedJob(job) {
   return APPLIED_STATUSES.includes(job.status)
@@ -20,11 +21,20 @@ export function isAppliedJob(job) {
 
 export function isRepliedJob(job) {
   if (REPLIED_STATUSES.includes(job.status)) return true
+  if (hasRepliedHistory(job)) return true
   if (job.status === '已结束') {
     if (!job.endReason) return true
-    return ['被拒绝', '岗位关闭', '其他'].includes(job.endReason)
+    return REPLIED_END_REASONS.includes(job.endReason)
   }
   return false
+}
+
+function hasRepliedHistory(job) {
+  if (getInterviewRounds(job).length > 0) return true
+  return (job.timeline || []).some((item) => {
+    const text = `${item.action || ''} ${item.detail || ''}`
+    return REPLIED_STATUSES.some((status) => text.includes(status))
+  })
 }
 
 export function hasOaExperience(job) {
