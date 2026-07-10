@@ -226,7 +226,7 @@ export default function Insights() {
         <MetricCard label="收到回复" value={data.repliedCount} sub={`${data.replyRate}% 回复率`} />
         <MetricCard label="总面试次数" value={data.interviewedCount} sub={`${data.interviewedPeopleCount} 岗位参与 · ${data.interviewRate}% 面试率`} onClick={() => setDetailOpen(true)} />
         <MetricCard label="总 Offer" value={data.offerCount} sub={`${data.offerRate}% Offer 率`} accent />
-        <MetricCard label="已结束" value={data.endedCount} sub="无结果" />
+        <MetricCard label="已结束" value={data.endedCount} sub="无结果" danger />
       </div>
 
       {/* ===== Conversion Rates ===== */}
@@ -344,13 +344,13 @@ export default function Insights() {
 
 /* ===== Sub-components ===== */
 
-function MetricCard({ label, value, sub, accent, onClick }) {
+function MetricCard({ label, value, sub, accent, danger, onClick }) {
   return (
     <div onClick={onClick} className={`card-modern relative flex min-h-[128px] flex-col justify-between overflow-visible p-4 md:min-h-[148px] md:p-6 ${onClick ? 'cursor-pointer card-hover' : ''}`}>
       <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/[0.02] to-transparent rounded-bl-full" />
       <div className="space-y-2">
         <p className="text-offer-muted text-sm font-medium leading-6 tracking-wide">{label}</p>
-        <p className={`text-3xl font-semibold leading-tight tracking-tight ${accent ? 'text-emerald-400' : 'text-white'}`}>{value}</p>
+        <p className={`text-3xl font-semibold leading-tight tracking-tight ${accent ? 'text-emerald-400' : danger ? 'text-red-400' : 'text-white'}`}>{value}</p>
       </div>
       <p className="text-sm leading-6 mt-2 text-gray-400 dark:text-white/45">{sub}</p>
     </div>
