@@ -56,9 +56,7 @@ export function AuthProvider({ children }) {
     }
     // Clear client-side caches so the next user starts fresh
     localStorage.removeItem('offerFlow_jobs')
-    localStorage.removeItem('offerFlow_resumes')
     localStorage.removeItem('offerFlow_tasks')
-    localStorage.removeItem('offerFlow_reviews')
     // Reset SplashScreen so it shows again on next auth visit
     sessionStorage.removeItem('offerflow_splash_shown')
     delete document.documentElement.dataset.offerflowSplashShown

@@ -41,7 +41,7 @@ function formatLocalDate(date) {
 }
 
 export default function Dashboard() {
-  const { jobs, tasks, reviews, addToast, deleteJob } = useApp()
+  const { jobs, tasks, addToast, deleteJob } = useApp()
   const [detailJobId, setDetailJobId] = useState(null)
   const [editingJob, setEditingJob] = useState(null)
   const [jobModalOpen, setJobModalOpen] = useState(false)

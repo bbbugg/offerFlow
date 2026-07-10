@@ -36,10 +36,12 @@ echo.
 echo [3/4] 切换到 SQLite 本地数据库...
 copy /Y prisma\schema.sqlite.prisma prisma\schema.prisma >nul
 
-echo 生成 Prisma 数据库客户端...
-call npx prisma generate
+echo 初始化 SQLite 数据库并生成 Prisma 客户端...
+if not exist prisma\dev.db type nul > prisma\dev.db
+set DATABASE_URL=file:./dev.db
+call npx prisma db push
 if %ERRORLEVEL% NEQ 0 (
-    echo [错误] Prisma 生成失败
+    echo [错误] Prisma 数据库初始化失败
     pause
     exit /b 1
 )
@@ -52,7 +54,6 @@ if not exist .env (
         copy .env.example .env >nul
         echo 已从 .env.example 生成 .env 文件。
         echo 请用记事本打开 .env 文件，修改 JWT_SECRET 为一个随机字符串。
-        echo 然后在设置页面中填写你的 LLM API Key。
     ) else (
         echo [警告] 未找到 .env.example，请手动创建 .env 文件。
     )
@@ -71,7 +72,6 @@ echo.
 echo   首次使用：
 echo     1. 浏览器打开 http://localhost:3000
 echo     2. 注册一个账号
-echo     3. 进入"设置"-"AI 模型配置"
-echo     4. 填入你的 LLM API Key 即可使用 AI 面试分析
+echo     3. 开始管理岗位与投递进度
 echo.
 pause

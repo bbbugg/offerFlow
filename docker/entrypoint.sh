@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-mkdir -p /app/data /app/public/uploads
+mkdir -p /app/data
 
 if [ "${PRISMA_DB_PUSH}" = "true" ]; then
   echo "Running prisma db push..."

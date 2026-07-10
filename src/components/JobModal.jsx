@@ -15,7 +15,7 @@ const END_REASON_OPTIONS = ['', '被拒绝', '岗位关闭', '自己放弃', '�
 const emptyForm = {
   companyName: '', jobTitle: '', status: '感兴趣', city: '', salaryRange: '',
   workMode: 'onsite', channel: '', priority: '中', appliedDate: '',
-  jobLink: '', jdText: '', resumeId: '', contactName: '', contactInfo: '',
+  jobLink: '', jdText: '', contactName: '', contactInfo: '',
   nextAction: '', notes: '', endReason: '',
 }
 
@@ -69,7 +69,7 @@ function Select({ label, value, onChange, options, placeholder = '请选择' }) 
 }
 
 export default function JobModal({ open, job, onClose, initialStatus }) {
-  const { resumes, addToast, addJob, updateJob } = useApp()
+  const { addToast, addJob, updateJob } = useApp()
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const savingRef = useRef(false)
@@ -215,23 +215,6 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
 
             <Input label="投递日期" type="date" value={form.appliedDate} onChange={(e) => handleChange('appliedDate', e.target.value)} />
             <Input label="岗位链接" value={form.jobLink} onChange={(e) => handleChange('jobLink', e.target.value)} placeholder="https://..." />
-
-            {/* Resume selector */}
-            <div className="min-w-0">
-              <label className="text-sm text-offer-muted block mb-1">关联简历</label>
-              <select
-                value={form.resumeId}
-                onChange={(e) => handleChange('resumeId', e.target.value)}
-                className="min-h-[40px] w-full rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
-              >
-                <option value="" className="bg-gray-950 text-offer-muted">不关联</option>
-                {resumes.map((r) => (
-                  <option key={r.id} value={r.id} className="bg-gray-950 text-white">
-                    {r.name} ({r.version})
-                  </option>
-                ))}
-              </select>
-            </div>
 
             <Input label="联系人 / HR" value={form.contactName} onChange={(e) => handleChange('contactName', e.target.value)} placeholder="姓名" />
 

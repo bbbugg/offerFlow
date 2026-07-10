@@ -24,7 +24,7 @@ export async function POST(request) {
   if (!user) return NextResponse.json({ error: '未登录' }, { status: 401 })
 
   const body = await request.json()
-  const { companyName, jobTitle, status, city, salaryRange, workMode, channel, priority, appliedDate, jobLink, jdText, resumeId, contactName, contactInfo, nextAction, notes, endReason, interviewRounds, timeline } = body
+  const { companyName, jobTitle, status, city, salaryRange, workMode, channel, priority, appliedDate, jobLink, jdText, contactName, contactInfo, nextAction, notes, endReason, interviewRounds, timeline } = body
   const normalizedStatus = status || '感兴趣'
   const normalizedAppliedDate = appliedDate?.trim() || (statusImpliesApplied(normalizedStatus) ? getBeijingDateString() : '')
   const normalizedInterviewRounds = syncInterviewRoundsForStatus({ interviewRounds: interviewRounds || [] }, normalizedStatus)
@@ -43,7 +43,6 @@ export async function POST(request) {
       appliedDate: normalizedAppliedDate,
       jobLink: jobLink || '',
       jdText: jdText || '',
-      resumeId: resumeId || null,
       contactName: contactName || '',
       contactInfo: contactInfo || '',
       nextAction: nextAction || '',
@@ -70,9 +69,6 @@ export async function PUT(request) {
   if (!existing || existing.userId !== user.id) {
     return NextResponse.json({ error: '无权修改此记录' }, { status: 403 })
   }
-
-  // Convert empty resumeId to null to avoid FK issues
-  if (data.resumeId === '') data.resumeId = null
 
   if (data.status && !canSelectInterviewStatus(existing, data.status)) {
     return NextResponse.json({ error: '面试状态只能按轮次向后推进，不能退回前面的面试轮次' }, { status: 400 })

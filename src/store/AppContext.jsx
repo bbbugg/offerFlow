@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { generateMockData, defaultSettings } from './mockData'
-import { deleteReviewAttachmentsByReviewId } from '../utils/reviewAttachmentStore'
 import Toast from '../components/Toast'
 import { useAuth } from './AuthContext'
 import { APPLIED_STATUSES, canSelectInterviewStatus } from '../lib/jobStatus'
@@ -62,20 +61,6 @@ export function isOfferJob(job) {
   return job.status === 'Offer'
 }
 
-export function getResumeStats(resumeId, jobs) {
-  const linked = jobs.filter((j) => j.resumeId === resumeId)
-  const sentCount = linked.filter(isAppliedJob).length
-  const replyCount = linked.filter(isRepliedJob).length
-  const interviewPeopleCount = linked.filter(hasInterviewExperience).length
-  const interviewRoundCount = linked.reduce((sum, j) => sum + getInterviewRoundCount(j), 0)
-  const offerCount = linked.filter(isOfferJob).length
-  return {
-    sentCount, replyCount, interviewPeopleCount, interviewRoundCount, offerCount,
-    interviewRate: sentCount > 0 ? Math.round((interviewPeopleCount / sentCount) * 100) : 0,
-    offerRate: sentCount > 0 ? Math.round((offerCount / sentCount) * 100) : 0,
-  }
-}
-
 // ---- API helper ----
 
 async function apiFetch(url, options = {}) {
@@ -109,9 +94,7 @@ export function AppProvider({ children }) {
   const { user, loading: authLoading } = useAuth()
 
   const [jobs, setJobsRaw] = useState([])
-  const [resumes, setResumesRaw] = useState([])
   const [tasks, setTasksRaw] = useState([])
-  const [reviews, setReviewsRaw] = useState([])
   const [settings, setSettingsRaw] = useState(() => {
     if (typeof window === 'undefined') return defaultSettings
     return loadFromStorage('offerFlow_settings', defaultSettings)
@@ -136,38 +119,28 @@ export function AppProvider({ children }) {
   async function loadAllData() {
     setDataLoading(true)
     try {
-      let [j, r, t, rv] = await Promise.all([
+      const [j, t] = await Promise.all([
         apiFetch('/api/jobs'),
-        apiFetch('/api/resumes'),
         apiFetch('/api/tasks'),
-        apiFetch('/api/reviews'),
       ])
 
       setJobsRaw(j)
-      setResumesRaw(r)
       setTasksRaw(t)
-      setReviewsRaw(rv)
 
       saveToStorage('offerFlow_jobs', j)
-      saveToStorage('offerFlow_resumes', r)
       saveToStorage('offerFlow_tasks', t)
-      saveToStorage('offerFlow_reviews', rv)
     } catch (err) {
       // If unauthorized, just show empty data instead of falling
       // back to a potentially stale localStorage from another user.
       if (err.message === 'Unauthorized') {
         setJobsRaw([])
-        setResumesRaw([])
         setTasksRaw([])
-        setReviewsRaw([])
       } else {
         console.error('[AppContext] API load failed, falling back to localStorage', err)
         addToast('数据加载失败，使用本地缓存', 'error')
         const mock = generateMockData()
         setJobsRaw(loadFromStorage('offerFlow_jobs', mock.jobs))
-        setResumesRaw(loadFromStorage('offerFlow_resumes', mock.resumes))
         setTasksRaw(loadFromStorage('offerFlow_tasks', mock.tasks))
-        setReviewsRaw(loadFromStorage('offerFlow_reviews', mock.reviews))
       }
     } finally {
       setDataLoading(false)
@@ -184,26 +157,10 @@ export function AppProvider({ children }) {
     })
   }, [])
 
-  const setResumes = useCallback((value) => {
-    setResumesRaw((prev) => {
-      const next = typeof value === 'function' ? value(prev) : value
-      saveToStorage('offerFlow_resumes', next)
-      return next
-    })
-  }, [])
-
   const setTasks = useCallback((value) => {
     setTasksRaw((prev) => {
       const next = typeof value === 'function' ? value(prev) : value
       saveToStorage('offerFlow_tasks', next)
-      return next
-    })
-  }, [])
-
-  const setReviews = useCallback((value) => {
-    setReviewsRaw((prev) => {
-      const next = typeof value === 'function' ? value(prev) : value
-      saveToStorage('offerFlow_reviews', next)
       return next
     })
   }, [])
@@ -253,36 +210,6 @@ export function AppProvider({ children }) {
     }
   }, [reloadJobs, addToast])
 
-  // Resumes
-  const addResume = useCallback(async (formData) => {
-    try {
-      const result = await apiFetch('/api/resumes', { method: 'POST', body: JSON.stringify(formData) })
-      const newResume = result.resume
-      setResumes((prev) => [...prev, newResume])
-      return newResume
-    } catch (err) {
-      addToast(err.message, 'error')
-    }
-  }, [setResumes, addToast])
-
-  const updateResume = useCallback(async (id, patch) => {
-    try {
-      await apiFetch('/api/resumes', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
-      setResumes((prev) => prev.map((r) => r.id === id ? { ...r, ...patch } : r))
-    } catch (err) {
-      addToast(err.message, 'error')
-    }
-  }, [setResumes, addToast])
-
-  const deleteResume = useCallback(async (id) => {
-    try {
-      await apiFetch(`/api/resumes?id=${id}`, { method: 'DELETE' })
-      setResumes((prev) => prev.filter((r) => r.id !== id))
-    } catch (err) {
-      addToast(err.message, 'error')
-    }
-  }, [setResumes, addToast])
-
   // Tasks
   const addTask = useCallback(async (formData) => {
     try {
@@ -313,53 +240,6 @@ export function AppProvider({ children }) {
     }
   }, [setTasks, addToast])
 
-  // Reviews
-  const addReview = useCallback(async (reviewData) => {
-    try {
-      const result = await apiFetch('/api/reviews', { method: 'POST', body: JSON.stringify(reviewData) })
-      const newReview = {
-        ...result.review,
-        attachments: Array.isArray(result.review.attachments) ? result.review.attachments : [],
-        positiveTags: reviewData.positiveTags || [],
-        negativeTags: reviewData.negativeTags || [],
-      }
-      setReviews((prev) => [...prev, newReview])
-      return newReview
-    } catch (err) {
-      addToast(err.message, 'error')
-    }
-  }, [setReviews, addToast])
-
-  const updateReview = useCallback(async (id, patch) => {
-    try {
-      await apiFetch('/api/reviews', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
-      setReviews((prev) => prev.map((r) =>
-        r.id === id
-          ? {
-              ...r,
-              ...patch,
-              attachments:
-                Array.isArray(patch.attachments)
-                  ? patch.attachments
-                  : r.attachments || [],
-            }
-          : r
-      ))
-    } catch (err) {
-      addToast(err.message, 'error')
-    }
-  }, [setReviews, addToast])
-
-  const deleteReview = useCallback(async (id) => {
-    try {
-      await deleteReviewAttachmentsByReviewId(id)
-      await apiFetch(`/api/reviews?id=${id}`, { method: 'DELETE' })
-      setReviews((prev) => prev.filter((r) => r.id !== id))
-    } catch (err) {
-      addToast(err.message, 'error')
-    }
-  }, [setReviews, addToast])
-
   // Settings (localStorage only)
   const setSettings = useCallback((value) => {
     setSettingsRaw((prev) => {
@@ -372,13 +252,9 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{
       jobs, setJobs,
-      resumes, setResumes,
       tasks, setTasks,
-      reviews, setReviews,
       addJob, updateJob, deleteJob,
-      addResume, updateResume, deleteResume,
       addTask, updateTask, deleteTask,
-      addReview, updateReview, deleteReview,
       settings, setSettings,
       toasts, addToast,
       dataLoading,

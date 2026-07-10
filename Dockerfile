@@ -52,7 +52,7 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/prisma/schema.prisma ./prisma/schema.prisma
 COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-RUN mkdir -p /app/data /app/public/uploads \
+RUN mkdir -p /app/data \
   && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 3000

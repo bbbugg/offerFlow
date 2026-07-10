@@ -3,7 +3,7 @@ import { useMemo, useState, useEffect } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
-import { useApp, isAppliedJob, isRepliedJob, hasOaExperience, hasInterviewExperience, getInterviewRoundCount, isOfferJob, getResumeStats } from '../store/AppContext'
+import { useApp, isAppliedJob, isRepliedJob, hasOaExperience, hasInterviewExperience, getInterviewRoundCount, isOfferJob } from '../store/AppContext'
 import ModalHeader from '../components/ModalHeader'
 import GlowCard from '../components/GlowCard'
 import { parseLocalDate } from '../lib/dateUtils'
@@ -98,7 +98,7 @@ const CustomChartTooltip = ({ active, payload, label }) => {
 }
 
 export default function Insights() {
-  const { jobs, resumes, tasks, reviews } = useApp()
+  const { jobs, tasks } = useApp()
   const [timeRange, setTimeRange] = useState('全部')
   const [detailOpen, setDetailOpen] = useState(false)
 
@@ -126,12 +126,6 @@ export default function Insights() {
 
     // Pending follow-ups from tasks
     const pendingFollowUps = tasks.filter((t) => !t.done).length
-
-    // Pending reviews: interview-stage jobs that have no matching review
-    const pendingReviewCount = filteredJobs.filter(
-      (j) => hasInterviewExperience(j) &&
-        !reviews.some((r) => r.jobId === j.id)
-    ).length
 
     // Conversion rates
     const replyRate = appliedCount > 0 ? Math.round((replied.length / appliedCount) * 100) : 0
@@ -166,24 +160,6 @@ export default function Insights() {
       replyRate: c.sent > 0 ? Math.round((c.replied / c.sent) * 100) : 0,
       interviewRate: c.sent > 0 ? Math.round((c.interviewedPeople / c.sent) * 100) : 0,
     }))
-
-    // Resume version analysis
-    const resumeStats = resumes.map((r) => ({
-      name: r.name,
-      version: r.version,
-      ...getResumeStats(r.id, filteredJobs),
-    })).filter((s) => s.sentCount > 0)
-
-    // Tag frequency from reviews
-    const tagFreq = {}
-    reviews.forEach((r) => {
-      ;(r.negativeTags || r.tags || []).forEach((t) => {
-        tagFreq[t] = (tagFreq[t] || 0) + 1
-      })
-    })
-    const tagsData = Object.entries(tagFreq)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
 
     // Per-round stats for detail modal
     const roundCounts = { '一面': 0, '二面': 0, '三面': 0, '终面': 0 }
@@ -220,14 +196,14 @@ export default function Insights() {
       total, appliedCount, activeCount: active.length, repliedCount: replied.length,
       interviewedCount: totalRoundCount, interviewedPeopleCount: interviewed.length,
       offerCount: offers.length, endedCount: ended.length,
-      pendingFollowUps, pendingReviewCount,
+      pendingFollowUps,
       replyRate, interviewRate, offerRate,
-      funnel, channels, resumeStats, tagsData,
+      funnel, channels,
       roundCounts, roundPassRates, offerConversionRate,
       interviewedJobs: interviewed,
       cityDistribution,
     }
-  }, [jobs, timeFilter, resumes, tasks, reviews])
+  }, [jobs, timeFilter, tasks])
 
   return (
     <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
@@ -254,7 +230,6 @@ export default function Insights() {
         <MetricCard label="总 Offer" value={data.offerCount} sub={`${data.offerRate}% Offer 率`} accent />
         <MetricCard label="已结束" value={data.endedCount} sub="无结果" />
         <MetricCard label="待跟进" value={data.pendingFollowUps} sub="未完成任务" />
-        <MetricCard label="待复盘" value={data.pendingReviewCount} sub="面试后未复盘" />
       </div>
 
       {/* ===== Conversion Rates ===== */}
@@ -325,46 +300,6 @@ export default function Insights() {
         </div>
       </div>
 
-      {/* ===== Resume Version Analysis ===== */}
-      {data.resumeStats.length > 0 && (
-        <div className="card-modern mb-6 p-4 md:mb-8 md:p-6">
-          <h2 className="text-lg font-semibold text-white mb-5">简历版本效果</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-offer-muted border-b border-white/[0.06]">
-                  <th className="text-left py-3 pr-2 text-xs font-semibold uppercase tracking-wider text-offer-muted/80">简历版本</th>
-                  <th className="text-right px-2 py-3 text-xs font-semibold uppercase tracking-wider text-offer-muted/80">投递</th>
-                  <th className="text-right px-2 py-3 text-xs font-semibold uppercase tracking-wider text-offer-muted/80">回复</th>
-                  <th className="text-right px-2 py-3 text-xs font-semibold uppercase tracking-wider text-offer-muted/80">面试岗位</th>
-                  <th className="text-right px-2 py-3 text-xs font-semibold uppercase tracking-wider text-offer-muted/80">面试轮次</th>
-                  <th className="text-right px-2 py-3 text-xs font-semibold uppercase tracking-wider text-offer-muted/80">Offer</th>
-                  <th className="text-right px-2 py-3 text-xs font-semibold uppercase tracking-wider text-offer-muted/80">面试率</th>
-                  <th className="text-right pl-2 py-3 text-xs font-semibold uppercase tracking-wider text-offer-muted/80">Offer 率</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.resumeStats.map((rs) => (
-                  <tr key={rs.name} className="border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02] transition-colors">
-                    <td className="py-2.5 pr-2">
-                      <span className="text-white font-medium">{rs.name}</span>
-                      <span className="text-offer-muted ml-1">({rs.version})</span>
-                    </td>
-                    <td className="text-right px-2 py-2.5 text-offer-muted">{rs.sentCount}</td>
-                    <td className="text-right px-2 py-2.5 text-offer-muted">{rs.replyCount}</td>
-                    <td className="text-right px-2 py-2.5 text-offer-muted">{rs.interviewPeopleCount}</td>
-                    <td className="text-right px-2 py-2.5 text-offer-muted">{rs.interviewRoundCount}</td>
-                    <td className="text-right px-2 py-2.5 text-offer-accent font-medium">{rs.offerCount}</td>
-                    <td className="text-right px-2 py-2.5 text-offer-muted">{rs.interviewRate}%</td>
-                    <td className="text-right pl-2 py-2.5 text-offer-muted">{rs.offerRate}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
       {/* ===== City Distribution ===== */}
       <div className="card-modern mb-6 min-h-[340px] p-4 md:mb-8 md:min-h-[380px] md:p-6">
         <h2 className="text-lg font-semibold text-white mb-5">投递城市分布</h2>
@@ -391,30 +326,6 @@ export default function Insights() {
           </div>
         )}
       </div>
-
-      {/* ===== Weakness Tags ===== */}
-      {data.tagsData.length > 0 && (
-        <div className="card-modern mb-6 min-h-[340px] p-4 md:mb-8 md:min-h-[380px] md:p-6">
-          <h2 className="text-lg font-semibold text-white mb-5">面试薄弱项统计</h2>
-          <ResponsiveContainer width="100%" height={Math.max(180, data.tagsData.length * 36 + 20)}>
-            <BarChart data={data.tagsData} layout="vertical" margin={{ top: 5, right: 40, left: 80, bottom: 5 }} barSize={22}>
-              <CartesianGrid stroke="rgba(255,255,255,0.05)" horizontal={false} />
-              <XAxis type="number" tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis dataKey="name" type="category" tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} width={72} />
-              <Tooltip
-                content={<CustomChartTooltip />}
-                cursor={{ fill: 'rgba(168, 85, 247, 0.08)' }}
-              />
-              <Bar dataKey="value" radius={[0, 6, 6, 0]}>
-                <Cell fill="#F44336" />
-                {data.tagsData.slice(1).map((_, i) => (
-                  <Cell key={i} fill={`rgba(244,67,54,${Math.max(0.3, 1 - i * 0.08)})`} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
 
       {/* ===== Interview Detail Modal ===== */}
       <InterviewDetailModal

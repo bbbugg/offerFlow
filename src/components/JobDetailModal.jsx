@@ -95,16 +95,14 @@ function LinkifiedText({ text }) {
 }
 
 export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete }) {
-  const { jobs, resumes, addToast, updateJob, addTask, addReview } = useApp()
+  const { jobs, addToast, updateJob, addTask } = useApp()
   const job = jobs.find((j) => j.id === jobId)
 
   // Sub-dialog state
   const [showTaskForm, setShowTaskForm] = useState(false)
-  const [showReviewForm, setShowReviewForm] = useState(false)
   const [showEndForm, setShowEndForm] = useState(false)
 
   const [taskForm, setTaskForm] = useState({ title: '', type: '其他', date: formatLocalDate(), startTime: '', notes: '' })
-  const [reviewForm, setReviewForm] = useState({ interviewDate: formatLocalDate(), round: '一面', interviewType: '技术面', result: '待定', duration: '', interviewerInfo: '', rating: 3, note: '', strengths: '', weaknesses: '' })
   const [endReason, setEndReason] = useState('手动标记')
 
   // ESC close
@@ -118,7 +116,6 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
   useEffect(() => {
     if (open) return
     setShowTaskForm(false)
-    setShowReviewForm(false)
     setShowEndForm(false)
     setEndReason('手动标记')
   }, [open])
@@ -130,7 +127,6 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
 
   if (!open || !job) return null
 
-  const resumeName = resumes.find((r) => r.id === job.resumeId)
   const waitingDays = getElapsedLocalDays(job.appliedDate)
 
   // ---- Status change ----
@@ -172,24 +168,6 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
     setShowTaskForm(false)
   }
 
-  // ---- Create review ----
-  const createReview = async () => {
-    await addReview({
-      companyName: job.companyName, jobTitle: job.jobTitle, jobId,
-      interviewDate: reviewForm.interviewDate, round: reviewForm.round,
-      interviewType: reviewForm.interviewType,
-      duration: reviewForm.duration, interviewerInfo: reviewForm.interviewerInfo,
-      result: reviewForm.result, rating: reviewForm.rating,
-      note: reviewForm.note,
-      strengths: reviewForm.strengths, weaknesses: reviewForm.weaknesses,
-      scores: { expression: 3, jobUnderstanding: 3, projectFamiliarity: 3, businessThinking: 3, technicalAbility: 3, composure: 3, questionQuality: 3, overall: reviewForm.rating },
-      questions: [], tags: [], improvements: [],
-    })
-    addToast('复盘记录已创建', 'success')
-    setReviewForm({ interviewDate: formatLocalDate(), round: '一面', interviewType: '技术面', result: '待定', duration: '', interviewerInfo: '', rating: 3, note: '', strengths: '', weaknesses: '' })
-    setShowReviewForm(false)
-  }
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
@@ -222,7 +200,6 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
               <InfoRow label="优先级" value={job.priority || '-'} />
               <InfoRow label="投递日期" value={job.appliedDate || '-'} />
               <InfoRow label="等待天数" value={waitingDays !== null ? `${waitingDays} 天` : '-'} />
-              <InfoRow label="关联简历" value={resumeName ? `${resumeName.name} (${resumeName.version})` : '-'} />
             </div>
           </section>
 
@@ -342,12 +319,6 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
                 >
                   新建日程
                 </button>
-                <button
-                  onClick={() => setShowReviewForm(true)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100 transition-all"
-                >
-                  新建复盘
-                </button>
               </div>
               {showEndForm && (
                 <div className="mt-3 rounded-xl border border-red-500/15 bg-red-500/5 p-3">
@@ -465,99 +436,6 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
         </div>
       )}
 
-      {/* ===== Review Form Sub-dialog ===== */}
-      {showReviewForm && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50"
-          onMouseDown={(e) => { if (e.target === e.currentTarget) setShowReviewForm(false) }}
-        >
-          <div className="modal-panel w-full max-w-md mx-4 shadow-2xl shadow-black/40 max-h-[85vh]" onClick={(e) => e.stopPropagation()}>
-            <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col overflow-hidden">
-            <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col overflow-hidden max-h-[calc(85vh-24px)]">
-            <ModalHeader title="新建复盘" onClose={() => setShowReviewForm(false)} />
-            <div className="overflow-y-auto p-5 pt-4">
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-offer-muted block mb-1">面试日期</label>
-                  <input type="date" value={reviewForm.interviewDate} onChange={(e) => setReviewForm((p) => ({ ...p, interviewDate: e.target.value }))} className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" autoFocus />
-                </div>
-                <div>
-                  <label className="text-xs text-offer-muted block mb-1">轮次</label>
-                  <select value={reviewForm.round} onChange={(e) => setReviewForm((p) => ({ ...p, round: e.target.value }))} className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
-                    {['一面', '二面', '三面', 'HR 面', '技术面', '主管面'].map((r) => (
-                      <option key={r} className="bg-gray-950">{r}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-offer-muted block mb-1">面试类型</label>
-                  <select value={reviewForm.interviewType} onChange={(e) => setReviewForm((p) => ({ ...p, interviewType: e.target.value }))} className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
-                    {['技术面', 'HR 面', '主管面', '行为面', '笔试', '其他'].map((r) => (
-                      <option key={r} className="bg-gray-950">{r}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-offer-muted block mb-1">面试时长</label>
-                  <input value={reviewForm.duration} onChange={(e) => setReviewForm((p) => ({ ...p, duration: e.target.value }))} placeholder="如：1小时" className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-offer-muted block mb-1">结果</label>
-                  <select value={reviewForm.result} onChange={(e) => setReviewForm((p) => ({ ...p, result: e.target.value }))} className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
-                    {['通过', '待定', '未通过'].map((r) => (
-                      <option key={r} className="bg-gray-950">{r}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-offer-muted block mb-1">整体评分</label>
-                  <div className="flex items-center gap-1 h-9">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <button key={s} type="button" onClick={() => setReviewForm((p) => ({ ...p, rating: s }))}
-                        className="p-0.5 transition-colors hover:scale-110">
-                        <svg className={`w-4 h-4 ${s <= reviewForm.rating ? 'text-amber-400' : 'text-offer-muted/30'}`} fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      </button>
-                    ))}
-                    <span className="text-xs text-offer-muted ml-1">{reviewForm.rating}/5</span>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label className="text-xs text-offer-muted block mb-1">面试官信息</label>
-                <input value={reviewForm.interviewerInfo} onChange={(e) => setReviewForm((p) => ({ ...p, interviewerInfo: e.target.value }))} placeholder="姓名、职位" className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
-              </div>
-              <div>
-                <label className="text-xs text-offer-muted block mb-1">面试记录</label>
-                <textarea value={reviewForm.note} onChange={(e) => setReviewForm((p) => ({ ...p, note: e.target.value }))} rows={3} placeholder="记录面试问题和表现..." className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-offer-muted focus:outline-none focus:border-offer-primary transition-colors resize-none" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-offer-muted block mb-1">优势</label>
-                  <input value={reviewForm.strengths} onChange={(e) => setReviewForm((p) => ({ ...p, strengths: e.target.value }))} placeholder="做得好" className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
-                </div>
-                <div>
-                  <label className="text-xs text-offer-muted block mb-1">不足</label>
-                  <input value={reviewForm.weaknesses} onChange={(e) => setReviewForm((p) => ({ ...p, weaknesses: e.target.value }))} placeholder="需改进" className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3 justify-end mt-4">
-              <button onClick={() => setShowReviewForm(false)} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium">取消</button>
-              <button onClick={createReview} className="btn-gradient px-4 py-2 rounded-xl text-sm font-medium text-white">创建</button>
-            </div>
-          </div>
-          </div>
-        </GlowCard>
-        </div>
-        </div>
-      )}
     </div>
   )
 }

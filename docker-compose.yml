@@ -12,8 +12,6 @@ services:
       REGISTER_ALLOWED_USERNAMES: ${REGISTER_ALLOWED_USERNAMES:-}
     volumes:
       - offerflow-data:/app/data
-      - offerflow-uploads:/app/public/uploads
 
 volumes:
   offerflow-data:
-  offerflow-uploads:

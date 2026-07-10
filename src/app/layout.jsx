@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata = {
   title: 'OfferFlow - 把求职从焦虑，变成可管理的流程',
-  description: '求职全流程管理工具 — 覆盖岗位收集→投递→面试→复盘→决策全链路',
+  description: '求职全流程管理工具 — 覆盖岗位收集、投递、面试与决策',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },

@@ -43,7 +43,7 @@ function getMostRecentJob(jobs) {
 }
 
 export default function Positions() {
-  const { jobs, resumes, addToast, deleteJob } = useApp()
+  const { jobs, addToast, deleteJob } = useApp()
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState(new Set())
@@ -113,13 +113,6 @@ export default function Positions() {
         }),
       }))
   }, [filteredJobs])
-
-  // Resume name lookup
-  const getResumeName = (id) => {
-    if (!id) return '-'
-    const r = resumes.find((r) => r.id === id)
-    return r ? `${r.name}` : '-'
-  }
 
   // Selection helpers
   const allSelected = filteredJobs.length > 0 && selectedIds.size === filteredJobs.length
@@ -373,7 +366,6 @@ export default function Positions() {
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">投递日期</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">等待天数</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">优先级</th>
-                <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">关联简历</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap min-w-[120px]">下一步行动</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap w-20">操作</th>
               </tr>
@@ -432,7 +424,6 @@ export default function Positions() {
                           j.priority === '高' ? 'bg-red-500/[0.15] text-red-700 dark:text-red-300 border-red-500/30' : j.priority === '中' ? 'bg-amber-500/[0.15] text-amber-700 dark:text-amber-300 border-amber-500/30' : 'bg-white/[0.04] text-gray-300 dark:text-white/65 border-white/10'
                         }`}>{j.priority || '-'}</span>
                       </td>
-                      <td className="px-4 py-3 text-gray-300 dark:text-white/65 text-xs whitespace-nowrap">{getResumeName(j.resumeId)}</td>
                       <td className="px-4 py-3 text-gray-300 dark:text-white/65 text-xs max-w-[120px] truncate" title={j.nextAction}>{j.nextAction || '-'}</td>
                       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1">

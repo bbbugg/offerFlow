@@ -18,8 +18,7 @@ export default async function middleware(request) {
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/_next') ||
     pathname === '/favicon.svg' ||
-    pathname.startsWith('/images') ||
-    pathname.startsWith('/api/debug')
+    pathname.startsWith('/images')
   ) {
     return NextResponse.next()
   }

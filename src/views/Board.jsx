@@ -24,7 +24,7 @@ const COLUMNS = [
 ]
 
 export default function Board() {
-  const { jobs, resumes, addToast, updateJob, deleteJob } = useApp()
+  const { jobs, addToast, updateJob, deleteJob } = useApp()
 
   // Drag state
   const [dragOverColumn, setDragOverColumn] = useState(null)
@@ -51,9 +51,6 @@ export default function Board() {
   // Follow-up
   const [followUpJob, setFollowUpJob] = useState(null)
   const [followUpText, setFollowUpText] = useState('')
-
-  const resumeMap = {}
-  resumes.forEach((r) => { resumeMap[r.id] = r })
 
   // ---- Drag handlers ----
   const handleDragStart = (e, jobId) => {
@@ -307,7 +304,6 @@ export default function Board() {
                     <Card
                       key={job.id}
                       job={job}
-                      resumeMap={resumeMap}
                       menuOpen={menuJobId === job.id}
                       onToggleMenu={(e) => { e.stopPropagation(); setMenuJobId(menuJobId === job.id ? null : job.id) }}
                       onCloseMenu={() => setMenuJobId(null)}
@@ -401,9 +397,8 @@ export default function Board() {
 }
 
 /* ---- Card Component (stable, outside Board) ---- */
-function Card({ job, resumeMap, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, onDragEnd, onEditFromMenu, onDelete, onMarkOffer, onMarkEnded, onFollowUp }) {
+function Card({ job, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, onDragEnd, onEditFromMenu, onDelete, onMarkOffer, onMarkEnded, onFollowUp }) {
   const days = getElapsedLocalDays(job.appliedDate)
-  const resumeName = job.resumeId && resumeMap[job.resumeId]
   const actionBtnRef = useRef(null)
 
   const priorityColor = job.priority === '高' ? 'text-red-700 dark:text-red-300 bg-red-500/[0.15] border-red-500/30'
@@ -464,7 +459,6 @@ function Card({ job, resumeMap, menuOpen, onToggleMenu, onCloseMenu, onClick, on
 
       <div className="flex items-center justify-between mt-2 text-[11px] text-offer-muted">
         <span>{days !== null ? `${days} 天` : '-'}</span>
-        {resumeName && <span className="truncate max-w-[80px]" title={resumeName.name}>{resumeName.name}</span>}
       </div>
 
       {job.nextAction && (
