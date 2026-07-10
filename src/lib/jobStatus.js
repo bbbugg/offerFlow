@@ -67,6 +67,14 @@ export function canSelectInterviewStatus(job, targetStatus) {
   const progressIndex = getInterviewProgressIndex(job)
   if (targetIndex < progressIndex) return false
 
+  const targetRoundLabel = STATUS_ROUND_MAP[targetStatus]
+  const rounds = Array.isArray(job?.interviewRounds) ? job.interviewRounds : []
+  const targetRound = rounds.find((round) => round.round === targetRoundLabel)
+
+  if (targetRound && targetRound.status && targetRound.status !== '进行中' && job?.status !== targetStatus) {
+    return false
+  }
+
   return targetIndex <= progressIndex + 1
 }
 
