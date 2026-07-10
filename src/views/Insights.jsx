@@ -326,10 +326,22 @@ export default function Insights() {
         <h2 className="text-lg font-semibold text-white mb-5">投递城市分布</h2>
         {data.cityDistribution.length > 0 ? (
           <ResponsiveContainer width="100%" height={Math.max(200, data.cityDistribution.length * 44 + 20)}>
-            <BarChart data={data.cityDistribution} layout="vertical" margin={{ top: 5, right: 60, left: 60, bottom: 5 }} barSize={28}>
+            <BarChart
+              data={data.cityDistribution}
+              layout="vertical"
+              margin={{ top: 5, right: isMobile ? 15 : 60, left: isMobile ? -15 : 60, bottom: 5 }}
+              barSize={28}
+            >
               <CartesianGrid stroke="rgba(255,255,255,0.05)" horizontal={false} />
               <XAxis type="number" allowDecimals={false} tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis dataKey="city" type="category" tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} width={60} />
+              <YAxis
+                dataKey="city"
+                type="category"
+                tick={{ fill: '#AAAAAA', fontSize: isMobile ? 10 : 11 }}
+                axisLine={false}
+                tickLine={false}
+                width={isMobile ? 50 : 60}
+              />
               <Tooltip
                 content={<CustomChartTooltip />}
                 cursor={{ fill: 'rgba(168, 85, 247, 0.08)' }}
