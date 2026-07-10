@@ -1,13 +1,5 @@
-export const defaultSettings = {
-  name: '张同学',
-  email: 'zhang@example.com',
-  targetPosition: '后端开发工程师',
-  targetCities: '北京 / 上海',
-  salaryExpectation: '30K - 50K',
-  workType: '全职',
-  notifyInterview: true,
-  notifyProgress: true,
-}
+export const defaultSettings = {}
+
 
 const id = () => crypto.randomUUID()
 
