@@ -67,16 +67,6 @@ export function getResumeStats(resumeId, jobs) {
   }
 }
 
-function migrateJobs(jobs) {
-  return jobs.map((j) => {
-    let updated = { ...j }
-    if (updated.status === '面试中') {
-      updated.status = '一面中'
-    }
-    return updated
-  })
-}
-
 // ---- API helper ----
 
 async function apiFetch(url, options = {}) {
@@ -144,12 +134,12 @@ export function AppProvider({ children }) {
         apiFetch('/api/reviews'),
       ])
 
-      setJobsRaw(migrateJobs(j))
+      setJobsRaw(j)
       setResumesRaw(r)
       setTasksRaw(t)
       setReviewsRaw(rv)
 
-      saveToStorage('offerFlow_jobs', migrateJobs(j))
+      saveToStorage('offerFlow_jobs', j)
       saveToStorage('offerFlow_resumes', r)
       saveToStorage('offerFlow_tasks', t)
       saveToStorage('offerFlow_reviews', rv)
@@ -165,7 +155,7 @@ export function AppProvider({ children }) {
         console.error('[AppContext] API load failed, falling back to localStorage', err)
         addToast('数据加载失败，使用本地缓存', 'error')
         const mock = generateMockData()
-        setJobsRaw(migrateJobs(loadFromStorage('offerFlow_jobs', mock.jobs)))
+        setJobsRaw(loadFromStorage('offerFlow_jobs', mock.jobs))
         setResumesRaw(loadFromStorage('offerFlow_resumes', mock.resumes))
         setTasksRaw(loadFromStorage('offerFlow_tasks', mock.tasks))
         setReviewsRaw(loadFromStorage('offerFlow_reviews', mock.reviews))
@@ -210,7 +200,7 @@ export function AppProvider({ children }) {
   }, [])
 
   const reloadJobs = useCallback(async () => {
-    const nextJobs = migrateJobs(await apiFetch('/api/jobs'))
+    const nextJobs = await apiFetch('/api/jobs')
     setJobsRaw(nextJobs)
     saveToStorage('offerFlow_jobs', nextJobs)
     return nextJobs

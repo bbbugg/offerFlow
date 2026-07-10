@@ -1,6 +1,7 @@
 export const ROUND_ORDER = ['一面', '二面', '三面', '终面']
 export const STATUS_ROUND_MAP = { '一面中': '一面', '二面中': '二面', '三面中': '三面', '终面中': '终面' }
 export const INTERVIEW_STATUS_ORDER = ['一面中', '二面中', '三面中', '终面中']
+const CANCELED_END_REASONS = new Set(['岗位关闭', '自己放弃', '流程太慢', '薪资不匹配', '地点不合适'])
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
@@ -20,6 +21,26 @@ function createInterviewRound(round, status) {
 function getRoundStatusIndex(round) {
   const status = Object.entries(STATUS_ROUND_MAP).find(([, label]) => label === round.round)?.[0]
   return INTERVIEW_STATUS_ORDER.indexOf(status)
+}
+
+function sortInterviewRounds(rounds) {
+  return rounds.sort((a, b) => {
+    const ai = ROUND_ORDER.indexOf(a.round)
+    const bi = ROUND_ORDER.indexOf(b.round)
+    if (ai === -1 && bi === -1) return 0
+    if (ai === -1) return 1
+    if (bi === -1) return -1
+    return ai - bi
+  })
+}
+
+function getClosedRoundStatus(job) {
+  return CANCELED_END_REASONS.has(job?.endReason) ? '已取消' : '未通过'
+}
+
+function getNonInterviewRoundStatus(job, targetStatus) {
+  if (targetStatus === '已结束') return getClosedRoundStatus(job)
+  return '已通过'
 }
 
 export function getInterviewProgressIndex(job) {
@@ -48,7 +69,14 @@ export function syncInterviewRoundsForStatus(job, targetStatus = job?.status) {
     ? job.interviewRounds.map((round) => ({ ...round }))
     : []
 
-  if (!targetRound) return rounds
+  if (!targetRound) {
+    rounds.forEach((round) => {
+      if (!round.status || round.status === '进行中') {
+        round.status = getNonInterviewRoundStatus(job, targetStatus)
+      }
+    })
+    return sortInterviewRounds(rounds)
+  }
 
   const targetIndex = ROUND_ORDER.indexOf(targetRound)
   for (let i = 0; i <= targetIndex; i++) {
@@ -65,12 +93,5 @@ export function syncInterviewRoundsForStatus(job, targetStatus = job?.status) {
     }
   }
 
-  return rounds.sort((a, b) => {
-    const ai = ROUND_ORDER.indexOf(a.round)
-    const bi = ROUND_ORDER.indexOf(b.round)
-    if (ai === -1 && bi === -1) return 0
-    if (ai === -1) return 1
-    if (bi === -1) return -1
-    return ai - bi
-  })
+  return sortInterviewRounds(rounds)
 }

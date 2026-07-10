@@ -78,12 +78,13 @@ export async function PUT(request) {
   }
 
   const updateData = { ...data }
-  if (updateData.status) {
+  if (updateData.status || updateData.endReason || updateData.interviewRounds) {
+    const nextStatus = updateData.status ?? existing.status
     updateData.interviewRounds = syncInterviewRoundsForStatus({
       ...existing,
       ...updateData,
       interviewRounds: updateData.interviewRounds ?? existing.interviewRounds,
-    }, updateData.status)
+    }, nextStatus)
   }
 
   const job = await prisma.job.update({
