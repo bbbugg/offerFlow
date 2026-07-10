@@ -24,6 +24,7 @@ export default function Navbar() {
   const { addToast, tasks, jobs, deleteJob } = useApp()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
+  const [showSearchResults, setShowSearchResults] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
@@ -32,9 +33,38 @@ export default function Navbar() {
   const [editingJob, setEditingJob] = useState(null)
   const [jobModalOpen, setJobModalOpen] = useState(false)
   const [deletingJob, setDeletingJob] = useState(null)
+  const searchContainerRef = useRef(null)
   const menuRef = useRef(null)
   const avatarRef = useRef(null)
   const bellRef = useRef(null)
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return []
+    const lowerQuery = searchQuery.toLowerCase()
+    const match = (s) => (s || '').toLowerCase().includes(lowerQuery)
+    return jobs.filter((job) =>
+      match(job.companyName) || match(job.jobTitle) || match(job.city) || match(job.channel)
+    )
+  }, [searchQuery, jobs])
+
+  // Close search results on click outside / Escape
+  useEffect(() => {
+    if (!showSearchResults) return
+    const handleClick = (e) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setShowSearchResults(false)
+      }
+    }
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setShowSearchResults(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleEsc)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleEsc)
+    }
+  }, [showSearchResults])
 
   // Close menu on click outside / Escape
   useEffect(() => {
@@ -87,6 +117,11 @@ export default function Navbar() {
       document.removeEventListener('keydown', handleEsc)
     }
   }, [popoverOpen])
+
+  const handleSelectSearchResult = (jobId) => {
+    setShowSearchResults(false)
+    setDetailJobId(jobId)
+  }
 
   const handleLogout = async () => {
     setMenuOpen(false)
@@ -141,10 +176,10 @@ export default function Navbar() {
       </div>
 
       {/* Center: Search */}
-      <div className="mx-2 w-10 flex-none sm:mx-4 sm:w-auto sm:max-w-md sm:flex-1 md:mx-6">
-        <div className="relative">
+      <div className="mx-2 flex-1 sm:mx-4 sm:max-w-md md:mx-6">
+        <div className="relative" ref={searchContainerRef}>
           <svg
-            className="pointer-events-none absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 text-theme-muted sm:left-4 sm:translate-x-0"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-theme-muted"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -158,11 +193,46 @@ export default function Navbar() {
           </svg>
           <input
             type="text"
-            placeholder="搜索岗位、公司、关键词..."
+            placeholder="搜索公司、岗位、城市、渠道..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="min-h-[40px] w-full rounded-xl border border-theme-border bg-theme-card p-0 text-transparent placeholder:text-transparent outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 sm:py-2.5 sm:!pl-12 sm:pr-4 sm:text-sm sm:text-theme-text sm:placeholder:text-theme-muted"
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              setShowSearchResults(true)
+            }}
+            onFocus={() => setShowSearchResults(true)}
+            className="min-h-[40px] w-full rounded-xl border border-theme-border bg-theme-card py-2 pl-9 pr-3 text-sm text-theme-text placeholder:text-theme-muted outline-none transition-all duration-200 focus:border-offer-primary/70 focus:ring-2 focus:ring-offer-primary/20"
           />
+
+          {/* Search Dropdown */}
+          {showSearchResults && searchQuery.trim() && (
+            <div className="absolute top-full left-0 right-0 mt-2 z-50 animate-fade-in origin-top">
+              <div className="rounded-xl bg-white dark:bg-[#13151A] border border-slate-200 dark:border-white/[0.08] shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] max-h-[300px] overflow-auto">
+                {searchResults.length > 0 ? (
+                  <ul className="py-2 min-w-min">
+                    {searchResults.map(job => (
+                      <li key={job.id}>
+                        <button
+                          onClick={() => handleSelectSearchResult(job.id)}
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors flex flex-col gap-0.5"
+                        >
+                          <span className="text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
+                            {job.companyName}
+                          </span>
+                          <span className="text-xs text-slate-500 dark:text-white/45 whitespace-nowrap">
+                            {job.jobTitle}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="px-4 py-3 text-sm text-slate-500 dark:text-white/45 text-center whitespace-nowrap">
+                    没有找到匹配的岗位
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
