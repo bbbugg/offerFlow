@@ -101,6 +101,14 @@ export default function Insights() {
   const { jobs } = useApp()
   const [timeRange, setTimeRange] = useState('全部')
   const [detailOpen, setDetailOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     if (!detailOpen) return
@@ -245,9 +253,25 @@ export default function Insights() {
         <div className="card-modern min-h-[340px] p-4 md:min-h-[380px] md:p-6">
           <h2 className="text-lg font-semibold text-white mb-5">求职漏斗</h2>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data.funnel} margin={{ top: 5, right: 10, left: -15, bottom: 5 }} barSize={36} maxBarSize={50}>
+            <BarChart
+              data={data.funnel}
+              margin={{ top: 5, right: 10, left: -15, bottom: isMobile ? 25 : 5 }}
+              barSize={36}
+              maxBarSize={50}
+            >
               <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <XAxis
+                dataKey="name"
+                tick={{
+                  fill: '#AAAAAA',
+                  fontSize: isMobile ? 10 : 11,
+                  angle: isMobile ? -30 : 0,
+                  textAnchor: isMobile ? 'end' : 'middle',
+                }}
+                axisLine={false}
+                tickLine={false}
+                interval={0}
+              />
               <YAxis tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip
                 content={<CustomChartTooltip />}
