@@ -98,7 +98,7 @@ const CustomChartTooltip = ({ active, payload, label }) => {
 }
 
 export default function Insights() {
-  const { jobs, tasks } = useApp()
+  const { jobs } = useApp()
   const [timeRange, setTimeRange] = useState('全部')
   const [detailOpen, setDetailOpen] = useState(false)
 
@@ -124,8 +124,7 @@ export default function Insights() {
     const offers = filteredJobs.filter(isOfferJob)
     const ended = filteredJobs.filter((j) => j.status === '已结束')
 
-    // Pending follow-ups from tasks
-    const pendingFollowUps = tasks.filter((t) => !t.done).length
+
 
     // Conversion rates
     const replyRate = appliedCount > 0 ? Math.round((replied.length / appliedCount) * 100) : 0
@@ -196,14 +195,13 @@ export default function Insights() {
       total, appliedCount, activeCount: active.length, repliedCount: replied.length,
       interviewedCount: totalRoundCount, interviewedPeopleCount: interviewed.length,
       offerCount: offers.length, endedCount: ended.length,
-      pendingFollowUps,
       replyRate, interviewRate, offerRate,
       funnel, channels,
       roundCounts, roundPassRates, offerConversionRate,
       interviewedJobs: interviewed,
       cityDistribution,
     }
-  }, [jobs, timeFilter, tasks])
+  }, [jobs, timeFilter])
 
   return (
     <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
@@ -222,14 +220,13 @@ export default function Insights() {
       </div>
 
       {/* ===== Core Metrics ===== */}
-      <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-4 md:gap-5">
+      <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-3 md:gap-5">
         <MetricCard label="总投递数" value={data.appliedCount} sub={`共 ${data.total} 个记录`} />
         <MetricCard label="活跃流程" value={data.activeCount} sub="进行中" />
         <MetricCard label="收到回复" value={data.repliedCount} sub={`${data.replyRate}% 回复率`} />
         <MetricCard label="总面试次数" value={data.interviewedCount} sub={`${data.interviewedPeopleCount} 岗位参与 · ${data.interviewRate}% 面试率`} onClick={() => setDetailOpen(true)} />
         <MetricCard label="总 Offer" value={data.offerCount} sub={`${data.offerRate}% Offer 率`} accent />
         <MetricCard label="已结束" value={data.endedCount} sub="无结果" />
-        <MetricCard label="待跟进" value={data.pendingFollowUps} sub="未完成任务" />
       </div>
 
       {/* ===== Conversion Rates ===== */}
