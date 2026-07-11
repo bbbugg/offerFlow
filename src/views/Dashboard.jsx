@@ -112,7 +112,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-5xl min-w-0 px-0 py-2 md:px-6 md:py-6">
+    <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">仪表盘</h1>
         <p className="text-sm text-gray-400 dark:text-white/45 mt-1">欢迎回来，这是你的求职总览</p>
