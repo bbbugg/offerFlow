@@ -44,10 +44,10 @@ export async function seedDemoDataForUser(userId) {
     { title: '蚂蚁集团三面', type: '面试', date: '2026-05-13', startTime: '14:30', endTime: '15:30', priority: '高', done: false, jobId: createdJobs[11].id, notes: '主管面，准备BQ问题' },
     { title: '快手笔试截止', type: 'Deadline', date: '2026-05-16', startTime: '23:59', endTime: '', priority: '中', done: false, jobId: createdJobs[9].id, notes: '2小时，4道算法' },
     { title: '跟进 ByteDance 二面结果', type: 'Follow-up', date: '2026-05-15', startTime: '', endTime: '', priority: '中', done: false, jobId: createdJobs[0].id, notes: '发感谢信并询问后续' },
-    { title: '复习系统设计', type: '准备任务', date: '2026-05-12', startTime: '20:00', endTime: '22:00', priority: '中', done: false, jobId: '', notes: '分布式系统常见面试题' },
+    { title: '复习系统设计', type: '准备任务', date: '2026-05-12', startTime: '20:00', endTime: '22:00', priority: '中', done: false, jobId: null, notes: '分布式系统常见面试题' },
     { title: 'Meituan Offer 确认截止', type: 'Deadline', date: '2026-05-20', startTime: '23:59', endTime: '', priority: '高', done: false, jobId: createdJobs[3].id, notes: '需要回复确认邮件' },
     { title: '整理 Tencent 面经', type: '其他', date: '2026-05-11', startTime: '17:00', endTime: '18:00', priority: '低', done: true, jobId: createdJobs[2].id, notes: '' },
-    { title: 'LeetCode 每日一题', type: '准备任务', date: '2026-05-12', startTime: '09:00', endTime: '10:00', priority: '低', done: true, jobId: '', notes: '' },
+    { title: 'LeetCode 每日一题', type: '准备任务', date: '2026-05-12', startTime: '09:00', endTime: '10:00', priority: '低', done: true, jobId: null, notes: '' },
     { title: 'Follow-up 京东二面', type: 'Follow-up', date: '2026-05-13', startTime: '', endTime: '', priority: '中', done: false, jobId: createdJobs[13].id, notes: '询问面试结果' },
   ]
   for (const t of taskData) {

@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
 
+function normalizeJobId(jobId) {
+  return jobId?.trim() || null
+}
+
 export async function GET() {
   const user = await getAuthUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -19,6 +23,7 @@ export async function POST(request) {
 
   const body = await request.json()
   const { title, type, date, startTime, endTime, priority, done, jobId, notes } = body
+  const normalizedJobId = normalizeJobId(jobId)
 
   const task = await prisma.task.create({
     data: {
@@ -30,7 +35,7 @@ export async function POST(request) {
       endTime: endTime || '',
       priority: priority || '中',
       done: done || false,
-      jobId: jobId || '',
+      jobId: normalizedJobId,
       notes: notes || '',
     },
   })
@@ -50,6 +55,10 @@ export async function PUT(request) {
   const existing = await prisma.task.findUnique({ where: { id } })
   if (!existing || existing.userId !== user.id) {
     return NextResponse.json({ error: '无权修改此记录' }, { status: 403 })
+  }
+
+  if ('jobId' in data) {
+    data.jobId = normalizeJobId(data.jobId)
   }
 
   const task = await prisma.task.update({

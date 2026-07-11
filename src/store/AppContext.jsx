@@ -68,7 +68,15 @@ async function apiFetch(url, options = {}) {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   })
-  const data = await res.json()
+  const text = await res.text()
+  let data = {}
+  if (text) {
+    try {
+      data = JSON.parse(text)
+    } catch {
+      throw new Error(res.ok ? '服务器返回了无效响应' : text)
+    }
+  }
   if (!res.ok) throw new Error(data.error || '请求失败')
   return data
 }
@@ -215,19 +223,24 @@ export function AppProvider({ children }) {
     try {
       const result = await apiFetch('/api/tasks', { method: 'POST', body: JSON.stringify(formData) })
       const newTask = result.task
+      if (!newTask) throw new Error('事项创建失败：服务器未返回新事项')
       setTasks((prev) => [...prev, newTask])
       return newTask
     } catch (err) {
       addToast(err.message, 'error')
+      return null
     }
   }, [setTasks, addToast])
 
   const updateTask = useCallback(async (id, patch) => {
     try {
-      await apiFetch('/api/tasks', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
+      const result = await apiFetch('/api/tasks', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
+      if (!result.task) throw new Error('事项更新失败：服务器未返回事项')
       setTasks((prev) => prev.map((t) => t.id === id ? { ...t, ...patch } : t))
+      return result.task
     } catch (err) {
       addToast(err.message, 'error')
+      return null
     }
   }, [setTasks, addToast])
 

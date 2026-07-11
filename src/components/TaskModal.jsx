@@ -63,11 +63,14 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
 
   const handleSave = async () => {
     if (!title.trim()) { addToast('请输入事项标题', 'error'); return }
+    const payload = { title: title.trim(), type, date, startTime, endTime, priority, jobId: jobId || null, notes }
     if (task) {
-      await updateTask(task.id, { title: title.trim(), type, date, startTime, endTime, priority, jobId, notes })
+      const savedTask = await updateTask(task.id, payload)
+      if (!savedTask) return
       addToast('事项已更新', 'success')
     } else {
-      await addTask({ title: title.trim(), type, date, startTime, endTime, priority, jobId, notes })
+      const savedTask = await addTask(payload)
+      if (!savedTask) return
       addToast('事项已创建', 'success')
     }
     onClose()
@@ -87,7 +90,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
         <div className="flex-1 min-w-0 space-y-4 overflow-y-auto overflow-x-hidden p-4 pb-6 pt-5 md:p-5 md:pb-7 md:pt-6" onFocus={handleFocusIn}>
           <Field label="标题 *">
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="事项标题"
-              autoFocus
+              autoFocus={!task}
               className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
           </Field>
 
