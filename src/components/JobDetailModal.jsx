@@ -103,6 +103,8 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
 
   const [taskForm, setTaskForm] = useState({ title: '', type: '其他', date: formatBeijingDate(), startTime: '', notes: '' })
   const [endReason, setEndReason] = useState('手动标记')
+  const [isSubmittingTask, setIsSubmittingTask] = useState(false)
+  const [isSubmittingStatus, setIsSubmittingStatus] = useState(false)
 
   // ESC close
   useEffect(() => {
@@ -130,23 +132,30 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
 
   // ---- Status change ----
   const changeStatus = async (newStatus, label) => {
+    if (isSubmittingStatus) return
     const existing = jobs.find((j) => j.id === jobId)
     if (!existing) return
     if (!canSelectJobStatus(existing, newStatus)) {
       addToast('已投递及之后的岗位不能改回感兴趣，面试状态只能按轮次向后推进', 'error')
       return
     }
-    const patch = {
-      status: newStatus,
-      timeline: [...(existing.timeline || []), { date: formatLocalDate(), action: `标记为 ${label}`, detail: `从 ${existing.status} 更新为 ${newStatus}` }],
-      endReason: newStatus === '已结束' ? endReason : '',
+    
+    setIsSubmittingStatus(true)
+    try {
+      const patch = {
+        status: newStatus,
+        timeline: [...(existing.timeline || []), { date: formatLocalDate(), action: `标记为 ${label}`, detail: `从 ${existing.status} 更新为 ${newStatus}` }],
+        endReason: newStatus === '已结束' ? endReason : '',
+      }
+      if (statusImpliesApplied(newStatus) && !existing.appliedDate) {
+        patch.appliedDate = formatBeijingDate()
+      }
+      await updateJob(jobId, patch)
+      addToast(`已标记为「${label}」`, 'success')
+      setShowEndForm(false)
+    } finally {
+      setIsSubmittingStatus(false)
     }
-    if (statusImpliesApplied(newStatus) && !existing.appliedDate) {
-      patch.appliedDate = formatBeijingDate()
-    }
-    await updateJob(jobId, patch)
-    addToast(`已标记为「${label}」`, 'success')
-    setShowEndForm(false)
   }
 
   const openEndForm = () => {
@@ -156,15 +165,22 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
 
   // ---- Create task ----
   const createTask = async () => {
+    if (isSubmittingTask) return
     if (!taskForm.title.trim()) { addToast('请输入日程标题', 'error'); return }
-    await addTask({
-      title: taskForm.title, type: taskForm.type,
-      date: taskForm.date, startTime: taskForm.startTime,
-      jobId, notes: taskForm.notes,
-    })
-    addToast('日程已创建', 'success')
-    setTaskForm({ title: '', type: '其他', date: formatBeijingDate(), startTime: '', notes: '' })
-    setShowTaskForm(false)
+    
+    setIsSubmittingTask(true)
+    try {
+      await addTask({
+        title: taskForm.title, type: taskForm.type,
+        date: taskForm.date, startTime: taskForm.startTime,
+        jobId, notes: taskForm.notes,
+      })
+      addToast('日程已创建', 'success')
+      setTaskForm({ title: '', type: '其他', date: formatBeijingDate(), startTime: '', notes: '' })
+      setShowTaskForm(false)
+    } finally {
+      setIsSubmittingTask(false)
+    }
   }
 
   return (
@@ -303,10 +319,10 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
                     return (
                     <button
                       key={a.status}
-                      disabled={disabled}
+                      disabled={disabled || isSubmittingStatus}
                       onClick={() => a.status === '已结束' ? openEndForm() : changeStatus(a.status, a.label)}
                       title={disabled ? '该状态变更不符合当前流程限制' : undefined}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${disabled ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/35' : a.color}`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${disabled || isSubmittingStatus ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/35' : a.color}`}
                     >
                       {a.label}
                     </button>
@@ -334,9 +350,10 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
                     </select>
                     <button
                       onClick={() => changeStatus('已结束', '已结束')}
-                      className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-400"
+                      disabled={isSubmittingStatus}
+                      className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-400 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      确认结束
+                      {isSubmittingStatus ? '处理中...' : '确认结束'}
                     </button>
                   </div>
                 </div>
@@ -425,8 +442,8 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
               </div>
             </div>
             <div className="flex gap-3 justify-end mt-4">
-              <button onClick={() => setShowTaskForm(false)} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium">取消</button>
-              <button onClick={createTask} className="btn-gradient px-4 py-2 rounded-xl text-sm font-medium text-white">创建</button>
+              <button onClick={() => setShowTaskForm(false)} disabled={isSubmittingTask} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed">取消</button>
+              <button onClick={createTask} disabled={isSubmittingTask} className="btn-gradient px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed">{isSubmittingTask ? '处理中...' : '创建'}</button>
             </div>
           </div>
           </div>

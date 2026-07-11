@@ -1,16 +1,32 @@
 'use client'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import GlowCard from './GlowCard'
 
 export default function ConfirmDialog({ open, title, message, onConfirm, onCancel }) {
   if (!open) return null
 
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (open) setIsSubmitting(false)
+  }, [open])
+
   useEffect(() => {
     if (!open) return
-    const handler = (e) => { if (e.key === 'Escape') onCancel() }
+    const handler = (e) => { if (e.key === 'Escape' && !isSubmitting) onCancel() }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [open, onCancel])
+  }, [open, onCancel, isSubmitting])
+
+  const handleConfirm = async () => {
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      await onConfirm()
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onCancel}>
@@ -22,15 +38,17 @@ export default function ConfirmDialog({ open, title, message, onConfirm, onCance
             <div className="flex gap-3 justify-end">
               <button
                 onClick={onCancel}
-                className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium"
+                disabled={isSubmitting}
+                className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 取消
               </button>
               <button
-                onClick={onConfirm}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-600 hover:bg-red-500 transition-all"
+                onClick={handleConfirm}
+                disabled={isSubmitting}
+                className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-600 hover:bg-red-500 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                确认删除
+                {isSubmitting ? '处理中...' : '确认删除'}
               </button>
             </div>
           </div>

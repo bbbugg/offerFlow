@@ -7,6 +7,7 @@ import { formatBeijingDate } from '../lib/dateUtils'
 
 export default function TaskModal({ open, task, defaultDate, onClose }) {
   const { jobs, addToast, addTask, updateTask } = useApp()
+  const [saving, setSaving] = useState(false)
 
   const [title, setTitle] = useState('')
   const [type, setType] = useState('其他')
@@ -62,18 +63,25 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
   if (!open) return null
 
   const handleSave = async () => {
+    if (saving) return
     if (!title.trim()) { addToast('请输入事项标题', 'error'); return }
     const payload = { title: title.trim(), type, date, startTime, endTime, priority, jobId: jobId || null, notes }
-    if (task) {
-      const savedTask = await updateTask(task.id, payload)
-      if (!savedTask) return
-      addToast('事项已更新', 'success')
-    } else {
-      const savedTask = await addTask(payload)
-      if (!savedTask) return
-      addToast('事项已创建', 'success')
+    
+    setSaving(true)
+    try {
+      if (task) {
+        const savedTask = await updateTask(task.id, payload)
+        if (!savedTask) return
+        addToast('事项已更新', 'success')
+      } else {
+        const savedTask = await addTask(payload)
+        if (!savedTask) return
+        addToast('事项已创建', 'success')
+      }
+      onClose()
+    } finally {
+      setSaving(false)
     }
-    onClose()
   }
 
   const activeJobs = jobs.filter((j) => j.status !== '已结束')
@@ -147,10 +155,10 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
 
         {/* Footer */}
         <div className="flex justify-end gap-3 border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
-          <button onClick={onClose}
-            className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium">取消</button>
-          <button onClick={handleSave}
-            className="btn-gradient px-4 py-2 rounded-xl text-sm font-medium text-white">{task ? '保存' : '创建'}</button>
+          <button onClick={onClose} disabled={saving}
+            className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed">取消</button>
+          <button onClick={handleSave} disabled={saving}
+            className="btn-gradient px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed">{saving ? '处理中...' : (task ? '保存' : '创建')}</button>
         </div>
         </div>
         </GlowCard>
