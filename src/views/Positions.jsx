@@ -443,7 +443,9 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                           {/* 展示层：设置 pointer-events-none 让鼠标事件能穿透到下方的分流层 */}
                           <div className="pointer-events-none relative z-10 px-4 py-5 flex items-center h-full">
                             <div className="flex items-start gap-3">
-                              <div className="mt-1 h-12 w-1 rounded-full bg-purple-400/50 shrink-0 group-hover:bg-purple-300/60 transition-colors" />
+                              <div className={`mt-1 h-12 w-1 rounded-full shrink-0 transition-colors ${
+                                isCompanyHovered ? 'bg-purple-300/60' : 'bg-purple-400/50'
+                              }`} />
                               <div>
                                 <div className="text-[10px] font-semibold text-purple-400/70 uppercase tracking-wider mb-1">公司</div>
                                 <div className="text-base font-bold text-theme-text transition-colors">{company}</div>
