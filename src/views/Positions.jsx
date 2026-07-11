@@ -42,8 +42,11 @@ function getMostRecentJob(jobs) {
   return jobs.reduce((best, job) => (compareJobRecency(job, best) < 0 ? job : best), jobs[0])
 }
 
-export default function Positions() {
-  const { jobs, addToast, deleteJob } = useApp()
+export default function Positions({ jobs: propJobs, isReadOnly = false }) {
+  const appContext = useApp()
+  const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
+  const addToast = isReadOnly ? () => {} : appContext.addToast
+  const deleteJob = isReadOnly ? async () => {} : appContext.deleteJob
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState(new Set())
@@ -117,10 +120,12 @@ export default function Positions() {
   // Selection helpers
   const allSelected = filteredJobs.length > 0 && selectedIds.size === filteredJobs.length
   const toggleAll = () => {
+    if (isReadOnly) return
     if (allSelected) setSelectedIds(new Set())
     else setSelectedIds(new Set(filteredJobs.map((j) => j.id)))
   }
   const toggleOne = (id) => {
+    if (isReadOnly) return
     const next = new Set(selectedIds)
     if (next.has(id)) next.delete(id)
     else next.add(id)
@@ -129,11 +134,13 @@ export default function Positions() {
 
   // CRUD handlers
   const openAdd = () => {
+    if (isReadOnly) return
     setEditingJob(null)
     setModalOpen(true)
   }
 
   const openEdit = (job) => {
+    if (isReadOnly) return
     setEditingJob(job)
     setModalOpen(true)
   }
@@ -143,11 +150,13 @@ export default function Positions() {
   }
 
   const handleEditFromDetail = (job) => {
+    if (isReadOnly) return
     setEditingJob(job)
     setModalOpen(true)
   }
 
   const handleDeleteFromDetail = (job) => {
+    if (isReadOnly) return
     setDeletingJob(job)
     setDeletingId(job.id)
     setConfirmOpen(true)
@@ -159,12 +168,14 @@ export default function Positions() {
   }
 
   const requestDelete = (job) => {
+    if (isReadOnly) return
     setDeletingJob(job)
     setDeletingId(job.id)
     setConfirmOpen(true)
   }
 
   const confirmDelete = async () => {
+    if (isReadOnly) return
     await deleteJob(deletingId)
     setSelectedIds((prev) => { const n = new Set(prev); n.delete(deletingId); return n })
     setConfirmOpen(false)
@@ -175,6 +186,7 @@ export default function Positions() {
   }
 
   const handleBatchDelete = () => {
+    if (isReadOnly) return
     if (selectedIds.size === 0) {
       addToast('请先选择要删除的岗位', 'error')
       return
@@ -184,6 +196,7 @@ export default function Positions() {
   }
 
   const confirmBatchDelete = async () => {
+    if (isReadOnly) return
     await deleteJob(Array.from(selectedIds))
     setSelectedIds(new Set())
     setConfirmOpen(false)
@@ -193,6 +206,7 @@ export default function Positions() {
   }
 
   const handleConfirm = () => {
+    if (isReadOnly) return
     if (deletingId === 'batch') confirmBatchDelete()
     else confirmDelete()
   }
@@ -246,25 +260,29 @@ export default function Positions() {
             />
           </div>
 
-          <div className="grid w-full grid-cols-3 gap-2 md:ml-auto md:flex md:w-auto">
-            <button onClick={openAdd} className="btn-gradient min-w-0 whitespace-nowrap px-2 md:px-4">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              新增岗位
-            </button>
+          <div className="flex w-full gap-2 md:ml-auto md:w-auto">
+            {!isReadOnly && (
+              <>
+                <button onClick={openAdd} className="btn-gradient min-w-0 whitespace-nowrap px-4 py-2.5 text-sm flex-1 md:flex-initial">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  新增岗位
+                </button>
 
-            <button
-              onClick={handleBatchDelete}
-              className={`btn-danger min-w-0 whitespace-nowrap px-2 py-2.5 text-sm md:px-4 ${selectedIds.size > 0 ? '' : 'opacity-50'}`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              删除{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
-            </button>
+                <button
+                  onClick={handleBatchDelete}
+                  className={`btn-danger min-w-0 whitespace-nowrap px-4 py-2.5 text-sm flex-1 md:flex-initial ${selectedIds.size > 0 ? '' : 'opacity-50'}`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  删除{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
+                </button>
+              </>
+            )}
 
-            <button onClick={handleExport} className="btn-secondary min-w-0 whitespace-nowrap px-2 md:px-4">
+            <button onClick={handleExport} className="btn-secondary min-w-0 whitespace-nowrap px-4 py-2.5 text-sm flex-1 md:flex-initial flex items-center justify-center gap-1.5">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -350,14 +368,16 @@ export default function Positions() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/10 bg-white/[0.02]">
-                <th className="w-10 px-4 py-3.5 text-left">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={toggleAll}
-                    className="w-4 h-4 rounded border-white/20 bg-black/40 accent-offer-primary cursor-pointer"
-                  />
-                </th>
+                {!isReadOnly && (
+                  <th className="w-10 px-4 py-3.5 text-left">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleAll}
+                      className="w-4 h-4 rounded border-white/20 bg-black/40 accent-offer-primary cursor-pointer"
+                    />
+                  </th>
+                )}
                 <th className="min-w-[240px] px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">公司</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">岗位</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">状态</th>
@@ -367,7 +387,9 @@ export default function Positions() {
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">等待天数</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">优先级</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap min-w-[120px]">下一步行动</th>
-                <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap w-20">操作</th>
+                {!isReadOnly && (
+                  <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap w-20">操作</th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -380,14 +402,16 @@ export default function Positions() {
                       onClick={() => openDetail(j.id)}
                       className={`${idx === jobs.length - 1 ? 'border-b border-white/[0.08]' : 'border-b border-white/10'} hover:bg-white/[0.04] transition-colors cursor-pointer`}
                     >
-                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(j.id)}
-                          onChange={() => toggleOne(j.id)}
-                          className="w-4 h-4 rounded border-white/20 bg-black/40 accent-offer-primary cursor-pointer"
-                        />
-                      </td>
+                      {!isReadOnly && (
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(j.id)}
+                            onChange={() => toggleOne(j.id)}
+                            className="w-4 h-4 rounded border-white/20 bg-black/40 accent-offer-primary cursor-pointer"
+                          />
+                        </td>
+                      )}
                       {idx === 0 && (
                         <td
                           rowSpan={jobs.length}
@@ -425,28 +449,30 @@ export default function Positions() {
                         }`}>{j.priority || '-'}</span>
                       </td>
                       <td className="px-4 py-3 text-gray-300 dark:text-white/65 text-xs max-w-[120px] truncate" title={j.nextAction}>{j.nextAction || '-'}</td>
-                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => openEdit(j)}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 dark:text-white/45 hover:text-offer-accent hover:bg-white/[0.06] transition-all"
-                            title="编辑"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => requestDelete(j)}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 dark:text-white/45 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                            title="删除"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
+                      {!isReadOnly && (
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => openEdit(j)}
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 dark:text-white/45 hover:text-offer-accent hover:bg-white/[0.06] transition-all"
+                              title="编辑"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => requestDelete(j)}
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 dark:text-white/45 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                              title="删除"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   )
                 })
@@ -457,14 +483,14 @@ export default function Positions() {
 
         {filteredJobs.length === 0 && (
           <div className="py-16 text-center text-gray-500 dark:text-white/45 text-sm">
-            {jobs.length === 0 ? '暂无岗位数据，点击"新增岗位"开始添加' : '没有匹配筛选条件的岗位'}
+            {jobs.length === 0 ? (isReadOnly ? '暂无岗位数据' : '暂无岗位数据，点击"新增岗位"开始添加') : '没有匹配筛选条件的岗位'}
           </div>
         )}
 
         {/* Footer count */}
         <div className="px-5 py-3 border-t border-white/10 text-xs text-gray-500 dark:text-white/45 flex items-center justify-between">
           <span>显示 {filteredJobs.length} / {jobs.length} 条</span>
-          {selectedIds.size > 0 && <span>已选 {selectedIds.size} 条</span>}
+          {!isReadOnly && selectedIds.size > 0 && <span>已选 {selectedIds.size} 条</span>}
         </div>
       </div>
 
@@ -475,15 +501,21 @@ export default function Positions() {
         onClose={() => setDetailJobId(null)}
         onEdit={handleEditFromDetail}
         onDelete={handleDeleteFromDetail}
+        jobs={jobs}
+        isReadOnly={isReadOnly}
       />
-      <JobModal open={modalOpen} job={editingJob} onClose={handleCloseModal} />
-      <ConfirmDialog
-        open={confirmOpen}
-        title="确认删除"
-        message={deletingId === 'batch' ? `确定要删除已选的 ${selectedIds.size} 个岗位吗？此操作不可恢复。` : `确定要删除「${deletingJob?.companyName || ''} - ${deletingJob?.jobTitle || ''}」这条岗位记录吗？此操作不可恢复。`}
-        onConfirm={handleConfirm}
-        onCancel={() => { setConfirmOpen(false); setDeletingId(null); setDeletingJob(null) }}
-      />
+      {!isReadOnly && (
+        <>
+          <JobModal open={modalOpen} job={editingJob} onClose={handleCloseModal} />
+          <ConfirmDialog
+            open={confirmOpen}
+            title="确认删除"
+            message={deletingId === 'batch' ? `确定要删除已选的 ${selectedIds.size} 个岗位吗？此操作不可恢复。` : `确定要删除「${deletingJob?.companyName || ''} - ${deletingJob?.jobTitle || ''}」这条岗位记录吗？此操作不可恢复。`}
+            onConfirm={handleConfirm}
+            onCancel={() => { setConfirmOpen(false); setDeletingId(null); setDeletingJob(null) }}
+          />
+        </>
+      )}
     </div>
   )
 }

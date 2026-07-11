@@ -10,7 +10,6 @@ import { parseLocalDate } from '../lib/dateUtils'
 
 const TIME_RANGES = ['全部', '最近 7 天', '最近 30 天', '最近 90 天']
 
-
 function makeTimeFilter(range) {
   if (range === '全部') return () => true
   const now = new Date()
@@ -97,8 +96,9 @@ const CustomChartTooltip = ({ active, payload, label }) => {
   )
 }
 
-export default function Insights() {
-  const { jobs } = useApp()
+export default function Insights({ jobs: propJobs, isReadOnly = false }) {
+  const appContext = useApp()
+  const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
   const [timeRange, setTimeRange] = useState('全部')
   const [detailOpen, setDetailOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -131,8 +131,6 @@ export default function Insights() {
     const totalRoundCount = filteredJobs.reduce((sum, j) => sum + getInterviewRoundCount(j), 0)
     const offers = filteredJobs.filter(isOfferJob)
     const ended = filteredJobs.filter((j) => j.status === '已结束')
-
-
 
     // Conversion rates
     const replyRate = appliedCount > 0 ? Math.round((replied.length / appliedCount) * 100) : 0

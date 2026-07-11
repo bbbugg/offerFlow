@@ -93,9 +93,13 @@ function LinkifiedText({ text }) {
   return parts
 }
 
-export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete }) {
-  const { jobs, addToast, updateJob, addTask } = useApp()
-  const job = jobs.find((j) => j.id === jobId)
+export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete, jobs: propJobs, isReadOnly = false }) {
+  const appContext = useApp()
+  const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
+  const addToast = isReadOnly ? () => {} : appContext.addToast
+  const updateJob = isReadOnly ? async () => {} : appContext.updateJob
+  const addTask = isReadOnly ? async () => {} : appContext.addTask
+  const job = jobs?.find((j) => j.id === jobId)
 
   // Sub-dialog state
   const [showTaskForm, setShowTaskForm] = useState(false)
@@ -308,7 +312,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
           )}
 
           {/* Quick Status Actions */}
-          {job.status !== '已结束' && (
+          {!isReadOnly && job.status !== '已结束' && (
             <section>
               <h3 className="text-xs font-semibold text-white/45 uppercase tracking-wider mb-3">快捷操作</h3>
               <div className="flex flex-wrap gap-2">
@@ -382,21 +386,34 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
 
         {/* Footer Actions */}
         <div className="flex shrink-0 items-center justify-between border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
-          <button
-            onClick={() => { onClose(); onDelete(job) }}
-            className="btn-danger text-sm flex items-center gap-1.5"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            删除
-          </button>
-          <button
-            onClick={() => { onClose(); onEdit(job) }}
-            className="btn-gradient px-5 py-2 rounded-xl text-sm font-medium text-white"
-          >
-            编辑岗位
-          </button>
+          {isReadOnly ? (
+            <div className="w-full flex justify-end">
+              <button
+                onClick={onClose}
+                className="btn-secondary px-5 py-2 rounded-xl text-sm font-medium"
+              >
+                关闭
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={() => { onClose(); onDelete(job) }}
+                className="btn-danger text-sm flex items-center gap-1.5"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                删除
+              </button>
+              <button
+                onClick={() => { onClose(); onEdit(job) }}
+                className="btn-gradient px-5 py-2 rounded-xl text-sm font-medium text-white"
+              >
+                编辑岗位
+              </button>
+            </>
+          )}
         </div>
         </div>
         </GlowCard>

@@ -125,6 +125,13 @@ export function AppProvider({ children }) {
   }, [user?.id, authLoading])
 
   async function loadAllData() {
+    // 未登录时（如分享页访客）直接跳过，不发请求，避免产生无意义的 401
+    if (!user) {
+      setJobsRaw([])
+      setTasksRaw([])
+      setDataLoading(false)
+      return
+    }
     setDataLoading(true)
     try {
       const [j, t] = await Promise.all([

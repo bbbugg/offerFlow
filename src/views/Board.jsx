@@ -22,8 +22,12 @@ const COLUMNS = [
   { key: '已结束', color: 'border-t-red-500/40', headerColor: 'text-red-400', bgColor: 'bg-red-500/10' },
 ]
 
-export default function Board() {
-  const { jobs, addToast, updateJob, deleteJob } = useApp()
+export default function Board({ jobs: propJobs, isReadOnly = false }) {
+  const appContext = useApp()
+  const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
+  const addToast = isReadOnly ? () => {} : appContext.addToast
+  const updateJob = isReadOnly ? async () => {} : appContext.updateJob
+  const deleteJob = isReadOnly ? async () => {} : appContext.deleteJob
 
   // Drag state
   const [dragOverColumn, setDragOverColumn] = useState(null)
@@ -53,12 +57,14 @@ export default function Board() {
 
   // ---- Drag handlers ----
   const handleDragStart = (e, jobId) => {
+    if (isReadOnly) return
     dragJobId.current = jobId
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', jobId)
   }
 
   const handleDragOver = (e, columnKey) => {
+    if (isReadOnly) return
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
     setDragOverColumn(columnKey)
@@ -69,6 +75,7 @@ export default function Board() {
   }
 
   const handleDrop = async (e, targetStatus) => {
+    if (isReadOnly) return
     e.preventDefault()
     setDragOverColumn(null)
     const jobId = dragJobId.current
@@ -157,6 +164,7 @@ export default function Board() {
 
   // ---- Actions ----
   const openAddForColumn = (status) => {
+    if (isReadOnly) return
     setQuickStatus(status)
     setEditJob(null)
     setJobModalOpen(true)
@@ -168,11 +176,13 @@ export default function Board() {
   }
 
   const handleEditFromDetail = (job) => {
+    if (isReadOnly) return
     setEditJob(job)
     setJobModalOpen(true)
   }
 
   const openEdit = (job, e) => {
+    if (isReadOnly) return
     e.stopPropagation()
     setMenuJobId(null)
     setEditJob(job)
@@ -180,6 +190,7 @@ export default function Board() {
   }
 
   const requestDelete = (job, e) => {
+    if (isReadOnly) return
     if (e) e.stopPropagation()
     setMenuJobId(null)
     setDeleteJobId(job.id)
@@ -187,6 +198,7 @@ export default function Board() {
   }
 
   const confirmDelete = async () => {
+    if (isReadOnly) return
     await deleteJob(deleteJobId)
     setConfirmOpen(false)
     setDeleteJobId(null)
@@ -195,6 +207,7 @@ export default function Board() {
   }
 
   const markAs = async (job, newStatus, label, e) => {
+    if (isReadOnly) return
     if (e) e.stopPropagation()
     setMenuJobId(null)
     const timeline = job.timeline || []
@@ -215,6 +228,7 @@ export default function Board() {
   }
 
   const openFollowUp = (job, e) => {
+    if (isReadOnly) return
     e.stopPropagation()
     setMenuJobId(null)
     setFollowUpJob(job)
@@ -222,6 +236,7 @@ export default function Board() {
   }
 
   const saveFollowUp = async () => {
+    if (isReadOnly) return
     if (!followUpJob) return
     await updateJob(followUpJob.id, { nextAction: followUpText })
     addToast('下一步行动已更新', 'success')
@@ -275,9 +290,9 @@ export default function Board() {
               key={col.key}
               ref={(node) => { columnRefs.current[col.key] = node }}
               className="flex min-h-0 w-full min-w-full max-w-full flex-none snap-start flex-col md:w-auto md:min-w-[240px] md:max-w-[300px] md:flex-1"
-              onDragOver={(e) => handleDragOver(e, col.key)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, col.key)}
+              onDragOver={isReadOnly ? undefined : (e) => handleDragOver(e, col.key)}
+              onDragLeave={isReadOnly ? undefined : handleDragLeave}
+              onDrop={isReadOnly ? undefined : (e) => handleDrop(e, col.key)}
             >
               <div className={`min-h-0 overflow-hidden bg-white/[0.02] rounded-2xl border-t-2 ${col.color} ${isDragOver ? 'border-x border-b border-offer-accent bg-offer-primary/5' : 'border-x border-b border-white/10'} flex flex-col flex-1 transition-colors shadow-sm`}>
                 {/* Column Header */}
@@ -286,15 +301,17 @@ export default function Board() {
                     <span className={`text-sm font-semibold ${col.headerColor}`}>{col.key}</span>
                     <span className="inline-flex min-w-6 h-6 items-center justify-center rounded-full border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-white/80">{colJobs.length}</span>
                   </div>
-                  <button
-                    onClick={() => openAddForColumn(col.key)}
-                    className="w-6 h-6 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all"
-                    title={`新增 ${col.key}`}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  </button>
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => openAddForColumn(col.key)}
+                      className="w-6 h-6 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all"
+                      title={`新增 ${col.key}`}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
 
                 {/* Cards */}
@@ -315,10 +332,13 @@ export default function Board() {
                       onMarkOffer={(e) => markAs(job, 'Offer', 'Offer', e)}
                       onMarkEnded={(e) => markAs(job, '已结束', '已结束', e)}
                       onFollowUp={(e) => openFollowUp(job, e)}
+                      isReadOnly={isReadOnly}
                     />
                   ))}
                   {colJobs.length === 0 && (
-                    <div className="py-8 text-center text-offer-muted text-xs">拖拽或点击 + 添加</div>
+                    <div className="py-8 text-center text-offer-muted text-xs">
+                      {isReadOnly ? '暂无岗位' : '拖拽或点击 + 添加'}
+                    </div>
                   )}
                 </div>
               </div>
@@ -334,27 +354,33 @@ export default function Board() {
         onClose={() => setDetailJobId(null)}
         onEdit={handleEditFromDetail}
         onDelete={(job) => requestDelete(job)}
+        jobs={jobs}
+        isReadOnly={isReadOnly}
       />
 
       {/* Edit/Add Modal */}
-      <JobModal
-        open={jobModalOpen}
-        job={editJob}
-        initialStatus={quickStatus || undefined}
-        onClose={handleJobModalClose}
-      />
+      {!isReadOnly && (
+        <JobModal
+          open={jobModalOpen}
+          job={editJob}
+          initialStatus={quickStatus || undefined}
+          onClose={handleJobModalClose}
+        />
+      )}
 
       {/* Delete Confirm */}
-      <ConfirmDialog
-        open={confirmOpen}
-        title="确认删除"
-        message="确定要删除这个岗位吗？此操作不可恢复。"
-        onConfirm={confirmDelete}
-        onCancel={() => { setConfirmOpen(false); setDeleteJobId(null) }}
-      />
+      {!isReadOnly && (
+        <ConfirmDialog
+          open={confirmOpen}
+          title="确认删除"
+          message="确定要删除这个岗位吗？此操作不可恢复。"
+          onConfirm={confirmDelete}
+          onCancel={() => { setConfirmOpen(false); setDeleteJobId(null) }}
+        />
+      )}
 
       {/* Follow-up Dialog */}
-      {followUpJob && (
+      {!isReadOnly && followUpJob && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
           onMouseDown={(e) => {
@@ -396,7 +422,7 @@ export default function Board() {
 }
 
 /* ---- Card Component (stable, outside Board) ---- */
-function Card({ job, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, onDragEnd, onEditFromMenu, onDelete, onMarkOffer, onMarkEnded, onFollowUp }) {
+function Card({ job, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, onDragEnd, onEditFromMenu, onDelete, onMarkOffer, onMarkEnded, onFollowUp, isReadOnly = false }) {
   const days = getElapsedLocalDays(job.appliedDate)
   const actionBtnRef = useRef(null)
 
@@ -418,32 +444,36 @@ function Card({ job, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, 
 
   return (
     <div
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
+      draggable={!isReadOnly}
+      onDragStart={isReadOnly ? undefined : onDragStart}
+      onDragEnd={isReadOnly ? undefined : onDragEnd}
       onClick={onClick}
-      className={`card-modern p-4 cursor-grab active:cursor-grabbing card-hover relative group border-l-2 ${borderColorMap[job.status] || 'border-l-white/10'}`}
+      className={`card-modern p-4 ${isReadOnly ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'} card-hover relative group border-l-2 ${borderColorMap[job.status] || 'border-l-white/10'}`}
     >
       {/* More menu button */}
-      <button
-        ref={actionBtnRef}
-        onClick={onToggleMenu}
-        className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-lg text-gray-500 opacity-100 transition-all hover:bg-white/10 hover:text-white dark:text-white/45 md:opacity-0 md:group-hover:opacity-100"
-      >
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
-        </svg>
-      </button>
+      {!isReadOnly && (
+        <button
+          ref={actionBtnRef}
+          onClick={onToggleMenu}
+          className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-lg text-gray-500 opacity-100 transition-all hover:bg-white/10 hover:text-white dark:text-white/45 md:opacity-0 md:group-hover:opacity-100"
+        >
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
+          </svg>
+        </button>
+      )}
 
       {/* Portal-based Dropdown Menu — escapes card stacking context */}
-      <ActionMenuPortal open={menuOpen} anchorRef={actionBtnRef} onClose={onCloseMenu} menuWidth={180} menuHeight={190}>
-        <MenuItem icon="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" label="编辑" onClick={onEditFromMenu} />
-        <MenuItem icon="M13 7l5 5m0 0l-5 5m5-5H6" label="设置 Follow-up" onClick={onFollowUp} />
-        <MenuItem icon="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" label="标记为 Offer" onClick={onMarkOffer} />
-        <MenuItem icon="M6 18L18 6M6 6l12 12" label="标记为已结束" onClick={onMarkEnded} />
-        <div className="border-t border-slate-200 dark:border-white/10 my-1" />
-        <MenuItem icon="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" label="删除" onClick={onDelete} danger />
-      </ActionMenuPortal>
+      {!isReadOnly && (
+        <ActionMenuPortal open={menuOpen} anchorRef={actionBtnRef} onClose={onCloseMenu} menuWidth={180} menuHeight={190}>
+          <MenuItem icon="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" label="编辑" onClick={onEditFromMenu} />
+          <MenuItem icon="M13 7l5 5m0 0l-5 5m5-5H6" label="设置 Follow-up" onClick={onFollowUp} />
+          <MenuItem icon="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" label="标记为 Offer" onClick={onMarkOffer} />
+          <MenuItem icon="M6 18L18 6M6 6l12 12" label="标记为已结束" onClick={onMarkEnded} />
+          <div className="border-t border-slate-200 dark:border-white/10 my-1" />
+          <MenuItem icon="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" label="删除" onClick={onDelete} danger />
+        </ActionMenuPortal>
+      )}
 
       {/* Card Content */}
       <p className="text-sm font-semibold text-white truncate pr-5">{job.companyName}</p>

@@ -34,8 +34,13 @@ function getWeekStart(date) {
   return start
 }
 
-export default function Dashboard() {
-  const { jobs, tasks, addToast, deleteJob } = useApp()
+export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly = false }) {
+  const appContext = useApp()
+  const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
+  const tasks = isReadOnly ? (propTasks || []) : appContext.tasks
+  const addToast = isReadOnly ? () => {} : appContext.addToast
+  const deleteJob = isReadOnly ? async () => {} : appContext.deleteJob
+
   const [detailJobId, setDetailJobId] = useState(null)
   const [editingJob, setEditingJob] = useState(null)
   const [jobModalOpen, setJobModalOpen] = useState(false)
@@ -54,9 +59,6 @@ export default function Dashboard() {
     const appliedDate = parseLocalDate(j.appliedDate)
     return appliedDate && appliedDate >= weekStart && appliedDate < nextWeekStart
   })
-  const passRate = jobs.length > 0
-    ? Math.round((jobs.filter((j) => j.status !== '已结束').length / jobs.length) * 100) + '%'
-    : '0%'
 
   const stats = [
     { label: '进行中投递', value: activeJobs.length, color: 'from-offer-primary to-offer-accent' },
@@ -84,21 +86,24 @@ export default function Dashboard() {
     .slice(0, 4)
 
   const openTask = (task) => {
+    if (isReadOnly) return
     setEditingTask(task)
     setTaskModalOpen(true)
   }
 
   const handleEditFromDetail = (job) => {
+    if (isReadOnly) return
     setEditingJob(job)
     setJobModalOpen(true)
   }
 
   const handleDeleteFromDetail = (job) => {
+    if (isReadOnly) return
     setDeletingJob(job)
   }
 
   const confirmDeleteJob = async () => {
-    if (!deletingJob) return
+    if (isReadOnly) return
     await deleteJob(deletingJob.id)
     setDetailJobId(null)
     setDeletingJob(null)
@@ -109,7 +114,7 @@ export default function Dashboard() {
     <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">仪表盘</h1>
-        <p className="text-sm text-gray-400 dark:text-white/45 mt-1">欢迎回来，这是你的求职总览</p>
+        <p className="text-sm text-gray-400 dark:text-white/45 mt-1">欢迎回来，这是求职总览</p>
       </div>
 
       {/* Stats Grid */}
@@ -165,13 +170,20 @@ export default function Dashboard() {
                     t.type === '面试' ? 'bg-green-500' : t.type === 'OA / 笔试' || t.type === 'Deadline' ? 'bg-amber-500' : t.type === 'Follow-up' ? 'bg-teal-500' : 'bg-blue-500'
                   }`} />
                   <div className="flex-1 min-w-0">
-                    <button
-                      onClick={() => openTask(t)}
-                      className="block w-full min-w-0 cursor-pointer text-left"
-                    >
-                      <p className="truncate text-sm text-white transition-colors hover:text-offer-accent">{t.title}</p>
-                      <p className="mt-0.5 text-xs text-gray-500 transition-colors hover:text-offer-accent dark:text-white/45">{t.date} {t.startTime || ''}</p>
-                    </button>
+                    {isReadOnly ? (
+                      <div className="block w-full min-w-0 text-left">
+                        <p className="truncate text-sm text-white">{t.title}</p>
+                        <p className="mt-0.5 text-xs text-gray-500 dark:text-white/45">{t.date} {t.startTime || ''}</p>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => openTask(t)}
+                        className="block w-full min-w-0 cursor-pointer text-left"
+                      >
+                        <p className="truncate text-sm text-white transition-colors hover:text-offer-accent">{t.title}</p>
+                        <p className="mt-0.5 text-xs text-gray-500 transition-colors hover:text-offer-accent dark:text-white/45">{t.date} {t.startTime || ''}</p>
+                      </button>
+                    )}
                     {job && (
                       <button
                         onClick={() => setDetailJobId(job.id)}
@@ -201,16 +213,22 @@ export default function Dashboard() {
         onClose={() => setDetailJobId(null)}
         onEdit={handleEditFromDetail}
         onDelete={handleDeleteFromDetail}
+        jobs={jobs}
+        isReadOnly={isReadOnly}
       />
-      <JobModal open={jobModalOpen} job={editingJob} onClose={() => { setJobModalOpen(false); setEditingJob(null) }} />
-      <TaskModal open={taskModalOpen} task={editingTask} onClose={() => { setTaskModalOpen(false); setEditingTask(null) }} />
-      <ConfirmDialog
-        open={!!deletingJob}
-        title="确认删除"
-        message={`确定要删除「${deletingJob?.companyName || ''} - ${deletingJob?.jobTitle || ''}」这条岗位记录吗？此操作不可恢复。`}
-        onConfirm={confirmDeleteJob}
-        onCancel={() => setDeletingJob(null)}
-      />
+      {!isReadOnly && (
+        <>
+          <JobModal open={jobModalOpen} job={editingJob} onClose={() => { setJobModalOpen(false); setEditingJob(null) }} />
+          <TaskModal open={taskModalOpen} task={editingTask} onClose={() => { setTaskModalOpen(false); setEditingTask(null) }} />
+          <ConfirmDialog
+            open={!!deletingJob}
+            title="确认删除"
+            message={`确定要删除「${deletingJob?.companyName || ''} - ${deletingJob?.jobTitle || ''}」这条岗位记录吗？此操作不可恢复。`}
+            onConfirm={confirmDeleteJob}
+            onCancel={() => setDeletingJob(null)}
+          />
+        </>
+      )}
     </div>
   )
 }

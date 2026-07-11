@@ -16,6 +16,8 @@ export default async function middleware(request) {
   if (
     pathname.startsWith('/auth') ||
     pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/share') ||
+    pathname.startsWith('/api/share/board') ||
     pathname.startsWith('/_next') ||
     pathname === '/favicon.svg' ||
     pathname.startsWith('/images')

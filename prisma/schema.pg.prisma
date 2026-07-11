@@ -13,6 +13,7 @@ model User {
   id           String   @id @default(cuid())
   username     String   @unique
   passwordHash String   @map("password_hash")
+  shareToken   String?  @unique @map("share_token")
   createdAt    DateTime @default(now()) @map("created_at")
 
   jobs  Job[]
