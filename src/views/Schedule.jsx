@@ -73,6 +73,13 @@ export default function Schedule() {
     return tasks.filter((t) => t.type === activeFilter)
   }, [tasks, activeFilter, today])
 
+  // Overdue incomplete tasks
+  const overdueTasks = useMemo(() => {
+    return filtered
+      .filter((t) => t.date < today && !t.done)
+      .sort((a, b) => a.date.localeCompare(b.date) || (a.startTime || '').localeCompare(b.startTime || ''))
+  }, [filtered, today])
+
   // Today incomplete tasks
   const todayTasks = useMemo(() => {
     return filtered
@@ -197,7 +204,7 @@ export default function Schedule() {
 
           <div className="flex w-full items-center gap-2 md:ml-auto md:w-auto">
             <button onClick={() => handleDateClick(today)}
-              className="btn-gradient h-10 w-full rounded-lg px-4 text-sm font-medium text-white md:h-9 md:w-auto">
+              className="btn-gradient h-10 w-full rounded-lg px-4 text-sm font-medium text-white md:h-9 md:w-auto flex items-center justify-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
@@ -209,6 +216,23 @@ export default function Schedule() {
 
       {viewMode === 'list' ? (
         <div className="space-y-4">
+          {/* Overdue */}
+          {overdueTasks.length > 0 && (
+            <div className="card-modern p-4 md:p-5 border-red-500/20 dark:border-red-500/10 bg-red-500/[0.02] dark:bg-red-500/[0.01]">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-red-400 flex items-center gap-1.5">
+                  <svg className="w-4 h-4 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  已逾期
+                </h2>
+                <span className="text-sm text-red-400/80">{overdueTasks.length} 项</span>
+              </div>
+              <TaskCards tasks={overdueTasks} jobMap={jobMap} onToggle={toggleDone} onEdit={handleEdit}
+                onDelete={(id) => { setDeletingId(id); setConfirmOpen(true) }} />
+            </div>
+          )}
+
           {/* Today */}
           <div className="card-modern p-4 md:p-5">
             <div className="flex items-center justify-between mb-4">
@@ -250,33 +274,19 @@ export default function Schedule() {
                 <h2 className="text-base font-semibold text-white">已完成</h2>
                 <span className="text-sm text-gray-500 dark:text-white/45">{doneCount} 项</span>
               </div>
-              <div className="space-y-1.5">
-                {filtered.filter((t) => t.done).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30).map((t) => {
-                  const job = t.jobId ? jobMap[t.jobId] : null
-                  return (
-                    <div key={t.id}
-                      className="flex items-center gap-3 p-4 rounded-xl border border-white/[0.04] bg-white/[0.02] group hover:bg-white/[0.04] transition-colors">
-                      <button onClick={() => toggleDone(t.id)}
-                        className="w-4 h-4 rounded-full border-2 border-offer-primary bg-offer-primary flex items-center justify-center shrink-0 hover:opacity-80 transition-opacity cursor-pointer">
-                        <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </button>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-offer-muted line-through truncate">{t.title}</p>
-                        <p className="text-xs text-offer-muted/50">{t.date}{t.startTime ? ` ${t.startTime}` : ''}{job ? ` · ${job.companyName}` : ''}</p>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+              <TaskCards
+                tasks={filtered.filter((t) => t.done).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30)}
+                jobMap={jobMap}
+                onToggle={toggleDone}
+                onEdit={handleEdit}
+                onDelete={(id) => { setDeletingId(id); setConfirmOpen(true) }}
+              />
             </div>
           )}
         </div>
       ) : (
         /* Month View */
         <div className="card-modern min-w-0 overflow-hidden p-3 md:p-5">
-          {/* Navigation */}
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => navigateMonth(-1)}
               className="w-8 h-8 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all">
@@ -367,7 +377,14 @@ function TaskCards({ tasks, jobMap, compact, onToggle, onEdit, onDelete }) {
                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${TYPE_STYLE[t.type] || 'bg-gray-500/10 text-gray-400 dark:text-white/45 border-gray-500/20'}`}>{t.type}</span>
                 {t.startTime && <span className="text-xs text-offer-muted">{t.startTime}{t.endTime ? `-${t.endTime}` : ''}</span>}
                 {!compact && <span className={`text-[10px] ${PRIORITY_CLASS[t.priority] || 'text-offer-muted'}`}>{t.priority}</span>}
-                {job && <span className="text-[10px] text-offer-accent/70 truncate max-w-[130px]">{job.companyName}</span>}
+                {job && (
+                  <span
+                    className="text-[10px] text-offer-accent/70"
+                    title={`${job.companyName} - ${job.jobTitle}`}
+                  >
+                    {job.companyName} - {job.jobTitle}
+                  </span>
+                )}
               </div>
             </div>
 

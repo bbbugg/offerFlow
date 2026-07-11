@@ -4,10 +4,12 @@ import { useApp } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 import { formatBeijingDate } from '../lib/dateUtils'
+import ConfirmDialog from './ConfirmDialog'
 
 export default function TaskModal({ open, task, defaultDate, onClose }) {
-  const { jobs, addToast, addTask, updateTask } = useApp()
+  const { jobs, addToast, addTask, updateTask, deleteTask } = useApp()
   const [saving, setSaving] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const [title, setTitle] = useState('')
   const [type, setType] = useState('其他')
@@ -39,6 +41,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
       setJobId('')
       setNotes('')
     }
+    setConfirmOpen(false)
   }, [open, task, defaultDate])
 
   // ESC close
@@ -84,7 +87,43 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
     }
   }
 
-  const activeJobs = jobs.filter((j) => j.status !== '已结束')
+  const handleToggleDone = async () => {
+    if (saving || !task) return
+    setSaving(true)
+    try {
+      const newDone = !task.done
+      const savedTask = await updateTask(task.id, { done: newDone })
+      if (!savedTask) return
+      addToast(newDone ? '事项已完成' : '已取消完成', 'success')
+      onClose()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteClick = () => {
+    if (saving || !task) return
+    setConfirmOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (saving || !task) return
+    setSaving(true)
+    try {
+      await deleteTask(task.id)
+      addToast('事项已删除', 'success')
+      setConfirmOpen(false)
+      onClose()
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const sortedJobs = [...jobs].sort((a, b) => {
+    if (a.status === '已结束' && b.status !== '已结束') return 1
+    if (a.status !== '已结束' && b.status === '已结束') return -1
+    return 0
+  })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onClose}>
@@ -141,8 +180,10 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
             <select value={jobId} onChange={(e) => setJobId(e.target.value)}
               className="min-h-[40px] w-full min-w-0 max-w-full truncate rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
               <option value="" className="bg-gray-950">不关联</option>
-              {activeJobs.map((j) => (
-                <option key={j.id} value={j.id} className="bg-gray-950">{j.companyName} - {j.jobTitle}</option>
+              {sortedJobs.map((j) => (
+                <option key={j.id} value={j.id} className="bg-gray-950">
+                  {j.companyName} - {j.jobTitle}{j.status === '已结束' ? ' (已结束)' : ''}
+                </option>
               ))}
             </select>
           </Field>
@@ -154,7 +195,29 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
+        <div className="flex justify-end items-center gap-3 border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
+          {task && (
+            <div className="flex items-center gap-2 mr-auto">
+              <button
+                onClick={handleToggleDone}
+                disabled={saving}
+                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+                  task.done
+                    ? 'border-amber-500/30 text-amber-500 hover:bg-amber-500/10 bg-amber-500/[0.02]'
+                    : 'border-green-500/30 text-green-500 hover:bg-green-500/10 bg-green-500/[0.02]'
+                }`}
+              >
+                {task.done ? '设为未完成' : '标记完成'}
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                disabled={saving}
+                className="px-4 py-2 rounded-xl text-sm font-medium border border-red-500/30 text-red-500 hover:bg-red-500/10 bg-red-500/[0.02] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                删除
+              </button>
+            </div>
+          )}
           <button onClick={onClose} disabled={saving}
             className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed">取消</button>
           <button onClick={handleSave} disabled={saving}
@@ -163,6 +226,8 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
         </div>
         </GlowCard>
       </div>
+      <ConfirmDialog open={confirmOpen} title="确认删除" message="确定要删除这个事项吗？此操作不可恢复。"
+        onConfirm={handleDeleteConfirm} onCancel={() => setConfirmOpen(false)} />
     </div>
   )
 }
