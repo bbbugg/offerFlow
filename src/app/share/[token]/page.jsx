@@ -1,12 +1,14 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
+import { useEffect, useState, use, useRef, useMemo } from 'react'
+import Link from 'next/link'
 import { useTheme } from '@/store/ThemeContext'
 import Dashboard from '@/views/Dashboard'
 import Board from '@/views/Board'
 import Positions from '@/views/Positions'
 import Schedule from '@/views/Schedule'
 import Insights from '@/views/Insights'
+import JobDetailModal from '@/components/JobDetailModal'
 
 const menuItems = [
   { key: 'dashboard', label: '仪表盘', icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm12 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
@@ -28,6 +30,45 @@ export default function SharePage({ params: paramsPromise }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [username, setUsername] = useState('')
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showSearchResults, setShowSearchResults] = useState(false)
+  const [detailJobId, setDetailJobId] = useState(null)
+
+  const searchContainerRef = useRef(null)
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return []
+    const lowerQuery = searchQuery.toLowerCase()
+    const match = (s) => (s || '').toLowerCase().includes(lowerQuery)
+    return jobs.filter((job) =>
+      match(job.companyName) || match(job.jobTitle) || match(job.city) || match(job.channel)
+    )
+  }, [searchQuery, jobs])
+
+  // Close search results on click outside / Escape
+  useEffect(() => {
+    if (!showSearchResults) return
+    const handleClick = (e) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setShowSearchResults(false)
+      }
+    }
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setShowSearchResults(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleEsc)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleEsc)
+    }
+  }, [showSearchResults])
+
+  const handleSelectSearchResult = (jobId) => {
+    setShowSearchResults(false)
+    setDetailJobId(jobId)
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -54,10 +95,10 @@ export default function SharePage({ params: paramsPromise }) {
 
   if (loading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#0D0E12] text-white">
+      <div className={`flex h-screen w-screen items-center justify-center transition-colors duration-500 ${isDark ? 'bg-[#0D0E12] text-white' : 'bg-slate-50 text-slate-900'}`}>
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-400 border-t-transparent" />
-          <p className="text-sm text-offer-muted">正在加载公开空间...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
+          <p className={`text-sm ${isDark ? 'text-offer-muted' : 'text-slate-500'}`}>正在加载公开空间...</p>
         </div>
       </div>
     )
@@ -65,15 +106,15 @@ export default function SharePage({ params: paramsPromise }) {
 
   if (error) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#0D0E12] text-white p-4">
-        <div className="card-modern max-w-md w-full p-8 text-center flex flex-col items-center">
-          <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 mb-4">
+      <div className={`flex h-screen w-screen items-center justify-center p-4 transition-colors duration-500 ${isDark ? 'bg-[#0D0E12] text-white' : 'bg-slate-50 text-slate-900'}`}>
+        <div className={`card-modern max-w-md w-full p-8 text-center flex flex-col items-center border transition-all duration-500 ${isDark ? 'border-white/10 bg-[#16171d]' : 'border-slate-200 bg-white shadow-lg shadow-slate-100'}`}>
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDark ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-100 text-red-600'}`}>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-white font-semibold text-lg mb-2">无法查看面板</h2>
-          <p className="text-offer-muted text-sm mb-6">{error}</p>
+          <h2 className={`font-semibold text-lg mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>无法查看面板</h2>
+          <p className={`text-sm mb-6 ${isDark ? 'text-offer-muted' : 'text-slate-500'}`}>{error}</p>
         </div>
       </div>
     )
@@ -104,15 +145,77 @@ export default function SharePage({ params: paramsPromise }) {
       <div className="app-glow-br" />
 
       {/* Share Topbar Navbar */}
-      <header className="h-16 shrink-0 border-b border-theme-border bg-offer-card px-4 md:px-6 flex items-center justify-between relative z-10">
-        <div className="flex shrink-0 items-center gap-2 md:gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-offer-primary to-offer-accent flex items-center justify-center text-white font-bold text-sm">
+      <header className="h-16 shrink-0 border-b border-theme-border bg-offer-card px-4 md:px-6 flex items-center justify-between relative z-20">
+        <Link href="/" className="flex shrink-0 items-center gap-2 hover:opacity-90 transition-opacity">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-offer-primary to-offer-accent flex items-center justify-center text-white font-bold text-sm shrink-0">
             O
           </div>
-          <span className="text-lg font-bold tracking-tight text-theme-text inline-flex items-center gap-2">
+          <span className="hidden text-lg font-bold tracking-tight text-theme-text md:inline-flex items-center gap-2">
             OfferFlow
             <span className="text-[10px] text-purple-400 border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 rounded-full font-medium">只读分享</span>
           </span>
+          <span className="text-[10px] text-purple-400 border border-purple-500/20 bg-purple-500/10 px-2 py-0.5 rounded-full font-medium md:hidden">只读</span>
+        </Link>
+
+        {/* 中间：搜索栏 */}
+        <div className="mx-2 flex-1 sm:mx-4 sm:max-w-md md:mx-6">
+          <div className="relative" ref={searchContainerRef}>
+            <svg
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-theme-muted"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="搜索公司、岗位、城市、渠道..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setShowSearchResults(true)
+              }}
+              onFocus={() => setShowSearchResults(true)}
+              className="min-h-[40px] w-full rounded-xl border border-theme-border bg-theme-card py-2 pl-9 pr-3 text-sm text-theme-text placeholder:text-theme-muted outline-none transition-all duration-200 focus:border-offer-primary/70 focus:ring-2 focus:ring-offer-primary/20"
+            />
+
+            {/* 搜索下拉框 */}
+            {showSearchResults && searchQuery.trim() && (
+              <div className="absolute top-full left-0 right-0 mt-2 z-50 animate-fade-in origin-top">
+                <div className="rounded-xl bg-white dark:bg-[#13151A] border border-slate-200 dark:border-white/[0.08] shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] max-h-[300px] overflow-auto">
+                  {searchResults.length > 0 ? (
+                    <ul className="py-2 min-w-min">
+                      {searchResults.map(job => (
+                        <li key={job.id}>
+                          <button
+                            onClick={() => handleSelectSearchResult(job.id)}
+                            className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors flex flex-col gap-0.5"
+                          >
+                            <span className="text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
+                              {job.companyName}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-white/45 whitespace-nowrap">
+                              {job.jobTitle}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="px-4 py-3 text-sm text-slate-500 dark:text-white/45 text-center whitespace-nowrap">
+                      没有找到匹配的岗位
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
@@ -213,6 +316,15 @@ export default function SharePage({ params: paramsPromise }) {
           })}
         </div>
       </nav>
+
+      {/* 用于搜索结果展示的岗位详情模态框 */}
+      <JobDetailModal
+        open={!!detailJobId}
+        jobId={detailJobId}
+        onClose={() => setDetailJobId(null)}
+        jobs={jobs}
+        isReadOnly={true}
+      />
     </div>
   )
 }
