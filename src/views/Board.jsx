@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef } from 'react'
-import { useApp, canSelectInterviewStatus } from '../store/AppContext'
+import { useApp, canSelectJobStatus } from '../store/AppContext'
 import JobModal from '../components/JobModal'
 import JobDetailModal from '../components/JobDetailModal'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -75,8 +75,8 @@ export default function Board() {
     if (!jobId) return
     const job = jobs.find((j) => j.id === jobId)
     if (!job || job.status === targetStatus) return
-    if (!canSelectInterviewStatus(job, targetStatus)) {
-      addToast('面试状态只能按轮次向后推进', 'error')
+    if (!canSelectJobStatus(job, targetStatus)) {
+      addToast('已投递及之后的岗位不能改回感兴趣，面试状态只能按轮次向后推进', 'error')
       dragJobId.current = null
       return
     }

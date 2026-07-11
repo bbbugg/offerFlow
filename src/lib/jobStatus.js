@@ -79,6 +79,11 @@ export function canSelectInterviewStatus(job, targetStatus) {
   return targetIndex <= progressIndex + 1
 }
 
+export function canSelectJobStatus(job, targetStatus) {
+  if (statusImpliesApplied(job?.status) && targetStatus === '感兴趣') return false
+  return canSelectInterviewStatus(job, targetStatus)
+}
+
 export function syncInterviewRoundsForStatus(job, targetStatus = job?.status) {
   const targetRound = STATUS_ROUND_MAP[targetStatus]
   const rounds = Array.isArray(job?.interviewRounds)

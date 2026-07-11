@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 import { generateMockData, defaultSettings } from './mockData'
 import Toast from '../components/Toast'
 import { useAuth } from './AuthContext'
-import { APPLIED_STATUSES, canSelectInterviewStatus } from '../lib/jobStatus'
+import { APPLIED_STATUSES, canSelectInterviewStatus, canSelectJobStatus } from '../lib/jobStatus'
 
 const AppContext = createContext(null)
 
@@ -55,7 +55,7 @@ export function getInterviewRoundCount(job) {
   return getInterviewRounds(job).length
 }
 
-export { canSelectInterviewStatus }
+export { canSelectInterviewStatus, canSelectJobStatus }
 
 export function isOfferJob(job) {
   return job.status === 'Offer'

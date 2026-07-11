@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useApp, canSelectInterviewStatus } from '../store/AppContext'
+import { useApp, canSelectJobStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 import { formatBeijingDate, formatLocalDate } from '../lib/dateUtils'
@@ -77,7 +77,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
     if (open) {
       const base = job ? { ...emptyForm, ...job } : { ...emptyForm }
       if (!job && initialStatus) {
-        base.status = canSelectInterviewStatus(base, initialStatus) ? initialStatus : '一面中'
+        base.status = canSelectJobStatus(base, initialStatus) ? initialStatus : '一面中'
       }
       setForm(base)
       setSaving(false)
@@ -91,8 +91,8 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
 
   const handleStatusChange = useCallback((value) => {
     const statusBasis = job || emptyForm
-    if (!canSelectInterviewStatus(statusBasis, value)) {
-      addToast('面试状态只能按轮次向后推进', 'error')
+    if (!canSelectJobStatus(statusBasis, value)) {
+      addToast('已投递及之后的岗位不能改回感兴趣，面试状态只能按轮次向后推进', 'error')
       return
     }
     setForm((prev) => ({
@@ -121,8 +121,8 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
       addToast('请选择结束原因', 'error')
       return
     }
-    if (!canSelectInterviewStatus(job || emptyForm, form.status)) {
-      addToast('面试状态只能按轮次向后推进', 'error')
+    if (!canSelectJobStatus(job || emptyForm, form.status)) {
+      addToast('已投递及之后的岗位不能改回感兴趣，面试状态只能按轮次向后推进', 'error')
       return
     }
 
@@ -179,7 +179,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
   const statusBasis = job || emptyForm
   const statusOptions = JOB_STATUSES.map((status) => ({
     value: status,
-    disabled: !canSelectInterviewStatus(statusBasis, status),
+    disabled: !canSelectJobStatus(statusBasis, status),
   }))
 
   return (

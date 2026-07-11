@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
-import { canSelectInterviewStatus, statusImpliesApplied, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
+import { canSelectJobStatus, statusImpliesApplied, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
 import { formatBeijingDate } from '@/lib/dateUtils'
 
 function getBeijingDateString() {
@@ -70,8 +70,8 @@ export async function PUT(request) {
     return NextResponse.json({ error: '无权修改此记录' }, { status: 403 })
   }
 
-  if (data.status && !canSelectInterviewStatus(existing, data.status)) {
-    return NextResponse.json({ error: '面试状态只能按轮次向后推进，不能退回前面的面试轮次' }, { status: 400 })
+  if (data.status && !canSelectJobStatus(existing, data.status)) {
+    return NextResponse.json({ error: '已投递及之后的岗位不能改回感兴趣，面试状态只能按轮次向后推进' }, { status: 400 })
   }
 
   const updateData = { ...data }

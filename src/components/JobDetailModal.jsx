@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useApp, canSelectInterviewStatus } from '../store/AppContext'
+import { useApp, canSelectJobStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 import { formatBeijingDate, formatLocalDate, getElapsedLocalDays } from '../lib/dateUtils'
@@ -132,8 +132,8 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
   const changeStatus = async (newStatus, label) => {
     const existing = jobs.find((j) => j.id === jobId)
     if (!existing) return
-    if (!canSelectInterviewStatus(existing, newStatus)) {
-      addToast('面试状态只能按轮次向后推进', 'error')
+    if (!canSelectJobStatus(existing, newStatus)) {
+      addToast('已投递及之后的岗位不能改回感兴趣，面试状态只能按轮次向后推进', 'error')
       return
     }
     const patch = {
@@ -299,13 +299,13 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
                 {STATUS_ACTIONS
                   .filter((a) => a.status !== job.status)
                   .map((a) => {
-                    const disabled = !canSelectInterviewStatus(job, a.status)
+                    const disabled = !canSelectJobStatus(job, a.status)
                     return (
                     <button
                       key={a.status}
                       disabled={disabled}
                       onClick={() => a.status === '已结束' ? openEndForm() : changeStatus(a.status, a.label)}
-                      title={disabled ? '面试状态只能按轮次向后推进' : undefined}
+                      title={disabled ? '该状态变更不符合当前流程限制' : undefined}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${disabled ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/35' : a.color}`}
                     >
                       {a.label}
