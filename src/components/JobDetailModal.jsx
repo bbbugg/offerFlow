@@ -101,7 +101,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
   const [showTaskForm, setShowTaskForm] = useState(false)
   const [showEndForm, setShowEndForm] = useState(false)
 
-  const [taskForm, setTaskForm] = useState({ title: '', type: '其他', date: formatLocalDate(), startTime: '', notes: '' })
+  const [taskForm, setTaskForm] = useState({ title: '', type: '其他', date: formatBeijingDate(), startTime: '', notes: '' })
   const [endReason, setEndReason] = useState('手动标记')
 
   // ESC close
@@ -163,7 +163,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete 
       jobId, notes: taskForm.notes,
     })
     addToast('日程已创建', 'success')
-    setTaskForm({ title: '', type: '其他', date: formatLocalDate(), startTime: '', notes: '' })
+    setTaskForm({ title: '', type: '其他', date: formatBeijingDate(), startTime: '', notes: '' })
     setShowTaskForm(false)
   }
 

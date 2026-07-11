@@ -5,6 +5,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import JobDetailModal from '../components/JobDetailModal'
 import JobModal from '../components/JobModal'
 import TaskModal from '../components/TaskModal'
+import { formatBeijingDate } from '../lib/dateUtils'
 
 function parseLocalDate(value) {
   if (!value) return null
@@ -31,13 +32,6 @@ function getWeekStart(date) {
   const day = start.getDay()
   start.setDate(start.getDate() + (day === 0 ? -6 : 1 - day))
   return start
-}
-
-function formatLocalDate(date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
 }
 
 export default function Dashboard() {
@@ -78,7 +72,7 @@ export default function Dashboard() {
     .slice(0, 6)
 
   // Upcoming tasks
-  const today = formatLocalDate(new Date())
+  const today = formatBeijingDate()
   const todayStart = parseLocalDate(today)
   const upcomingTasks = tasks
     .filter((t) => {

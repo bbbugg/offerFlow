@@ -1,5 +1,6 @@
 'use client'
 import { useMemo } from 'react'
+import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
 
 const TYPE_BG = {
   '面试': 'bg-blue-50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30',
@@ -15,13 +16,6 @@ function formatShort(dateStr) {
   return `${d.getMonth() + 1}/${d.getDate()}`
 }
 
-function formatLocalDate(date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
 export default function TaskPopover({ open, tasks, jobs, onTaskClick, onJobClick }) {
   const jobMap = useMemo(() => {
     const map = {}
@@ -30,11 +24,10 @@ export default function TaskPopover({ open, tasks, jobs, onTaskClick, onJobClick
   }, [jobs])
 
   const dayList = useMemo(() => {
+    const today = formatBeijingDate()
     const days = []
     for (let i = 0; i <= 3; i++) {
-      const d = new Date()
-      d.setDate(d.getDate() + i)
-      const dateStr = formatLocalDate(d)
+      const dateStr = addDaysToDateString(today, i)
       const label = i === 0 ? '今天' : i === 1 ? '明天' : i === 2 ? '后天' : '3 天后'
       days.push({ dateStr, label })
     }

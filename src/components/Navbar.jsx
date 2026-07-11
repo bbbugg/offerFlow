@@ -9,13 +9,7 @@ import JobDetailModal from './JobDetailModal'
 import JobModal from './JobModal'
 import TaskPopover from './TaskPopover'
 import TaskModal from './TaskModal'
-
-function formatLocalDate(date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
+import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme()
@@ -89,10 +83,8 @@ export default function Navbar() {
   }, [menuOpen])
 
   const hasUpcomingTasks = useMemo(() => {
-    const today = formatLocalDate(new Date())
-    const end = new Date()
-    end.setDate(end.getDate() + 3)
-    const endStr = formatLocalDate(end)
+    const today = formatBeijingDate()
+    const endStr = addDaysToDateString(today, 3)
     return tasks.some((t) => !t.done && t.date >= today && t.date <= endStr)
   }, [tasks])
 

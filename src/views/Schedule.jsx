@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react'
 import { useApp } from '../store/AppContext'
 import TaskModal from '../components/TaskModal'
 import ConfirmDialog from '../components/ConfirmDialog'
-import { formatLocalDate, parseLocalDate } from '../lib/dateUtils'
+import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
 
 const TYPE_STYLE = {
   '面试': 'bg-blue-50 text-blue-700 dark:text-blue-400 border-blue-200',
@@ -30,22 +30,12 @@ const PRIORITY_CLASS = {
 }
 
 function todayStr() {
-  return formatLocalDate()
+  return formatBeijingDate()
 }
 
-function isSameLocalDate(dateStr1, dateStr2) {
-  try {
-    const a = parseLocalDate(dateStr1)
-    const b = dateStr2 instanceof Date ? dateStr2 : parseLocalDate(dateStr2)
-    return (
-      a && b &&
-      a.getFullYear() === b.getFullYear() &&
-      a.getMonth() === b.getMonth() &&
-      a.getDate() === b.getDate()
-    )
-  } catch {
-    return false
-  }
+function getYearMonth(dateStr) {
+  const [year, month] = dateStr.split('-').map(Number)
+  return { year, month: month - 1 }
 }
 
 function formatWeekday(dateStr) {
@@ -59,10 +49,7 @@ export default function Schedule() {
 
   const [viewMode, setViewMode] = useState('list')
   const [activeFilter, setActiveFilter] = useState('全部')
-  const [currentMonth, setCurrentMonth] = useState(() => {
-    const d = new Date()
-    return { year: d.getFullYear(), month: d.getMonth() }
-  })
+  const [currentMonth, setCurrentMonth] = useState(() => getYearMonth(formatBeijingDate()))
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
   const [defaultDate, setDefaultDate] = useState('')
@@ -81,11 +68,10 @@ export default function Schedule() {
   const filtered = useMemo(() => {
     if (activeFilter === '全部') return tasks
     if (activeFilter === '今天') {
-      const now = new Date()
-      return tasks.filter((t) => t.date && isSameLocalDate(t.date, now))
+      return tasks.filter((t) => t.date === today)
     }
     return tasks.filter((t) => t.type === activeFilter)
-  }, [tasks, activeFilter])
+  }, [tasks, activeFilter, today])
 
   // Today incomplete tasks
   const todayTasks = useMemo(() => {
@@ -98,16 +84,14 @@ export default function Schedule() {
   const next7Days = useMemo(() => {
     const days = []
     for (let i = 1; i <= 7; i++) {
-      const d = new Date()
-      d.setDate(d.getDate() + i)
-      const dateStr = formatLocalDate(d)
+      const dateStr = addDaysToDateString(today, i)
       const dayTasks = filtered
         .filter((t) => t.date === dateStr && !t.done)
         .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
       days.push({ date: dateStr, tasks: dayTasks })
     }
     return days
-  }, [filtered])
+  }, [filtered, today])
 
   // Month calendar data
   const monthData = useMemo(() => {
@@ -146,8 +130,7 @@ export default function Schedule() {
   }
 
   const goToday = () => {
-    const d = new Date()
-    setCurrentMonth({ year: d.getFullYear(), month: d.getMonth() })
+    setCurrentMonth(getYearMonth(formatBeijingDate()))
     setViewMode('list')
   }
 

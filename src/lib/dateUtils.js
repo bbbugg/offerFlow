@@ -20,6 +20,17 @@ export function formatBeijingDate(date = new Date()) {
   return `${values.year}-${values.month}-${values.day}`
 }
 
+export function addDaysToDateString(value, days) {
+  const match = String(value || '').trim().match(DATE_ONLY_RE)
+  if (!match) return ''
+
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + days))
+  const year = date.getUTCFullYear()
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(date.getUTCDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export function parseLocalDate(value) {
   const text = String(value || '').trim()
   if (!text) return null

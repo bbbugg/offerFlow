@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
-import { formatLocalDate } from '../lib/dateUtils'
+import { formatBeijingDate } from '../lib/dateUtils'
 
 export default function TaskModal({ open, task, defaultDate, onClose }) {
   const { jobs, addToast, addTask, updateTask } = useApp()
@@ -31,7 +31,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
     } else {
       setTitle('')
       setType('其他')
-      setDate(defaultDate || formatLocalDate())
+      setDate(defaultDate || formatBeijingDate())
       setStartTime('')
       setEndTime('')
       setPriority('中')
