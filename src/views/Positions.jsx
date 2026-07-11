@@ -5,13 +5,13 @@ import JobModal from '../components/JobModal'
 import JobDetailModal from '../components/JobDetailModal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { formatLocalDate, getElapsedLocalDays, parseLocalDate } from '../lib/dateUtils'
+import { JOB_STATUSES } from '../lib/jobStatus'
 
-const STATUS_OPTIONS = ['全部', '感兴趣', '准备投递', '已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
+const STATUS_OPTIONS = ['全部', ...JOB_STATUSES]
 const PRIORITY_OPTIONS = ['全部', '高', '中', '低']
 
 const statusColors = {
   '感兴趣': 'bg-blue-500/[0.15] text-blue-700 dark:text-blue-300 border-blue-500/30',
-  '准备投递': 'bg-amber-500/[0.15] text-amber-700 dark:text-amber-300 border-amber-500/30',
   '已投递': 'bg-cyan-500/[0.15] text-cyan-700 dark:text-cyan-300 border-cyan-500/30',
   'OA / 笔试': 'bg-orange-500/[0.15] text-orange-700 dark:text-orange-300 border-orange-500/30',
   '一面中': 'bg-offer-primary/[0.15] text-offer-accent border-offer-primary/30',

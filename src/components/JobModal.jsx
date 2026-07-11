@@ -4,9 +4,8 @@ import { useApp, canSelectInterviewStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 import { formatBeijingDate, formatLocalDate } from '../lib/dateUtils'
-import { statusImpliesApplied } from '../lib/jobStatus'
+import { JOB_STATUSES, statusImpliesApplied } from '../lib/jobStatus'
 
-const STATUS_OPTIONS = ['感兴趣', '准备投递', '已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
 const WORK_MODE_OPTIONS = ['onsite', 'remote', 'hybrid']
 const CHANNEL_OPTIONS = ['', '内推', '官网投递', '猎头', '招聘平台', '校园招聘', '其他']
 const PRIORITY_OPTIONS = ['高', '中', '低']
@@ -178,7 +177,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
   if (!open) return null
 
   const statusBasis = job || emptyForm
-  const statusOptions = STATUS_OPTIONS.map((status) => ({
+  const statusOptions = JOB_STATUSES.map((status) => ({
     value: status,
     disabled: !canSelectInterviewStatus(statusBasis, status),
   }))

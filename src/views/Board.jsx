@@ -12,7 +12,6 @@ import { statusImpliesApplied } from '../lib/jobStatus'
 
 const COLUMNS = [
   { key: '感兴趣', color: 'border-t-blue-500/40', headerColor: 'text-blue-400', bgColor: 'bg-blue-500/10' },
-  { key: '准备投递', color: 'border-t-amber-500/40', headerColor: 'text-amber-400', bgColor: 'bg-amber-500/10' },
   { key: '已投递', color: 'border-t-cyan-500/40', headerColor: 'text-cyan-400', bgColor: 'bg-cyan-500/10' },
   { key: 'OA / 笔试', color: 'border-t-orange-500/40', headerColor: 'text-orange-400', bgColor: 'bg-orange-500/10' },
   { key: '一面中', color: 'border-t-offer-primary/40', headerColor: 'text-offer-accent', bgColor: 'bg-offer-primary/10' },
@@ -407,7 +406,6 @@ function Card({ job, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, 
 
   const borderColorMap = {
     '感兴趣': 'border-l-blue-500/60',
-    '准备投递': 'border-l-amber-500/60',
     '已投递': 'border-l-cyan-500/60',
     'OA / 笔试': 'border-l-orange-500/60',
     '一面中': 'border-l-offer-primary/60',

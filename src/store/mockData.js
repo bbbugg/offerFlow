@@ -80,7 +80,7 @@ export function generateMockData() {
       timeline: [],
     },
     {
-      id: id(), companyName: 'Baidu', jobTitle: 'AI平台后端开发', status: '准备投递',
+      id: id(), companyName: 'Baidu', jobTitle: 'AI平台后端开发', status: '感兴趣',
       city: '北京', salaryRange: '30K-48K', workMode: ' onsite', channel: '',
       priority: '高', appliedDate: '', jobLink: 'https://example.com/baidu', jdText: '负责AI平台后端服务开发...',
       contactName: '', contactInfo: '',
@@ -96,7 +96,7 @@ export function generateMockData() {
       timeline: [],
     },
     {
-      id: id(), companyName: 'Bilibili', jobTitle: 'Go 后端开发', status: '准备投递',
+      id: id(), companyName: 'Bilibili', jobTitle: 'Go 后端开发', status: '感兴趣',
       city: '上海', salaryRange: '28K-42K', workMode: ' onsite', channel: '内推',
       priority: '中', appliedDate: '', jobLink: '', jdText: '',
       contactName: '陈学姐', contactInfo: 'B站内部',
