@@ -62,6 +62,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingJob, setEditingJob] = useState(null)
   const [detailJobId, setDetailJobId] = useState(null)
+  const [hoveredRowId, setHoveredRowId] = useState(null)
 
   // Confirm dialog state
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -396,11 +397,16 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
               {groupedJobs.map(({ company, jobs }) =>
                 jobs.map((j, idx) => {
                   const days = getElapsedLocalDays(j.appliedDate)
+                  const isCompanyHovered = jobs.some((job) => job.id === hoveredRowId)
                   return (
                     <tr
                       key={j.id}
                       onClick={() => openDetail(j.id)}
-                      className={`${idx === jobs.length - 1 ? 'border-b border-white/[0.08]' : 'border-b border-white/10'} hover:bg-white/[0.04] transition-colors cursor-pointer`}
+                      onMouseEnter={() => setHoveredRowId(j.id)}
+                      onMouseLeave={() => setHoveredRowId(null)}
+                      className={`${idx === jobs.length - 1 ? 'border-b border-white/[0.08]' : 'border-b border-white/10'} ${
+                        hoveredRowId === j.id ? 'bg-[#F9FAFC] dark:bg-[#222327]' : 'bg-transparent'
+                      } transition-colors duration-150 cursor-pointer group`}
                     >
                       {!isReadOnly && (
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
@@ -415,15 +421,35 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                       {idx === 0 && (
                         <td
                           rowSpan={jobs.length}
-                          className="align-top border-r border-white/[0.08] bg-white/[0.02] px-4 py-5"
+                          className={`align-middle border-r border-white/[0.08] ${
+                            isCompanyHovered ? 'bg-[#F2F5F9] dark:bg-[#222327]' : 'bg-white/[0.02]'
+                          } p-0 relative transition-colors duration-150`}
                         >
-                          <div className="flex items-start gap-3 group">
-                            <div className="mt-1 h-12 w-1 rounded-full bg-purple-400/50 shrink-0 group-hover:bg-purple-300/60 transition-colors" />
-                            <div>
-                              <div className="text-[10px] font-semibold text-purple-400/70 uppercase tracking-wider mb-1">公司</div>
-                              <div className="text-base font-bold text-theme-text transition-colors">{company}</div>
-                              <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-2.5 py-0.5 text-xs text-purple-300 font-medium">
-                                {jobs.length} 个岗位
+                          {/* 点击与悬浮分流层：将单元格垂直等分 */}
+                          <div className="absolute inset-0 flex flex-col z-0">
+                            {jobs.map((job) => (
+                              <div
+                                key={job.id}
+                                className="flex-1 cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  openDetail(job.id)
+                                }}
+                                onMouseEnter={() => setHoveredRowId(job.id)}
+                                onMouseLeave={() => setHoveredRowId(null)}
+                              />
+                            ))}
+                          </div>
+                          {/* 展示层：设置 pointer-events-none 让鼠标事件能穿透到下方的分流层 */}
+                          <div className="pointer-events-none relative z-10 px-4 py-5 flex items-center h-full">
+                            <div className="flex items-start gap-3">
+                              <div className="mt-1 h-12 w-1 rounded-full bg-purple-400/50 shrink-0 group-hover:bg-purple-300/60 transition-colors" />
+                              <div>
+                                <div className="text-[10px] font-semibold text-purple-400/70 uppercase tracking-wider mb-1">公司</div>
+                                <div className="text-base font-bold text-theme-text transition-colors">{company}</div>
+                                <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-2.5 py-0.5 text-xs text-purple-300 font-medium">
+                                  {jobs.length} 个岗位
+                                </div>
                               </div>
                             </div>
                           </div>
