@@ -333,7 +333,7 @@ export default function Insights() {
               barSize={28}
             >
               <CartesianGrid stroke="rgba(255,255,255,0.05)" horizontal={false} />
-              <XAxis type="number" allowDecimals={false} tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <XAxis type="number" domain={[0, 'dataMax']} allowDecimals={false} tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis
                 dataKey="city"
                 type="category"
