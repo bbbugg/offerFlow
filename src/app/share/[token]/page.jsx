@@ -247,7 +247,7 @@ export default function SharePage({ params: paramsPromise }) {
       </header>
 
       {/* Main body: Sidebar + Content */}
-      <div className="flex flex-1 overflow-hidden relative z-10">
+      <div className="flex flex-1 overflow-hidden relative">
         {/* Share Sidebar */}
         <aside className="hidden lg:flex self-start my-4 ml-4 h-[calc(100vh-5.5rem)] w-[300px] rounded-[28px] py-6 px-5 bg-white/80 backdrop-blur-xl border border-slate-200/70 shadow-sm dark:bg-offer-card dark:border-white/[0.06] overflow-visible flex-col shrink-0">
           <nav className="relative z-10 ml-4 flex flex-col gap-2.5 flex-1 pt-3">
