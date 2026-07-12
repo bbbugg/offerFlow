@@ -49,7 +49,7 @@ export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly
   const [deletingJob, setDeletingJob] = useState(null)
 
   const activeJobs = jobs.filter((j) => !['已结束', 'Offer'].includes(j.status))
-  const interviewJobs = jobs.filter((j) => (j.interviewRounds || []).length > 0 || ['一面中', '二面中', '三面中', '终面中'].includes(j.status))
+  const interviewJobs = jobs.filter((j) => ['一面中', '二面中', '三面中', '终面中'].includes(j.status))
   const offerJobs = jobs.filter((j) => j.status === 'Offer')
   const weekStart = getWeekStart(new Date())
   const nextWeekStart = new Date(weekStart)
