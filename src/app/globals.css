@@ -282,12 +282,11 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
 /* ===== Dark mode animated gradient border for modal panels ===== */
 .dark .modal-panel {
   position: relative;
-  background: linear-gradient(90deg, #352A54, #DAC066, #352A54);
+  background: linear-gradient(90deg, #FDC761, #A78BFA, #22D3EE, #FDC761);
   background-size: 200% 100%;
-  padding: 2px;
+  padding: 12px;
   border: none;
   animation: border-flow 3s linear infinite, modal-enter 0.2s ease-out;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
   overflow: hidden;
   border-radius: 28px;
 }
@@ -295,9 +294,9 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
 .dark .modal-panel::before {
   content: '';
   position: absolute;
-  inset: 2px;
+  inset: 12px;
   background: rgba(20, 20, 25, 0.95);
-  border-radius: 26px;
+  border-radius: 22px;
   z-index: 0;
   pointer-events: none;
 }
@@ -309,13 +308,13 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
 
 /* Danger variant */
 .dark .modal-panel.danger {
-  background: linear-gradient(90deg, #352A54, #FF5050, #352A54);
+  background: linear-gradient(90deg, #FF5050, #FDC761, #A78BFA, #FF5050);
   background-size: 200% 100%;
 }
 
 /* Success variant */
 .dark .modal-panel.success {
-  background: linear-gradient(90deg, #352A54, #50FF78, #352A54);
+  background: linear-gradient(90deg, #50FF78, #22D3EE, #A78BFA, #50FF78);
   background-size: 200% 100%;
 }
 
@@ -327,7 +326,7 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
 @media (prefers-reduced-motion: reduce) {
   .dark .modal-panel {
     animation: modal-enter 0.2s ease-out;
-    background: linear-gradient(90deg, #352A54, #DAC066);
+    background: linear-gradient(90deg, #FDC761, #A78BFA, #22D3EE);
   }
 }
 
@@ -423,6 +422,7 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
   background-color: transparent !important;
   color: var(--c-text);
   border-color: rgba(255,255,255,0.08);
+  color-scheme: dark;
 }
 
 /* ===== Light mode label text inside modals — force slate-600 minimum ===== */
@@ -508,6 +508,7 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
 .dark .modal-panel option {
   background-color: var(--c-bg-card);
   color: var(--c-text);
+  color-scheme: dark;
 }
 
 /* General bg-gray-950 inside modal panels */
@@ -520,7 +521,8 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
 }
 
 .dark .modal-panel option:checked {
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(126, 87, 194, 0.1));
+  background-color: #4338ca;
+  color: #ffffff !important;
 }
 
 /* ===== Modal overlay backdrop ===== */

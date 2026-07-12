@@ -1,15 +1,7 @@
 'use client'
 import { useMemo } from 'react'
 import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
-
-const TYPE_BG = {
-  '面试': 'bg-blue-50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30',
-  'OA / 笔试': 'bg-cyan-50 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-500/30',
-  'Deadline': 'bg-red-50 text-red-700 dark:text-red-400 border-red-200 dark:border-red-500/30',
-  'Follow-up': 'bg-green-50 text-green-700 dark:text-green-400 border-green-200 dark:border-green-500/30',
-  '准备任务': 'bg-purple-50 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/30',
-  '其他': 'bg-gray-100 text-gray-700 dark:text-white/45 border-gray-200 dark:border-white/10',
-}
+import { NEUTRAL_BADGE, TASK_TYPE_BADGE } from '../lib/badgeStyles'
 
 function formatShort(dateStr) {
   const d = new Date(dateStr + 'T00:00:00')
@@ -115,7 +107,7 @@ export default function TaskPopover({ open, tasks, jobs, onTaskClick, onJobClick
                                   {t.startTime}{t.endTime ? `-${t.endTime}` : ''}
                                 </span>
                               )}
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${TYPE_BG[t.type] || 'bg-gray-100 dark:bg-white/10 text-offer-muted border-gray-200 dark:border-white/10'}`}>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${TASK_TYPE_BADGE[t.type] || NEUTRAL_BADGE}`}>
                                 {t.type}
                               </span>
                               {job && (

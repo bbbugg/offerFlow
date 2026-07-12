@@ -3,33 +3,23 @@ import { useState, useEffect } from 'react'
 import { useApp, canSelectJobStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
+import CustomSelect from './CustomSelect'
 import { formatBeijingDate, formatLocalDate, getElapsedLocalDays } from '../lib/dateUtils'
 import { statusImpliesApplied } from '../lib/jobStatus'
+import { JOB_STATUS_ACTION_BADGE, JOB_STATUS_BADGE, NEUTRAL_BADGE, ROUND_STATUS_BADGE } from '../lib/badgeStyles'
 
 const STATUS_ACTIONS = [
-  { status: '已投递', label: '已投递', color: 'border-cyan-200 text-cyan-700 dark:text-cyan-300 bg-cyan-50 hover:bg-cyan-100' },
-  { status: 'OA / 笔试', label: '收到 OA', color: 'border-orange-200 text-orange-700 dark:text-orange-300 bg-orange-50 hover:bg-orange-100' },
-  { status: '一面中', label: '一面中', color: 'border-offer-primary/30 text-offer-accent bg-offer-primary/10 hover:bg-offer-primary/20' },
-  { status: '二面中', label: '二面中', color: 'border-indigo-200 text-indigo-700 dark:text-indigo-300 bg-indigo-50 hover:bg-indigo-100' },
-  { status: '三面中', label: '三面中', color: 'border-violet-200 text-violet-700 dark:text-violet-300 bg-violet-50 hover:bg-violet-100' },
-  { status: '终面中', label: '终面中', color: 'border-pink-200 text-pink-700 dark:text-pink-300 bg-pink-50 hover:bg-pink-100' },
-  { status: 'Offer', label: '收到 Offer', color: 'border-emerald-200 text-emerald-700 dark:text-emerald-300 bg-emerald-50 hover:bg-emerald-100' },
-  { status: '已结束', label: '已结束', color: 'border-red-200 text-red-700 dark:text-red-300 bg-red-50 hover:bg-red-100' },
+  { status: '已投递', label: '已投递', color: JOB_STATUS_ACTION_BADGE['已投递'] },
+  { status: 'OA / 笔试', label: '收到 OA', color: JOB_STATUS_ACTION_BADGE['OA / 笔试'] },
+  { status: '一面中', label: '一面中', color: JOB_STATUS_ACTION_BADGE['一面中'] },
+  { status: '二面中', label: '二面中', color: JOB_STATUS_ACTION_BADGE['二面中'] },
+  { status: '三面中', label: '三面中', color: JOB_STATUS_ACTION_BADGE['三面中'] },
+  { status: '终面中', label: '终面中', color: JOB_STATUS_ACTION_BADGE['终面中'] },
+  { status: 'Offer', label: '收到 Offer', color: JOB_STATUS_ACTION_BADGE['Offer'] },
+  { status: '已结束', label: '已结束', color: JOB_STATUS_ACTION_BADGE['已结束'] },
 ]
 
 const END_REASON_OPTIONS = ['被拒绝', '岗位关闭', '自己放弃', '流程太慢', '薪资不匹配', '地点不合适', '手动标记', '其他']
-
-const statusColors = {
-  '感兴趣': 'bg-blue-50 text-blue-700 dark:text-blue-300 border-blue-200',
-  '已投递': 'bg-cyan-50 text-cyan-700 dark:text-cyan-300 border-cyan-200',
-  'OA / 笔试': 'bg-orange-50 text-orange-700 dark:text-orange-300 border-orange-200',
-  '一面中': 'bg-offer-primary/10 text-offer-accent border-offer-primary/30',
-  '二面中': 'bg-indigo-50 text-indigo-700 dark:text-indigo-300 border-indigo-200',
-  '三面中': 'bg-violet-50 text-violet-700 dark:text-violet-300 border-violet-200',
-  '终面中': 'bg-pink-50 text-pink-700 dark:text-pink-300 border-pink-200',
-  'Offer': 'bg-emerald-50 text-emerald-700 dark:text-emerald-300 border-emerald-200',
-  '已结束': 'bg-red-50 text-red-700 dark:text-red-300 border-red-200',
-}
 
 const URL_REGEX = /(?:https?:\/\/|www\.)[^\s<>"']+/gi
 
@@ -200,7 +190,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
           <div className="flex w-full min-w-0 flex-col items-center">
             <div className="relative w-full min-w-0">
               <h2 className="w-full break-words px-[4.5rem] text-center text-base font-semibold leading-normal text-slate-950 [overflow-wrap:anywhere] dark:text-white">{job.companyName}</h2>
-              <span className={`absolute right-0 top-0 inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-xs font-medium ${statusColors[job.status] || 'bg-slate-50 text-slate-700 dark:text-slate-300 border-slate-200'}`}>{job.status}</span>
+              <span className={`absolute right-0 top-0 inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-xs font-medium ${JOB_STATUS_BADGE[job.status] || NEUTRAL_BADGE}`}>{job.status}</span>
             </div>
             <p className="w-full break-words text-center text-sm font-medium leading-normal text-slate-600 [overflow-wrap:anywhere] dark:text-slate-300">{job.jobTitle}</p>
           </div>
@@ -293,12 +283,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-white font-medium">{r.round}</span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                          r.status === '已通过' ? 'bg-emerald-50 text-emerald-700 dark:text-emerald-300' :
-                          r.status === '未通过' ? 'bg-red-50 text-red-700 dark:text-red-300' :
-                          r.status === '已取消' ? 'bg-white/80 text-slate-500' :
-                          'bg-amber-50 text-amber-700 dark:text-amber-300'
-                        }`}>{r.status}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${ROUND_STATUS_BADGE[r.status] || ROUND_STATUS_BADGE['进行中']}`}>{r.status}</span>
                       </div>
                       {r.result && <p className="text-xs text-white/45 mt-0.5">{r.result}</p>}
                     </div>
@@ -334,7 +319,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
                   })}
                 <button
                   onClick={() => setShowTaskForm(true)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-all"
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-all dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-300 dark:hover:bg-blue-400/15"
                 >
                   新建日程
                 </button>
@@ -343,15 +328,12 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
                 <div className="mt-3 rounded-xl border border-red-500/15 bg-red-500/5 p-3">
                   <label className="mb-1 block text-xs text-white/45">结束原因</label>
                   <div className="flex flex-col gap-2 sm:flex-row">
-                    <select
+                    <CustomSelect
                       value={endReason}
-                      onChange={(e) => setEndReason(e.target.value)}
-                      className="min-h-[40px] flex-1 appearance-none rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 pr-10 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20"
-                    >
-                      {END_REASON_OPTIONS.map((reason) => (
-                        <option key={reason} value={reason} className="bg-gray-950 text-white">{reason}</option>
-                      ))}
-                    </select>
+                      onChange={setEndReason}
+                      options={END_REASON_OPTIONS}
+                      className="flex-1"
+                    />
                     <button
                       onClick={() => changeStatus('已结束', '已结束')}
                       disabled={isSubmittingStatus}
@@ -438,11 +420,11 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-offer-muted block mb-1">类型</label>
-                  <select value={taskForm.type} onChange={(e) => setTaskForm((p) => ({ ...p, type: e.target.value }))} className="min-h-[40px] rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
-                    {['面试', 'OA / 笔试', 'Deadline', 'Follow-up', '准备任务', '其他'].map((o) => (
-                      <option key={o} className="bg-gray-950">{o}</option>
-                    ))}
-                  </select>
+                  <CustomSelect
+                    value={taskForm.type}
+                    onChange={(nextValue) => setTaskForm((p) => ({ ...p, type: nextValue }))}
+                    options={['面试', 'OA / 笔试', 'Deadline', 'Follow-up', '准备任务', '其他']}
+                  />
                 </div>
                 <div>
                   <label className="text-xs text-offer-muted block mb-1">日期</label>

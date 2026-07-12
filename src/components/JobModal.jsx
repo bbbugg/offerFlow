@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useApp, canSelectJobStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
+import CustomSelect from './CustomSelect'
 import { formatBeijingDate, formatLocalDate } from '../lib/dateUtils'
 import { JOB_STATUSES, statusImpliesApplied } from '../lib/jobStatus'
 
@@ -50,19 +51,12 @@ function Select({ label, value, onChange, options, placeholder = '请选择' }) 
   return (
     <div className="min-w-0">
       <label className="text-sm text-offer-muted block mb-1">{label}</label>
-      <select
+      <CustomSelect
         value={value}
-        onChange={onChange}
-        className="min-h-[40px] w-full rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
-      >
-        {options.map((option) => {
-          const opt = typeof option === 'string' ? option : option.value
-          const disabled = typeof option === 'string' ? false : option.disabled
-          return (
-            <option key={opt || 'empty'} value={opt} disabled={disabled} className="bg-gray-950 text-white disabled:text-slate-500">{opt || placeholder}</option>
-          )
-        })}
-      </select>
+        onChange={(nextValue) => onChange({ target: { value: nextValue } })}
+        options={options}
+        placeholder={placeholder}
+      />
     </div>
   )
 }

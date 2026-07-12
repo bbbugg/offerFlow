@@ -1,0 +1,84 @@
+'use client'
+import { useEffect, useRef, useState } from 'react'
+
+function normalizeOption(option) {
+  if (typeof option === 'string') return { value: option, label: option, disabled: false }
+  return {
+    value: option.value,
+    label: option.label ?? option.value,
+    disabled: !!option.disabled,
+  }
+}
+
+export default function CustomSelect({ value, onChange, options, placeholder = '请选择', disabled = false, className = '' }) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef(null)
+  const normalized = options.map(normalizeOption)
+  const selected = normalized.find((option) => option.value === value)
+  const display = selected ? (selected.value === '' ? placeholder : selected.label) : placeholder
+
+  useEffect(() => {
+    if (!open) return
+
+    const handlePointerDown = (event) => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false)
+    }
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open])
+
+  const selectOption = (option) => {
+    if (option.disabled) return
+    onChange(option.value)
+    setOpen(false)
+  }
+
+  return (
+    <div ref={rootRef} className={`relative min-w-0 ${className}`}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((next) => !next)}
+        className="flex min-h-[40px] w-full min-w-0 items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-left text-sm font-medium text-slate-900 outline-none transition-all duration-200 hover:bg-slate-50 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06]"
+      >
+        <span className="min-w-0 truncate">{display}</span>
+        <svg className={`h-4 w-4 shrink-0 text-slate-500 transition-transform dark:text-white/45 ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-[80] mt-1 max-h-56 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 dark:border-white/10 dark:bg-[#111318] dark:shadow-black/40">
+          {normalized.map((option) => {
+            const isSelected = option.value === value
+            return (
+              <button
+                key={option.value || 'empty'}
+                type="button"
+                disabled={option.disabled}
+                onClick={() => selectOption(option)}
+                className={`block w-full min-w-0 truncate rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                  option.disabled
+                    ? 'cursor-not-allowed text-slate-400 dark:text-white/25'
+                    : isSelected
+                      ? 'bg-purple-50 text-purple-700 dark:bg-purple-500/20 dark:text-white'
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-white/80 dark:hover:bg-white/[0.07] dark:hover:text-white'
+                }`}
+              >
+                {option.value === '' ? placeholder : option.label}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}

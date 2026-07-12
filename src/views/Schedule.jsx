@@ -4,15 +4,7 @@ import { useApp } from '../store/AppContext'
 import TaskModal from '../components/TaskModal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
-
-const TYPE_STYLE = {
-  '面试': 'bg-blue-50 text-blue-700 dark:text-blue-400 border-blue-200',
-  'OA / 笔试': 'bg-cyan-50 text-cyan-700 dark:text-cyan-400 border-cyan-200',
-  'Deadline': 'bg-red-50 text-red-700 dark:text-red-400 border-red-200',
-  'Follow-up': 'bg-green-50 text-green-700 dark:text-green-400 border-green-200',
-  '准备任务': 'bg-purple-50 text-purple-700 dark:text-purple-400 border-purple-200',
-  '其他': 'bg-gray-100 text-gray-700 dark:text-white/45 border-gray-200',
-}
+import { NEUTRAL_BADGE, TASK_TYPE_BADGE } from '../lib/badgeStyles'
 
 const TYPE_DOT = {
   '面试': 'bg-blue-500',
@@ -332,7 +324,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
                     <div className="space-y-0.5">
                       {cell.tasks.slice(0, 3).map((t) => (
                         <div key={t.id} onClick={isReadOnly ? undefined : (e) => { e.stopPropagation(); handleEdit(t) }}
-                          className={`flex min-w-0 items-center gap-0.5 rounded px-0.5 py-0.5 text-[9px] leading-tight md:gap-1 md:px-1 md:text-[10px] ${t.done ? 'opacity-40' : ''} ${TYPE_STYLE[t.type] || 'bg-gray-500/10 text-gray-400 dark:text-white/45 border-gray-500/20'}`}>
+                          className={`flex min-w-0 items-center gap-0.5 rounded border px-0.5 py-0.5 text-[9px] leading-tight md:gap-1 md:px-1 md:text-[10px] ${t.done ? 'opacity-40' : ''} ${TASK_TYPE_BADGE[t.type] || NEUTRAL_BADGE}`}>
                           <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${TYPE_DOT[t.type] || 'bg-gray-500'}`} />
                           <span className="min-w-0 truncate">{t.title}</span>
                         </div>
@@ -388,7 +380,7 @@ function TaskCards({ tasks, jobMap, compact, onToggle, onEdit, onDelete, isReadO
             <div className={`flex-1 min-w-0 ${isReadOnly ? '' : 'cursor-pointer'}`} onClick={isReadOnly ? undefined : () => onEdit(t)}>
               <p className={`text-sm truncate ${t.done ? 'text-offer-muted line-through' : 'text-white'}`}>{t.title}</p>
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${TYPE_STYLE[t.type] || 'bg-gray-500/10 text-gray-400 dark:text-white/45 border-gray-500/20'}`}>{t.type}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${TASK_TYPE_BADGE[t.type] || NEUTRAL_BADGE}`}>{t.type}</span>
                 {t.startTime && <span className="text-xs text-offer-muted">{t.startTime}{t.endTime ? `-${t.endTime}` : ''}</span>}
                 {!compact && <span className={`text-[10px] ${PRIORITY_CLASS[t.priority] || 'text-offer-muted'}`}>{t.priority}</span>}
                 {job && (

@@ -5,6 +5,7 @@ import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 import { formatBeijingDate } from '../lib/dateUtils'
 import ConfirmDialog from './ConfirmDialog'
+import CustomSelect from './CustomSelect'
 
 export default function TaskModal({ open, task, defaultDate, onClose }) {
   const { jobs, addToast, addTask, updateTask, deleteTask } = useApp()
@@ -143,20 +144,10 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <Field label="类型">
-              <select value={type} onChange={(e) => setType(e.target.value)}
-                className="min-h-[40px] w-full min-w-0 max-w-full truncate rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
-                {['面试', 'OA / 笔试', 'Deadline', 'Follow-up', '准备任务', '其他'].map((o) => (
-                  <option key={o} className="bg-gray-950">{o}</option>
-                ))}
-              </select>
+              <CustomSelect value={type} onChange={setType} options={['面试', 'OA / 笔试', 'Deadline', 'Follow-up', '准备任务', '其他']} />
             </Field>
             <Field label="优先级">
-              <select value={priority} onChange={(e) => setPriority(e.target.value)}
-                className="min-h-[40px] w-full min-w-0 max-w-full truncate rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
-                {['高', '中', '低'].map((o) => (
-                  <option key={o} className="bg-gray-950">{o}</option>
-                ))}
-              </select>
+              <CustomSelect value={priority} onChange={setPriority} options={['高', '中', '低']} />
             </Field>
           </div>
 
@@ -177,15 +168,18 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
           </div>
 
           <Field label="关联岗位">
-            <select value={jobId} onChange={(e) => setJobId(e.target.value)}
-              className="min-h-[40px] w-full min-w-0 max-w-full truncate rounded-xl border border-white/10 bg-gray-950 px-4 py-2.5 text-sm font-medium text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer">
-              <option value="" className="bg-gray-950">不关联</option>
-              {sortedJobs.map((j) => (
-                <option key={j.id} value={j.id} className="bg-gray-950">
-                  {j.companyName} - {j.jobTitle}{j.status === '已结束' ? ' (已结束)' : ''}
-                </option>
-              ))}
-            </select>
+            <CustomSelect
+              value={jobId}
+              onChange={setJobId}
+              placeholder="不关联"
+              options={[
+                { value: '', label: '不关联' },
+                ...sortedJobs.map((j) => ({
+                  value: j.id,
+                  label: `${j.companyName} - ${j.jobTitle}${j.status === '已结束' ? ' (已结束)' : ''}`,
+                })),
+              ]}
+            />
           </Field>
 
           <Field label="备注">

@@ -7,6 +7,7 @@ import { useApp, isAppliedJob, isRepliedJob, hasOaExperience, hasInterviewExperi
 import ModalHeader from '../components/ModalHeader'
 import GlowCard from '../components/GlowCard'
 import { parseLocalDate } from '../lib/dateUtils'
+import { JOB_STATUS_BADGE, NEUTRAL_BADGE } from '../lib/badgeStyles'
 
 const TIME_RANGES = ['全部', '最近 7 天', '最近 30 天', '最近 90 天']
 
@@ -515,7 +516,7 @@ function InterviewDetailModal({ open, onClose, stats, jobs, offerCount }) {
                       <td className="px-4 py-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{j.companyName}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{j.jobTitle}</td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium whitespace-nowrap bg-purple-50 text-purple-700 border-purple-200 dark:bg-offer-primary/[0.15] dark:text-offer-accent dark:border-offer-primary/30">{j.status}</span>
+                        <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
                       </td>
                       <td className="px-4 py-3 text-slate-600 dark:text-white/65 text-right">{getRoundList(j)}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-white/65 text-right">{getHighestRound(j)}</td>
