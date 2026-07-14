@@ -95,10 +95,10 @@ export default function SharePage({ params: paramsPromise }) {
 
   if (loading) {
     return (
-      <div className={`flex h-screen w-screen items-center justify-center transition-colors duration-500 ${isDark ? 'bg-[#0D0E12] text-white' : 'bg-slate-50 text-slate-900'}`}>
+      <div className="flex h-screen w-screen items-center justify-center transition-colors duration-500 bg-slate-50 dark:bg-[#0D0E12] text-slate-900 dark:text-white">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
-          <p className={`text-sm ${isDark ? 'text-offer-muted' : 'text-slate-500'}`}>正在加载公开空间...</p>
+          <p className="text-sm text-slate-500 dark:text-offer-muted">正在加载公开空间...</p>
         </div>
       </div>
     )
@@ -106,15 +106,15 @@ export default function SharePage({ params: paramsPromise }) {
 
   if (error) {
     return (
-      <div className={`flex h-screen w-screen items-center justify-center p-4 transition-colors duration-500 ${isDark ? 'bg-[#0D0E12] text-white' : 'bg-slate-50 text-slate-900'}`}>
-        <div className={`card-modern max-w-md w-full p-8 text-center flex flex-col items-center border transition-all duration-500 ${isDark ? 'border-white/10 bg-[#16171d]' : 'border-slate-200 bg-white shadow-lg shadow-slate-100'}`}>
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDark ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-100 text-red-600'}`}>
+      <div className="flex h-screen w-screen items-center justify-center p-4 transition-colors duration-500 bg-slate-50 dark:bg-[#0D0E12] text-slate-900 dark:text-white">
+        <div className="card-modern max-w-md w-full p-8 text-center flex flex-col items-center border transition-all duration-500 border-slate-200 dark:border-white/10 bg-white dark:bg-[#16171d] shadow-lg shadow-slate-100 dark:shadow-none">
+          <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-red-600 dark:text-red-400">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className={`font-semibold text-lg mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>无法查看面板</h2>
-          <p className={`text-sm mb-6 ${isDark ? 'text-offer-muted' : 'text-slate-500'}`}>{error}</p>
+          <h2 className="font-semibold text-lg mb-2 text-slate-900 dark:text-white">无法查看面板</h2>
+          <p className="text-sm mb-6 text-slate-500 dark:text-offer-muted">{error}</p>
         </div>
       </div>
     )
