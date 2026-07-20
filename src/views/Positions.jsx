@@ -4,6 +4,7 @@ import { useApp } from '../store/AppContext'
 import JobModal from '../components/JobModal'
 import JobDetailModal from '../components/JobDetailModal'
 import ConfirmDialog from '../components/ConfirmDialog'
+import CustomSelect from '../components/CustomSelect'
 import { formatLocalDate, getElapsedLocalDays, parseLocalDate } from '../lib/dateUtils'
 import { JOB_STATUSES } from '../lib/jobStatus'
 import { JOB_STATUS_BADGE, NEUTRAL_BADGE } from '../lib/badgeStyles'
@@ -303,26 +304,22 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
           <div className="h-px w-full bg-theme-border md:h-6 md:w-px" />
 
           {/* Channel dropdown */}
-          <select
-            value={channelFilter}
-            onChange={(e) => setChannelFilter(e.target.value)}
-            className="min-h-[40px] w-full min-w-0 cursor-pointer appearance-none rounded-xl border border-theme-border bg-theme-card px-4 py-2.5 text-sm font-medium text-theme-text outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 md:w-auto"
-          >
-            {channels.map((c) => (
-              <option key={c} value={c} className="bg-theme-card text-theme-text">{c === '全部' ? '全部渠道' : c}</option>
-            ))}
-          </select>
+          <div className="w-full md:w-36 shrink-0 z-20">
+            <CustomSelect
+              value={channelFilter}
+              onChange={setChannelFilter}
+              options={channels.map((c) => ({ label: c === '全部' ? '全部渠道' : c, value: c }))}
+            />
+          </div>
 
           {/* City dropdown */}
-          <select
-            value={cityFilter}
-            onChange={(e) => setCityFilter(e.target.value)}
-            className="min-h-[40px] w-full min-w-0 cursor-pointer appearance-none rounded-xl border border-theme-border bg-theme-card px-4 py-2.5 text-sm font-medium text-theme-text outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 md:w-auto"
-          >
-            {cities.map((c) => (
-              <option key={c} value={c} className="bg-theme-card text-theme-text">{c === '全部' ? '全部城市' : c}</option>
-            ))}
-          </select>
+          <div className="w-full md:w-36 shrink-0 z-10">
+            <CustomSelect
+              value={cityFilter}
+              onChange={setCityFilter}
+              options={cities.map((c) => ({ label: c === '全部' ? '全部城市' : c, value: c }))}
+            />
+          </div>
 
           {/* Priority filter */}
           <div className="flex flex-wrap items-center gap-2">

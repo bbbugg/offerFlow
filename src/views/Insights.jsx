@@ -504,10 +504,10 @@ function InterviewDetailModal({ open, onClose, stats, jobs, offerCount }) {
                     <th className="text-left py-3 pr-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">公司</th>
                     <th className="text-left px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">岗位</th>
                     <th className="text-left px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">当前状态</th>
-                    <th className="text-right px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">已参与轮次</th>
-                    <th className="text-right px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">最高轮次</th>
-                    <th className="text-right px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">是否 Offer</th>
-                    <th className="text-right pl-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">结束原因</th>
+                    <th className="text-left px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">已参与轮次</th>
+                    <th className="text-left px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">最高轮次</th>
+                    <th className="text-left px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">是否 Offer</th>
+                    <th className="text-left pl-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">结束原因</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -518,12 +518,12 @@ function InterviewDetailModal({ open, onClose, stats, jobs, offerCount }) {
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
                       </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-white/65 text-right">{getRoundList(j)}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-white/65 text-right">{getHighestRound(j)}</td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-slate-600 dark:text-white/65">{getRoundList(j)}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-white/65">{getHighestRound(j)}</td>
+                      <td className="px-4 py-3">
                         {j.status === 'Offer' ? <span className="text-emerald-600 dark:text-emerald-400 font-medium">是</span> : <span className="text-slate-400 dark:text-white/45">-</span>}
                       </td>
-                      <td className="px-4 py-3 text-slate-500 dark:text-white/55 text-right max-w-[140px] truncate" title={j.endReason || '-'}>{j.endReason || '-'}</td>
+                      <td className="px-4 py-3 text-slate-500 dark:text-white/55 max-w-[140px] truncate" title={j.endReason || '-'}>{j.endReason || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
