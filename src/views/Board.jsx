@@ -448,7 +448,7 @@ function Card({ job, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, 
       onDragStart={isReadOnly ? undefined : onDragStart}
       onDragEnd={isReadOnly ? undefined : onDragEnd}
       onClick={onClick}
-      className={`card-modern p-4 ${isReadOnly ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'} card-hover relative group border-l-2 ${borderColorMap[job.status] || 'border-l-white/10'}`}
+      className={`card-modern dark:!bg-[#22242b] dark:!border-white/[0.10] p-4 ${isReadOnly ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'} card-hover relative group border-l-2 ${borderColorMap[job.status] || 'border-l-white/10'}`}
     >
       {/* More menu button */}
       {!isReadOnly && (

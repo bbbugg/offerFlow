@@ -357,7 +357,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02]">
+              <tr className="border-b border-white/10 bg-white/[0.05]">
                 {!isReadOnly && (
                   <th className="w-10 px-4 py-3.5 text-left">
                     <input
@@ -411,7 +411,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                         <td
                           rowSpan={jobs.length}
                           className={`align-middle border-r border-white/[0.08] ${
-                            isCompanyHovered ? 'bg-[#F2F5F9] dark:bg-[#222327]' : 'bg-white/[0.02]'
+                            isCompanyHovered ? 'bg-[#F2F5F9] dark:bg-[#222327]' : 'bg-white/[0.05] dark:bg-[#16181e]'
                           } p-0 relative transition-colors duration-150`}
                         >
                           {/* 点击与悬浮分流层：将单元格垂直等分 */}
