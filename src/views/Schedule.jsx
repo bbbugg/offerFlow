@@ -185,16 +185,16 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
           {/* View toggle */}
           <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => setViewMode('list')}
-              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${viewMode === 'list' ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>列表</button>
+              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium cursor-pointer ${viewMode === 'list' ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>列表</button>
             <button onClick={() => setViewMode('month')}
-              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${viewMode === 'month' ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>月历</button>
+              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium cursor-pointer ${viewMode === 'month' ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>月历</button>
           </div>
 
           {/* Type / date filter */}
           <div className="flex flex-wrap items-center gap-2">
             {filterOptions.map((f) => (
               <button key={f} onClick={() => setActiveFilter(f)}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${activeFilter === f ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>{f}</button>
+                className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium cursor-pointer ${activeFilter === f ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>{f}</button>
             ))}
           </div>
 
@@ -213,7 +213,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
       </div>
 
       {viewMode === 'list' ? (
-        <div className="space-y-4">
+        <div className="space-y-4 schedule-view">
           {/* Overdue */}
           {overdueTasks.length > 0 && (
             <div className="card-modern p-4 md:p-5 border-red-500/20 dark:border-red-500/10 bg-red-500/[0.02] dark:bg-red-500/[0.01]">
@@ -287,7 +287,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
         </div>
       ) : (
         /* Month View */
-        <div className="card-modern min-w-0 overflow-hidden p-3 md:p-5">
+        <div className="card-modern min-w-0 overflow-hidden p-3 md:p-5 schedule-view">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => navigateMonth(-1)}
               className="w-8 h-8 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all cursor-pointer">

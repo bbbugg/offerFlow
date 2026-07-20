@@ -680,6 +680,14 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
   transition: background-color 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out, color 0.15s ease-out;
 }
 
+/* ===== 日程待办视图切换时禁用整体过渡动画 ===== */
+.dark .schedule-view,
+.dark .schedule-view *,
+.dark .schedule-view *::before,
+.dark .schedule-view *::after {
+  transition-property: none !important;
+}
+
 /* ===== Dark mode scrollbar refinement ===== */
 .dark ::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.08);

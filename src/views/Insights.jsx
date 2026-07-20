@@ -258,7 +258,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
               barSize={36}
               maxBarSize={50}
             >
-              <CartesianGrid stroke="rgba(255,255,255,0.05)" vertical={false} />
+              <CartesianGrid stroke="rgba(148,163,184,0.2)" vertical={false} />
               <XAxis
                 dataKey="name"
                 tick={{
@@ -331,7 +331,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
               margin={{ top: 5, right: isMobile ? 15 : 60, left: isMobile ? -15 : 60, bottom: 5 }}
               barSize={28}
             >
-              <CartesianGrid stroke="rgba(255,255,255,0.05)" horizontal={false} />
+              <CartesianGrid stroke="rgba(148,163,184,0.2)" horizontal={false} />
               <XAxis type="number" domain={[0, 'dataMax']} allowDecimals={false} tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis
                 dataKey="city"
