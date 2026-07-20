@@ -69,7 +69,7 @@ export default function CustomSelect({ value, onChange, options, placeholder = '
                   option.disabled
                     ? 'cursor-not-allowed text-slate-400 dark:text-white/25'
                     : isSelected
-                      ? 'bg-purple-50 text-purple-700 dark:bg-purple-500/20 dark:text-white'
+                      ? 'cursor-pointer bg-purple-50 text-purple-700 dark:bg-purple-500/20 dark:text-white'
                       : 'cursor-pointer text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-white/80 dark:hover:bg-white/[0.07] dark:hover:text-white'
                 }`}
               >
