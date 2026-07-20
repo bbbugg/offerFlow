@@ -65,7 +65,7 @@ function LinkifiedText({ text }) {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="break-all text-offer-accent underline decoration-offer-accent/40 underline-offset-2 transition-colors hover:text-offer-primary"
+        className="break-all text-offer-accent underline decoration-offer-accent/40 underline-offset-2 transition-colors hover:text-offer-primary cursor-pointer"
         onClick={(e) => e.stopPropagation()}
       >
         {linkText}
@@ -311,7 +311,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
                       disabled={disabled || isSubmittingStatus}
                       onClick={() => a.status === '已结束' ? openEndForm() : changeStatus(a.status, a.label)}
                       title={disabled ? '该状态变更不符合当前流程限制' : undefined}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${disabled || isSubmittingStatus ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/35' : a.color}`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${disabled || isSubmittingStatus ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/35' : 'cursor-pointer ' + a.color}`}
                     >
                       {a.label}
                     </button>
@@ -319,7 +319,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
                   })}
                 <button
                   onClick={() => setShowTaskForm(true)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-all dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-300 dark:hover:bg-blue-400/15"
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-all dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-300 dark:hover:bg-blue-400/15 cursor-pointer"
                 >
                   新建日程
                 </button>
@@ -337,7 +337,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
                     <button
                       onClick={() => changeStatus('已结束', '已结束')}
                       disabled={isSubmittingStatus}
-                      className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-400 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-400 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {isSubmittingStatus ? '处理中...' : '确认结束'}
                     </button>
@@ -372,7 +372,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
             <div className="w-full flex justify-end">
               <button
                 onClick={onClose}
-                className="btn-secondary px-5 py-2 rounded-xl text-sm font-medium"
+                className="btn-secondary px-5 py-2 rounded-xl text-sm font-medium cursor-pointer"
               >
                 关闭
               </button>
@@ -381,7 +381,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
             <>
               <button
                 onClick={() => { onClose(); onDelete(job) }}
-                className="btn-danger text-sm flex items-center gap-1.5"
+                className="btn-danger text-sm flex items-center gap-1.5 cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -390,7 +390,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
               </button>
               <button
                 onClick={() => { onClose(); onEdit(job) }}
-                className="btn-gradient px-5 py-2 rounded-xl text-sm font-medium text-white"
+                className="btn-gradient px-5 py-2 rounded-xl text-sm font-medium text-white cursor-pointer"
               >
                 编辑岗位
               </button>
@@ -441,8 +441,8 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
               </div>
             </div>
             <div className="flex gap-3 justify-end mt-4">
-              <button onClick={() => setShowTaskForm(false)} disabled={isSubmittingTask} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed">取消</button>
-              <button onClick={createTask} disabled={isSubmittingTask} className="btn-gradient px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed">{isSubmittingTask ? '处理中...' : '创建'}</button>
+              <button onClick={() => setShowTaskForm(false)} disabled={isSubmittingTask} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">取消</button>
+              <button onClick={createTask} disabled={isSubmittingTask} className="btn-gradient px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">{isSubmittingTask ? '处理中...' : '创建'}</button>
             </div>
           </div>
           </div>

@@ -205,7 +205,7 @@ export default function Navbar() {
                       <li key={job.id}>
                         <button
                           onClick={() => handleSelectSearchResult(job.id)}
-                          className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors flex flex-col gap-0.5"
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors flex flex-col gap-0.5 cursor-pointer"
                         >
                           <span className="text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
                             {job.companyName}
@@ -232,7 +232,7 @@ export default function Navbar() {
       <div className="flex shrink-0 items-center gap-2 md:gap-3">
         <button
           onClick={toggleTheme}
-          className="h-9 w-9 rounded-full md:h-10 md:w-10 flex items-center justify-center transition-all duration-200
+          className="h-9 w-9 rounded-full md:h-10 md:w-10 flex items-center justify-center transition-all duration-200 cursor-pointer
             dark:border-white/25 dark:bg-white/[0.12] dark:text-white/80 dark:shadow-lg dark:shadow-black/20
             dark:hover:bg-white/[0.2] dark:hover:text-white dark:hover:scale-105
             border-slate-300 bg-white text-slate-600 shadow-sm
@@ -256,7 +256,7 @@ export default function Navbar() {
           <button
             ref={bellRef}
             onClick={handleNotification}
-            className="w-9 h-9 rounded-lg bg-theme-icon-btn border border-theme-border flex items-center justify-center text-theme-muted hover:text-theme-text hover:border-offer-primary transition-all relative"
+            className="w-9 h-9 rounded-lg bg-theme-icon-btn border border-theme-border flex items-center justify-center text-theme-muted hover:text-theme-text hover:border-offer-primary transition-all relative cursor-pointer"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -316,7 +316,7 @@ export default function Navbar() {
                 {/* Settings */}
                 <button
                   onClick={() => { setMenuOpen(false); router.push('/settings') }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-white/[0.02] border-b border-slate-100 dark:border-white/[0.06] transition-colors duration-150"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-white/[0.02] border-b border-slate-100 dark:border-white/[0.06] transition-colors duration-150 cursor-pointer"
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -327,7 +327,7 @@ export default function Navbar() {
                 {/* Logout */}
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-150"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-150 cursor-pointer"
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

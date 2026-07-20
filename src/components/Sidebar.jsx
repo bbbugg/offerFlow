@@ -32,7 +32,7 @@ export default function Sidebar() {
                   ? 'text-[oklch(0.21_0.04_278)] bg-[oklch(0.21_0.04_278/0.10)] font-semibold scale-[1.02] shadow-sm dark:text-[#A78BFA] dark:bg-[rgba(167,139,250,0.12)]'
                   : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100 dark:text-white/68 dark:hover:text-white/80 dark:hover:bg-white/10'
                 }
-              `}
+               cursor-pointer`}
             >
               {active && (
                 <span className="absolute left-1 top-1/2 -translate-y-1/2 w-[4px] h-6 rounded-full bg-[oklch(0.21_0.04_278)] dark:bg-[#A78BFA]" />

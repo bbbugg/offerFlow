@@ -185,23 +185,23 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
           {/* View toggle */}
           <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => setViewMode('list')}
-              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${viewMode === 'list' ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>列表</button>
+              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${viewMode === 'list' ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>列表</button>
             <button onClick={() => setViewMode('month')}
-              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${viewMode === 'month' ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>月历</button>
+              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${viewMode === 'month' ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>月历</button>
           </div>
 
           {/* Type / date filter */}
           <div className="flex flex-wrap items-center gap-2">
             {filterOptions.map((f) => (
               <button key={f} onClick={() => setActiveFilter(f)}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${activeFilter === f ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>{f}</button>
+                className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${activeFilter === f ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>{f}</button>
             ))}
           </div>
 
           {!isReadOnly && (
             <div className="flex w-full items-center gap-2 md:ml-auto md:w-auto">
               <button onClick={() => handleDateClick(today)}
-                className="btn-gradient h-10 w-full rounded-lg px-4 text-sm font-medium text-white md:h-9 md:w-auto flex items-center justify-center gap-2">
+                className="btn-gradient h-10 w-full rounded-lg px-4 text-sm font-medium text-white md:h-9 md:w-auto flex items-center justify-center gap-2 cursor-pointer">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
@@ -253,7 +253,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
                     </h3>
                     {!isReadOnly && (
                       <button onClick={() => handleDateClick(date)}
-                        className="text-xs text-offer-accent hover:text-offer-primary transition-colors">+ 添加</button>
+                        className="text-xs text-offer-accent hover:text-offer-primary transition-colors cursor-pointer">+ 添加</button>
                     )}
                   </div>
                   {dayTasks.length > 0 ? (
@@ -290,14 +290,14 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
         <div className="card-modern min-w-0 overflow-hidden p-3 md:p-5">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => navigateMonth(-1)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all">
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <h2 className="text-white font-semibold">{monthLabel}</h2>
             <button onClick={() => navigateMonth(1)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all">
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -324,7 +324,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
                     <div className="space-y-0.5">
                       {cell.tasks.slice(0, 3).map((t) => (
                         <div key={t.id} onClick={isReadOnly ? undefined : (e) => { e.stopPropagation(); handleEdit(t) }}
-                          className={`flex min-w-0 items-center gap-0.5 rounded border px-0.5 py-0.5 text-[9px] leading-tight md:gap-1 md:px-1 md:text-[10px] ${t.done ? 'opacity-40' : ''} ${TASK_TYPE_BADGE[t.type] || NEUTRAL_BADGE}`}>
+                          className={`flex min-w-0 items-center gap-0.5 rounded border px-0.5 py-0.5 text-[9px] leading-tight md:gap-1 md:px-1 md:text-[10px] cursor-pointer ${t.done ? 'opacity-40' : ''} ${TASK_TYPE_BADGE[t.type] || NEUTRAL_BADGE}`}>
                           <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${TYPE_DOT[t.type] || 'bg-gray-500'}`} />
                           <span className="min-w-0 truncate">{t.title}</span>
                         </div>
@@ -398,13 +398,13 @@ function TaskCards({ tasks, jobMap, compact, onToggle, onEdit, onDelete, isReadO
             {!isReadOnly && (
               <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
                 <button onClick={() => onEdit(t)}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all">
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all cursor-pointer">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
                 <button onClick={() => onDelete(t.id)}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-offer-muted hover:text-red-400 hover:bg-white/10 transition-all">
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-offer-muted hover:text-red-400 hover:bg-white/10 transition-all cursor-pointer">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>

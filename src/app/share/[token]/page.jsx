@@ -195,7 +195,7 @@ export default function SharePage({ params: paramsPromise }) {
                         <li key={job.id}>
                           <button
                             onClick={() => handleSelectSearchResult(job.id)}
-                            className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors flex flex-col gap-0.5"
+                            className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors flex flex-col gap-0.5 cursor-pointer"
                           >
                             <span className="text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
                               {job.companyName}
@@ -224,7 +224,7 @@ export default function SharePage({ params: paramsPromise }) {
           </span>
           <button
             onClick={toggleTheme}
-            className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-200
+            className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer
               dark:border-white/25 dark:bg-white/[0.12] dark:text-white/80 dark:shadow-lg dark:shadow-black/20
               dark:hover:bg-white/[0.2] dark:hover:text-white dark:hover:scale-105
               border-slate-300 bg-white text-slate-600 shadow-sm
@@ -257,8 +257,7 @@ export default function SharePage({ params: paramsPromise }) {
                 <button
                   key={item.key}
                   onClick={() => setActiveTab(item.key)}
-                  className={`
-                    group relative flex w-full items-center gap-3 rounded-2xl py-3 pl-5 pr-4 text-[17px] font-medium transition-all duration-200
+                  className={` cursor-pointer group relative flex w-full items-center gap-3 rounded-2xl py-3 pl-5 pr-4 text-[17px] font-medium transition-all duration-200
                     ${active
                       ? 'text-[oklch(0.21_0.04_278)] bg-[oklch(0.21_0.04_278/0.10)] font-semibold scale-[1.02] shadow-sm dark:text-[#A78BFA] dark:bg-[rgba(167,139,250,0.12)]'
                       : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100 dark:text-white/68 dark:hover:text-white/80 dark:hover:bg-white/10'
@@ -303,7 +302,7 @@ export default function SharePage({ params: paramsPromise }) {
               <button
                 key={item.key}
                 onClick={() => setActiveTab(item.key)}
-                className={`bottom-nav-btn flex h-full min-w-[52px] flex-1 flex-col items-center justify-center gap-1 px-1 ${
+                className={`cursor-pointer bottom-nav-btn flex h-full min-w-[52px] flex-1 flex-col items-center justify-center gap-1 px-1 ${
                   active ? 'text-offer-primary' : 'text-offer-muted'
                 }`}
               >

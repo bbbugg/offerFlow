@@ -47,7 +47,7 @@ export default function CustomSelect({ value, onChange, options, placeholder = '
         type="button"
         disabled={disabled}
         onClick={() => setOpen((next) => !next)}
-        className="flex min-h-[40px] w-full min-w-0 items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-left text-sm font-medium text-slate-900 outline-none transition-all duration-200 hover:bg-slate-50 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06]"
+        className="cursor-pointer flex min-h-[40px] w-full min-w-0 items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-left text-sm font-medium text-slate-900 outline-none transition-all duration-200 hover:bg-slate-50 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06]"
       >
         <span className="min-w-0 truncate">{display}</span>
         <svg className={`h-4 w-4 shrink-0 text-slate-500 transition-transform dark:text-white/45 ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +70,7 @@ export default function CustomSelect({ value, onChange, options, placeholder = '
                     ? 'cursor-not-allowed text-slate-400 dark:text-white/25'
                     : isSelected
                       ? 'bg-purple-50 text-purple-700 dark:bg-purple-500/20 dark:text-white'
-                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-white/80 dark:hover:bg-white/[0.07] dark:hover:text-white'
+                      : 'cursor-pointer text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-white/80 dark:hover:bg-white/[0.07] dark:hover:text-white'
                 }`}
               >
                 {option.value === '' ? placeholder : option.label}

@@ -39,14 +39,14 @@ export default function ConfirmDialog({ open, title, message, onConfirm, onCance
               <button
                 onClick={onCancel}
                 disabled={isSubmitting}
-                className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
                 取消
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-600 hover:bg-red-500 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-600 hover:bg-red-500 transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSubmitting ? '处理中...' : '确认删除'}
               </button>

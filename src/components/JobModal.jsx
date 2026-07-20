@@ -223,14 +223,14 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
         <div className="flex justify-end gap-3 border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
           <button
             onClick={onClose}
-            disabled={saving} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={saving} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
           >
             取消
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="btn-gradient px-5 py-2 rounded-xl text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-gradient px-5 py-2 rounded-xl text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
           >
             {saving ? '保存中...' : job ? '保存修改' : '新增岗位'}
           </button>

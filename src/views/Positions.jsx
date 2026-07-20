@@ -253,7 +253,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
           <div className="flex w-full gap-2 md:ml-auto md:w-auto">
             {!isReadOnly && (
               <>
-                <button onClick={openAdd} className="btn-gradient min-w-0 whitespace-nowrap px-4 py-2.5 text-sm flex-1 md:flex-initial">
+                <button onClick={openAdd} className="btn-gradient min-w-0 whitespace-nowrap px-4 py-2.5 text-sm flex-1 md:flex-initial cursor-pointer">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
@@ -262,7 +262,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
 
                 <button
                   onClick={handleBatchDelete}
-                  className={`btn-danger min-w-0 whitespace-nowrap px-4 py-2.5 text-sm flex-1 md:flex-initial ${selectedIds.size > 0 ? '' : 'opacity-50'}`}
+                  className={`btn-danger min-w-0 whitespace-nowrap px-4 py-2.5 text-sm flex-1 md:flex-initial cursor-pointer ${selectedIds.size > 0 ? '' : 'opacity-50'}`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -272,7 +272,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
               </>
             )}
 
-            <button onClick={handleExport} className="btn-secondary min-w-0 whitespace-nowrap px-4 py-2.5 text-sm flex-1 md:flex-initial flex items-center justify-center gap-1.5">
+            <button onClick={handleExport} className="btn-secondary min-w-0 whitespace-nowrap px-4 py-2.5 text-sm flex-1 md:flex-initial flex items-center justify-center gap-1.5 cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -289,7 +289,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${
                   statusFilter === s
                     ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20'
                     : 'border-theme-border bg-white dark:bg-white/[0.03] text-slate-700 dark:text-white/65 hover:bg-slate-100 dark:hover:bg-white/[0.07] hover:text-slate-900 dark:hover:text-white'
@@ -330,7 +330,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
               <button
                 key={p}
                 onClick={() => setPriorityFilter(p)}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${
                   priorityFilter === p
                     ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20'
                     : 'border-theme-border bg-white dark:bg-white/[0.03] text-slate-700 dark:text-white/65 hover:bg-slate-100 dark:hover:bg-white/[0.07] hover:text-slate-900 dark:hover:text-white'
@@ -344,7 +344,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
           {activeFilters > 0 && (
             <button
               onClick={() => { setStatusFilter('全部'); setChannelFilter('全部'); setCityFilter('全部'); setPriorityFilter('全部'); setSearch('') }}
-              className="text-sm text-offer-accent hover:text-white transition-colors ml-1"
+              className="text-sm text-offer-accent hover:text-white transition-colors ml-1 cursor-pointer"
             >
               清除筛选
             </button>
@@ -471,7 +471,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => openEdit(j)}
-                              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 dark:text-white/45 hover:text-offer-accent hover:bg-white/[0.06] transition-all"
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 dark:text-white/45 hover:text-offer-accent hover:bg-white/[0.06] transition-all cursor-pointer"
                               title="编辑"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -480,7 +480,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                             </button>
                             <button
                               onClick={() => requestDelete(j)}
-                              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 dark:text-white/45 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 dark:text-white/45 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
                               title="删除"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

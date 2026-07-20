@@ -118,14 +118,14 @@ export default function Settings() {
                       <div className="flex gap-2">
                         <button
                           onClick={handleCopy}
-                          className="min-h-[40px] px-4 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.03] dark:hover:bg-white/10 text-sm font-medium transition-colors shrink-0 flex items-center justify-center min-w-[90px]"
+                          className="min-h-[40px] px-4 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.03] dark:hover:bg-white/10 text-sm font-medium transition-colors shrink-0 flex items-center justify-center min-w-[90px] cursor-pointer"
                         >
                           {copied ? '已复制！' : '复制链接'}
                         </button>
                         <button
                           onClick={handleDeleteShare}
                           disabled={actionLoading}
-                          className="min-h-[40px] px-4 rounded-xl text-sm font-medium border border-red-500/30 text-red-500 bg-red-500/10 hover:bg-red-500/20 transition-all shrink-0 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="min-h-[40px] px-4 rounded-xl text-sm font-medium border border-red-500/30 text-red-500 bg-red-500/10 hover:bg-red-500/20 transition-all shrink-0 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
                           {actionLoading ? '正在关闭...' : '关闭分享'}
                         </button>
@@ -142,7 +142,7 @@ export default function Settings() {
                   <button
                     onClick={handleCreateShare}
                     disabled={actionLoading}
-                    className="btn-gradient px-6 py-2.5 rounded-xl text-white font-medium text-sm transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="btn-gradient px-6 py-2.5 rounded-xl text-white font-medium text-sm transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
                   >
                     {actionLoading ? (
                       <>

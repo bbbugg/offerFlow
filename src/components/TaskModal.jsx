@@ -195,7 +195,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
               <button
                 onClick={handleToggleDone}
                 disabled={saving}
-                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer ${
                   task.done
                     ? 'border-amber-500/30 text-amber-500 hover:bg-amber-500/10 bg-amber-500/[0.02]'
                     : 'border-green-500/30 text-green-500 hover:bg-green-500/10 bg-green-500/[0.02]'
@@ -206,16 +206,16 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
               <button
                 onClick={handleDeleteClick}
                 disabled={saving}
-                className="px-4 py-2 rounded-xl text-sm font-medium border border-red-500/30 text-red-500 hover:bg-red-500/10 bg-red-500/[0.02] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-xl text-sm font-medium border border-red-500/30 text-red-500 hover:bg-red-500/10 bg-red-500/[0.02] transition-colors disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
                 删除
               </button>
             </div>
           )}
           <button onClick={onClose} disabled={saving}
-            className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed">取消</button>
+            className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">取消</button>
           <button onClick={handleSave} disabled={saving}
-            className="btn-gradient px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed">{saving ? '处理中...' : (task ? '保存' : '创建')}</button>
+            className="btn-gradient px-4 py-2 rounded-xl text-sm font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">{saving ? '处理中...' : (task ? '保存' : '创建')}</button>
         </div>
         </div>
         </GlowCard>

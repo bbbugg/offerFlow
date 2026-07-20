@@ -70,7 +70,7 @@ function LoginForm() {
             />
             <button
               onClick={() => switchTab('login')}
-              className={`relative z-10 flex-1 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
+              className={`cursor-pointer relative z-10 flex-1 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
                 tab === 'login'
                   ? 'text-[#7E57C2] dark:text-white'
                   : 'text-slate-500 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/80'
@@ -80,7 +80,7 @@ function LoginForm() {
             </button>
             <button
               onClick={() => switchTab('register')}
-              className={`relative z-10 flex-1 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
+              className={`cursor-pointer relative z-10 flex-1 py-2.5 text-sm font-medium rounded-lg transition-colors duration-200 ${
                 tab === 'register'
                   ? 'text-[#7E57C2] dark:text-white'
                   : 'text-slate-500 dark:text-white/55 hover:text-slate-700 dark:hover:text-white/80'
@@ -155,7 +155,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-gradient w-full py-2.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
+              className="btn-gradient w-full py-2.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer relative overflow-hidden group"
             >
               <span className="relative z-10">
                 {loading ? (
@@ -178,9 +178,9 @@ function LoginForm() {
           {/* Footer hint */}
           <p className="mt-6 text-center text-xs text-theme-muted">
             {tab === 'login' ? (
-              <>还没有账号？ <button onClick={() => switchTab('register')} className="text-[#7E57C2] dark:text-[#A78BFA] hover:underline font-medium">立即注册</button></>
+              <>还没有账号？ <button onClick={() => switchTab('register')} className="text-[#7E57C2] dark:text-[#A78BFA] hover:underline font-medium cursor-pointer">立即注册</button></>
             ) : (
-              <>已有账号？ <button onClick={() => switchTab('login')} className="text-[#7E57C2] dark:text-[#A78BFA] hover:underline font-medium">立即登录</button></>
+              <>已有账号？ <button onClick={() => switchTab('login')} className="text-[#7E57C2] dark:text-[#A78BFA] hover:underline font-medium cursor-pointer">立即登录</button></>
             )}
           </p>
         </div>

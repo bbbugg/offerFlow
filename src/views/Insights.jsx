@@ -221,7 +221,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
         <div className="flex flex-wrap items-center gap-2">
           {TIME_RANGES.map((r) => (
             <button key={r} onClick={() => setTimeRange(r)}
-              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${timeRange === r ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>{r}</button>
+              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${timeRange === r ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>{r}</button>
           ))}
         </div>
       </div>

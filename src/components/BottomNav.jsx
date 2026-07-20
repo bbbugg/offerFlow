@@ -28,7 +28,7 @@ export default function BottomNav() {
               onClick={() => router.push('/' + item.key)}
               className={`bottom-nav-btn flex h-full min-w-[52px] flex-1 flex-col items-center justify-center gap-1 px-1 ${
                 active ? 'text-offer-primary' : 'text-offer-muted'
-              }`}
+              } cursor-pointer`}
             >
               <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
