@@ -42,7 +42,7 @@ export default function TaskPopover({ open, tasks, jobs, onTaskClick, onJobClick
 
   return (
     <div data-popover-content className="fixed left-4 right-4 top-16 z-50 mt-2 w-auto origin-top-right animate-fade-in md:absolute md:left-auto md:right-0 md:top-full md:w-[380px]">
-      <div className="rounded-xl bg-white dark:bg-[#13151A] border border-slate-200 dark:border-white/[0.08] shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+      <div className="rounded-xl bg-white dark:bg-[#1C1F26] border border-slate-200 dark:border-white/[0.18] shadow-xl dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)] overflow-hidden">
         {/* Header */}
         <div className="px-4 py-3 border-b border-slate-100 dark:border-white/[0.06]">
           <div className="flex items-center gap-2">

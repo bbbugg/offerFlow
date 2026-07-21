@@ -269,9 +269,10 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* ===== Modal panel - theme-aware containers ===== */
+/* ===== Modal panel - 浅色模式静态彩色边框 ===== */
 .modal-panel {
-  background: linear-gradient(90deg, #FDC761 0%, #5A50DE 100%);
+  position: relative;
+  background: linear-gradient(90deg, #FDC761, #A78BFA, #22D3EE);
   border-color: var(--c-border);
   border-radius: 28px;
   overflow: hidden;
@@ -279,14 +280,23 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
   padding: 12px;
 }
 
-/* ===== Dark mode animated gradient border for modal panels ===== */
+/* 浅色 Danger 变体 */
+.modal-panel.danger {
+  background: linear-gradient(90deg, #FF5050, #FDC761, #A78BFA);
+}
+
+/* 浅色 Success 变体 */
+.modal-panel.success {
+  background: linear-gradient(90deg, #50FF78, #22D3EE, #A78BFA);
+}
+
+/* ===== Dark mode static gradient border for modal panels ===== */
 .dark .modal-panel {
   position: relative;
-  background: linear-gradient(90deg, #FDC761, #A78BFA, #22D3EE, #FDC761);
-  background-size: 200% 100%;
+  background: linear-gradient(90deg, #FDC761, #A78BFA, #22D3EE);
   padding: 12px;
   border: none;
-  animation: border-flow 3s linear infinite, modal-enter 0.2s ease-out;
+  animation: modal-enter 0.2s ease-out;
   overflow: hidden;
   border-radius: 28px;
 }
@@ -308,27 +318,14 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
 
 /* Danger variant */
 .dark .modal-panel.danger {
-  background: linear-gradient(90deg, #FF5050, #FDC761, #A78BFA, #FF5050);
-  background-size: 200% 100%;
+  background: linear-gradient(90deg, #FF5050, #FDC761, #A78BFA);
 }
 
 /* Success variant */
 .dark .modal-panel.success {
-  background: linear-gradient(90deg, #50FF78, #22D3EE, #A78BFA, #50FF78);
-  background-size: 200% 100%;
+  background: linear-gradient(90deg, #50FF78, #22D3EE, #A78BFA);
 }
 
-@keyframes border-flow {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dark .modal-panel {
-    animation: modal-enter 0.2s ease-out;
-    background: linear-gradient(90deg, #FDC761, #A78BFA, #22D3EE);
-  }
-}
 
 /* ===== Glass content surface inside modal body (kept for backward compat) ===== */
 .modal-panel > .overflow-y-auto {
