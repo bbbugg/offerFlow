@@ -395,7 +395,7 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
               <ModalHeader onClose={() => { setFollowUpJob(null); setFollowUpText('') }}>
                 <div className="flex flex-col items-center min-w-0">
                   <h2 className="truncate text-base font-semibold leading-normal text-slate-950 dark:text-white">设置下一步行动</h2>
-                  <p className="truncate text-sm font-medium leading-normal text-slate-500 dark:text-white/55">{followUpJob.companyName} - {followUpJob.jobTitle}</p>
+                  <p className="break-words text-center text-sm font-medium leading-normal text-slate-500 dark:text-white/55">{followUpJob.companyName} - {followUpJob.jobTitle}</p>
                 </div>
               </ModalHeader>
               <div className="p-5 pb-7">
