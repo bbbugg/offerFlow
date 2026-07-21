@@ -297,7 +297,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
           )}
 
           {/* Quick Status Actions */}
-          {!isReadOnly && job.status !== '已结束' && (
+          {!isReadOnly && job.status !== '已结束' && job.status !== 'Offer' && (
             <section>
               <h3 className="text-xs font-semibold text-white/45 uppercase tracking-wider mb-3">快捷操作</h3>
               <div className="flex flex-wrap gap-2">
