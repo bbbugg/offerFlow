@@ -96,7 +96,7 @@ export default function TaskPopover({ open, tasks, jobs, onTaskClick, onJobClick
                               className={`text-sm truncate ${
                                 t.done
                                   ? 'text-offer-muted line-through'
-                                  : 'text-slate-900 transition-colors hover:text-offer-primary dark:text-white'
+                                  : 'text-slate-900 dark:text-white'
                               }`}
                             >
                               {t.title}

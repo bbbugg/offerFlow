@@ -402,8 +402,9 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
 .dark .modal-panel input,
 .dark .modal-panel textarea {
   background-color: var(--c-bg-card-inner) !important;
-  color: var(--c-text);
+  color: var(--c-text) !important;
   border-color: rgba(255,255,255,0.08);
+  color-scheme: dark;
 }
 
 .dark .modal-panel input::placeholder,
@@ -433,12 +434,12 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
 
 .dark .modal-panel label,
 .dark .modal-panel .text-offer-muted {
-  color: var(--offer-muted);
+  color: var(--offer-muted) !important;
 }
 
 /* ===== Light mode form input text color override ===== */
-.modal-panel input.text-white,
-.modal-panel textarea.text-white {
+:not(.dark) .modal-panel input.text-white,
+:not(.dark) .modal-panel textarea.text-white {
   color: #0f172a;
 }
 
