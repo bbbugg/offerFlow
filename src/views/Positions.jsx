@@ -235,7 +235,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
       </div>
 
       {/* ===== Toolbar ===== */}
-      <div className="card-modern mb-5 min-w-0 space-y-4 p-4 md:p-5">
+      <div className="card-modern relative z-10 mb-5 min-w-0 space-y-4 p-4 md:p-5">
         {/* Row 1: Search + Add + Batch delete + Export */}
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <div className="relative w-full min-w-0 md:max-w-xs md:flex-1">
@@ -350,7 +350,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
       </div>
 
       {/* ===== Table ===== */}
-      <div className="card-modern overflow-hidden">
+      <div className="card-modern relative z-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
