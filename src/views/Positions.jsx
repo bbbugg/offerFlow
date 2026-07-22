@@ -379,11 +379,12 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                 )}
               </tr>
             </thead>
-            <tbody>
+            <tbody onMouseLeave={() => setHoveredRowId(null)}>
               {groupedJobs.map(({ company, jobs }) =>
                 jobs.map((j, idx) => {
                   const days = getElapsedLocalDays(j.appliedDate)
                   const isCompanyHovered = jobs.some((job) => job.id === hoveredRowId)
+                  const handleTdMouseEnter = () => setHoveredRowId(j.id)
                   return (
                     <tr
                       key={j.id}
@@ -395,7 +396,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                       } transition-colors duration-150 cursor-pointer group`}
                     >
                       {!isReadOnly && (
-                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()} onMouseEnter={handleTdMouseEnter}>
                           <input
                             type="checkbox"
                             checked={selectedIds.has(j.id)}
@@ -408,7 +409,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                         <td
                           rowSpan={jobs.length}
                           className={`align-middle border-r border-white/[0.08] ${
-                            isCompanyHovered ? 'bg-[#F2F5F9] dark:bg-[#222327]' : 'bg-white/[0.05] dark:bg-[#16181e]'
+                            isCompanyHovered ? 'bg-[#F2F5F9] dark:bg-[#2c2d36]' : 'bg-white/[0.05] dark:bg-transparent'
                           } p-0 relative transition-colors duration-150`}
                         >
                           {/* 点击与悬浮分流层：将单元格垂直等分 */}
@@ -421,8 +422,10 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                                   e.stopPropagation()
                                   openDetail(job.id)
                                 }}
-                                onMouseEnter={() => setHoveredRowId(job.id)}
-                                onMouseLeave={() => setHoveredRowId(null)}
+                                onMouseEnter={(e) => {
+                                  e.stopPropagation()
+                                  setHoveredRowId(job.id)
+                                }}
                               />
                             ))}
                           </div>
@@ -443,28 +446,28 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                           </div>
                         </td>
                       )}
-                      <td className="px-4 py-3 text-white font-medium whitespace-nowrap">{j.jobTitle}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 text-white font-medium whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>{j.jobTitle}</td>
+                      <td className="px-4 py-3" onMouseEnter={handleTdMouseEnter}>
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
                       </td>
-                      <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap">{j.city || '-'}</td>
-                      <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap">{j.channel || '-'}</td>
-                      <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap">{j.appliedDate || '-'}</td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>{j.city || '-'}</td>
+                      <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>{j.channel || '-'}</td>
+                      <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>{j.appliedDate || '-'}</td>
+                      <td className="px-4 py-3 whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>
                         {days !== null ? (
                           <span className={`font-medium ${days <= 7 ? 'text-emerald-400' : days <= 14 ? 'text-amber-400' : 'text-gray-300 dark:text-white/65'}`}>{days} 天</span>
                         ) : (
                           <span className="text-gray-500 dark:text-white/45">-</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3" onMouseEnter={handleTdMouseEnter}>
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${
                           j.priority === '高' ? 'bg-red-500/[0.15] text-red-700 dark:text-red-300 border-red-500/30' : j.priority === '中' ? 'bg-amber-500/[0.15] text-amber-700 dark:text-amber-300 border-amber-500/30' : 'bg-white/[0.04] text-gray-300 dark:text-white/65 border-white/10'
                         }`}>{j.priority || '-'}</span>
                       </td>
-                      <td className="px-4 py-3 text-gray-300 dark:text-white/65 text-xs max-w-[120px] truncate" title={j.nextAction}>{j.nextAction || '-'}</td>
+                      <td className="px-4 py-3 text-gray-300 dark:text-white/65 text-xs max-w-[120px] truncate" title={j.nextAction} onMouseEnter={handleTdMouseEnter}>{j.nextAction || '-'}</td>
                       {!isReadOnly && (
-                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()} onMouseEnter={handleTdMouseEnter}>
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => openEdit(j)}
