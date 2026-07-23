@@ -102,6 +102,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
   const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
   const [timeRange, setTimeRange] = useState('全部')
   const [detailOpen, setDetailOpen] = useState(false)
+  const [replyDetailOpen, setReplyDetailOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -112,11 +113,16 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
   }, [])
 
   useEffect(() => {
-    if (!detailOpen) return
-    const handler = (e) => { if (e.key === 'Escape') setDetailOpen(false) }
+    if (!detailOpen && !replyDetailOpen) return
+    const handler = (e) => {
+      if (e.key === 'Escape') {
+        setDetailOpen(false)
+        setReplyDetailOpen(false)
+      }
+    }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [detailOpen])
+  }, [detailOpen, replyDetailOpen])
 
   const timeFilter = useMemo(() => makeTimeFilter(timeRange), [timeRange])
 
@@ -137,6 +143,14 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
     const replyRate = appliedCount > 0 ? Math.round((replied.length / appliedCount) * 100) : 0
     const interviewRate = appliedCount > 0 ? Math.round((interviewed.length / appliedCount) * 100) : 0
     const offerRate = appliedCount > 0 ? Math.round((offers.length / appliedCount) * 100) : 0
+
+    // Reply detail stats
+    const isInterviewingOrInterviewed = (j) => hasInterviewExperience(j) || ['一面中', '二面中', '三面中', '终面中'].includes(j.status)
+    const repliedToOfferCount = replied.filter(isOfferJob).length
+    const repliedToInterviewCount = replied.filter(isInterviewingOrInterviewed).length
+    const repliedToOaCount = replied.filter(hasOaExperience).length
+    const repliedEndedCount = replied.filter((j) => j.status === '已结束').length
+    const repliedActiveCount = replied.length - repliedToOfferCount - repliedToInterviewCount - repliedToOaCount - repliedEndedCount
 
     // Funnel
     const funnel = [
@@ -166,6 +180,8 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
       replyRate: c.sent > 0 ? Math.round((c.replied / c.sent) * 100) : 0,
       interviewRate: c.sent > 0 ? Math.round((c.interviewedPeople / c.sent) * 100) : 0,
     }))
+
+    const repliedChannels = channels.filter((c) => c.replied > 0).sort((a, b) => b.replied - a.replied)
 
     // Per-round stats for detail modal
     const roundCounts = { '一面': 0, '二面': 0, '三面': 0, '终面': 0 }
@@ -207,6 +223,13 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
       roundCounts, roundPassRates, offerConversionRate,
       interviewedJobs: interviewed,
       cityDistribution,
+      repliedJobs: replied,
+      repliedToOfferCount,
+      repliedToInterviewCount,
+      repliedToOaCount,
+      repliedEndedCount,
+      repliedActiveCount,
+      repliedChannels,
     }
   }, [jobs, timeFilter])
 
@@ -230,7 +253,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
       <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-3 md:gap-5">
         <MetricCard label="总投递数" value={data.appliedCount} sub={`共 ${data.total} 个记录`} />
         <MetricCard label="活跃流程" value={data.activeCount} sub="进行中" />
-        <MetricCard label="收到回复" value={data.repliedCount} sub={`${data.replyRate}% 回复率`} />
+        <MetricCard label="收到回复" value={data.repliedCount} sub={`${data.replyRate}% 回复率`} onClick={() => setReplyDetailOpen(true)} />
         <MetricCard label="总面试次数" value={data.interviewedCount} sub={`${data.interviewedPeopleCount} 岗位参与 · ${data.interviewRate}% 面试率`} onClick={() => setDetailOpen(true)} />
         <MetricCard label="总 Offer" value={data.offerCount} sub={`${data.offerRate}% Offer 率`} accent />
         <MetricCard label="已结束" value={data.endedCount} sub="无结果" danger />
@@ -373,6 +396,24 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
         jobs={data.interviewedJobs}
         offerCount={data.offerCount}
       />
+
+      {/* ===== Reply Detail Modal ===== */}
+      <ReplyDetailModal
+        open={replyDetailOpen}
+        onClose={() => setReplyDetailOpen(false)}
+        stats={{
+          totalReplied: data.repliedCount,
+          appliedCount: data.appliedCount,
+          replyRate: data.replyRate,
+          toOaCount: data.repliedToOaCount,
+          toInterviewCount: data.repliedToInterviewCount,
+          toOfferCount: data.repliedToOfferCount,
+          endedCount: data.repliedEndedCount,
+          activeCount: data.repliedActiveCount,
+          channels: data.repliedChannels,
+        }}
+        jobs={data.repliedJobs}
+      />
     </div>
   )
 }
@@ -436,6 +477,20 @@ function getRoundList(job) {
   return getHighestRound(job)
 }
 
+function getHighestRoundBadge(job) {
+  const round = getHighestRound(job)
+  if (!round || round === '-') {
+    return <span className="text-slate-400 dark:text-white/45">-</span>
+  }
+  const badgeClassKey = `${round}中`
+  const badgeClass = JOB_STATUS_BADGE[badgeClassKey] || NEUTRAL_BADGE
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${badgeClass}`}>
+      {round}
+    </span>
+  )
+}
+
 function InterviewDetailModal({ open, onClose, stats, jobs, offerCount }) {
   if (!open) return null
 
@@ -450,90 +505,256 @@ function InterviewDetailModal({ open, onClose, stats, jobs, offerCount }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onClose}>
       <div className="modal-panel border w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
         <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,255,255,0.03)' }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1">
-        <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
-        {/* Header */}
-        <ModalHeader title="面试统计详情" onClose={onClose} />
+          <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
+            {/* Header */}
+            <ModalHeader title="面试统计详情" onClose={onClose} />
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-6">
-          {/* Summary row */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bento-block">
-              <p className="text-xs text-slate-500 dark:text-white/45 mb-1">总面试次数</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalRounds}</p>
-            </div>
-            <div className="bento-block">
-              <p className="text-xs text-slate-500 dark:text-white/45 mb-1">参与面试岗位数</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.interviewedPeople}</p>
-            </div>
-          </div>
-
-          {/* Per-round cards */}
-          <div>
-            <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">各轮次统计</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {roundInfo.map((r) => (
-                <div key={r.round} className="card-glow bg-slate-50 border border-slate-200 rounded-xl p-4 dark:bg-white/[0.02] dark:border-white/[0.06]">
-                  <p className="text-sm text-slate-900 dark:text-white font-medium mb-2">{r.round}</p>
-                  <p className="text-lg font-bold text-slate-900 dark:text-white">{r.count} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">次</span></p>
-                  <p className="text-xs text-slate-500 dark:text-white/45 mt-1">已通过: {r.passedCount}</p>
-                  <div className="mt-2 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-offer-primary to-offer-accent transition-all" style={{ width: `${Math.min(r.passRate * 100, 100)}%` }} />
-                  </div>
-                  <p className="text-xs text-offer-accent mt-1">通过率 {formatPct(r.passRate)}</p>
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {/* Summary row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bento-block">
+                  <p className="text-xs text-slate-500 dark:text-white/45 mb-1">总面试次数</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalRounds}</p>
                 </div>
-              ))}
-            </div>
-          </div>
+                <div className="bento-block">
+                  <p className="text-xs text-slate-500 dark:text-white/45 mb-1">参与面试岗位数</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.interviewedPeople}</p>
+                </div>
+              </div>
 
-          {/* Offer conversion */}
-          <div className="card-glow bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 dark:bg-white/[0.02] dark:border-white/[0.06]">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600 dark:text-white/65">面试转 Offer 率</span>
-              <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formatPct(stats.offerConversionRate)}</span>
-            </div>
-          </div>
-
-          {/* Detail table */}
-          <div>
-            <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">面试岗位明细（{jobs.length}）</h3>
-            <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
-              <table className="w-full text-xs">
-                <thead className="sticky top-0 bg-slate-100 dark:bg-gray-950">
-                  <tr className="text-slate-500 dark:text-white/45 border-b border-slate-200 dark:border-white/[0.06]">
-                    <th className="text-left py-3 pr-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">公司</th>
-                    <th className="text-left px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">岗位</th>
-                    <th className="text-left px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">当前状态</th>
-                    <th className="text-left px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">已参与轮次</th>
-                    <th className="text-left px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">最高轮次</th>
-                    <th className="text-left px-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">是否 Offer</th>
-                    <th className="text-left pl-2 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/45">结束原因</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {jobs.map((j) => (
-                    <tr key={j.id} className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
-                      <td className="px-4 py-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{j.companyName}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{j.jobTitle}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-white/65">{getRoundList(j)}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-white/65">{getHighestRound(j)}</td>
-                      <td className="px-4 py-3">
-                        {j.status === 'Offer' ? <span className="text-emerald-600 dark:text-emerald-400 font-medium">是</span> : <span className="text-slate-400 dark:text-white/45">-</span>}
-                      </td>
-                      <td className="px-4 py-3 text-slate-500 dark:text-white/55 max-w-[140px] truncate" title={j.endReason || '-'}>{j.endReason || '-'}</td>
-                    </tr>
+              {/* Per-round cards */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">各轮次统计</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {roundInfo.map((r) => (
+                    <div key={r.round} className="card-glow bg-slate-50 border border-slate-200 rounded-xl p-4 dark:bg-white/[0.02] dark:border-white/[0.06]">
+                      <p className="text-sm text-slate-900 dark:text-white font-medium mb-2">{r.round}</p>
+                      <p className="text-lg font-bold text-slate-900 dark:text-white">{r.count} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">次</span></p>
+                      <p className="text-xs text-slate-500 dark:text-white/45 mt-1">已通过: {r.passedCount}</p>
+                      <div className="mt-2 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-gradient-to-r from-offer-primary to-offer-accent transition-all" style={{ width: `${Math.min(r.passRate * 100, 100)}%` }} />
+                      </div>
+                      <p className="text-xs text-offer-accent mt-1">通过率 {formatPct(r.passRate)}</p>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
+
+              {/* Offer conversion */}
+              <div className="card-glow bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 dark:bg-white/[0.02] dark:border-white/[0.06]">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600 dark:text-white/65">面试转 Offer 率</span>
+                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formatPct(stats.offerConversionRate)}</span>
+                </div>
+              </div>
+
+              {/* Detail table */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">面试岗位明细（{jobs.length}）</h3>
+                <div className="overflow-x-auto max-h-[300px] overflow-y-auto rounded-xl border border-slate-200 dark:border-white/[0.06]">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-slate-100 dark:bg-gray-950 z-10">
+                      <tr className="text-slate-500 dark:text-white/45 border-b border-slate-200 dark:border-white/[0.06]">
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">公司</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">岗位</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">当前状态</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">最高轮次</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">结束原因</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {jobs.map((j) => (
+                        <tr key={j.id} className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                          <td className="py-2.5 px-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{j.companyName}</td>
+                          <td className="py-2.5 px-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{j.jobTitle}</td>
+                          <td className="py-2.5 px-3">
+                            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
+                          </td>
+                          <td className="py-2.5 px-3">{getHighestRoundBadge(j)}</td>
+                          <td className="py-2.5 px-3 text-slate-500 dark:text-white/55 max-w-[140px] truncate" title={j.endReason || '-'}>{j.endReason || '-'}</td>
+                        </tr>
+                      ))}
+                      {jobs.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="text-center py-8 text-slate-500 dark:text-white/45">
+                            暂无面试岗位记录
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        </div>
         </GlowCard>
       </div>
     </div>
   )
 }
+
+function getReplyStageBadge(job) {
+  let badgeClassKey = '已投递'
+  let badgeText = '已投递'
+
+  if (isOfferJob(job)) {
+    badgeClassKey = 'Offer'
+    badgeText = 'Offer'
+  } else if (['一面中', '二面中', '三面中', '终面中'].includes(job.status)) {
+    badgeClassKey = job.status
+    badgeText = job.status.replace(/中$/, '')
+  } else if (hasInterviewExperience(job)) {
+    const highest = getHighestRound(job)
+    const cleanRound = highest && highest !== '-' ? highest : '一面'
+    badgeClassKey = `${cleanRound}中`
+    badgeText = cleanRound
+  } else if (hasOaExperience(job)) {
+    badgeClassKey = 'OA / 笔试'
+    badgeText = 'OA / 笔试'
+  } else if (job.status === '已结束') {
+    badgeClassKey = '已结束'
+    badgeText = '已结束'
+  } else {
+    badgeClassKey = '已投递'
+    badgeText = '已投递'
+  }
+
+  const badgeClass = JOB_STATUS_BADGE[badgeClassKey] || NEUTRAL_BADGE
+
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${badgeClass}`}>
+      {badgeText}
+    </span>
+  )
+}
+
+function ReplyDetailModal({ open, onClose, stats, jobs }) {
+  if (!open) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onClose}>
+      <div className="modal-panel border w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
+        <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,255,255,0.03)' }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1">
+          <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
+            {/* Header */}
+            <ModalHeader title="收到回复统计详情" onClose={onClose} />
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {/* Summary row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="bento-block">
+                  <p className="text-xs text-slate-500 dark:text-white/45 mb-1">收到回复岗位</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.totalReplied} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
+                  <p className="text-xs text-slate-500 dark:text-white/45 mt-1">回复率: {stats.replyRate}%</p>
+                </div>
+                <div className="bento-block">
+                  <p className="text-xs text-slate-500 dark:text-white/45 mb-1">收到笔试 / OA</p>
+                  <p className="text-2xl font-bold text-sky-600 dark:text-sky-400">{stats.toOaCount} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
+                </div>
+                <div className="bento-block">
+                  <p className="text-xs text-slate-500 dark:text-white/45 mb-1">收到面试</p>
+                  <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{stats.toInterviewCount} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
+                </div>
+                <div className="bento-block">
+                  <p className="text-xs text-slate-500 dark:text-white/45 mb-1">收到 Offer</p>
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.toOfferCount} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
+                </div>
+              </div>
+
+              {/* Reply outcomes progression breakdown */}
+              <div className="card-glow bg-slate-50 border border-slate-200 rounded-xl p-4 dark:bg-white/[0.02] dark:border-white/[0.06]">
+                <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">回复后推进阶段分布</h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-700 dark:text-white/80 font-medium">收到笔试 / OA</span>
+                      <span className="text-sky-600 dark:text-sky-400 font-semibold">{stats.toOaCount} 个 ({stats.totalReplied > 0 ? Math.round((stats.toOaCount / stats.totalReplied) * 100) : 0}%)</span>
+                    </div>
+                    <div className="h-2 bg-slate-200 dark:bg-white/[0.06] rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-sky-500 to-cyan-400 rounded-full transition-all" style={{ width: `${stats.totalReplied > 0 ? (stats.toOaCount / stats.totalReplied) * 100 : 0}%` }} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-700 dark:text-white/80 font-medium">收到面试</span>
+                      <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{stats.toInterviewCount} 个 ({stats.totalReplied > 0 ? Math.round((stats.toInterviewCount / stats.totalReplied) * 100) : 0}%)</span>
+                    </div>
+                    <div className="h-2 bg-slate-200 dark:bg-white/[0.06] rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-400 rounded-full transition-all" style={{ width: `${stats.totalReplied > 0 ? (stats.toInterviewCount / stats.totalReplied) * 100 : 0}%` }} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-700 dark:text-white/80 font-medium">收到 Offer</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{stats.toOfferCount} 个 ({stats.totalReplied > 0 ? Math.round((stats.toOfferCount / stats.totalReplied) * 100) : 0}%)</span>
+                    </div>
+                    <div className="h-2 bg-slate-200 dark:bg-white/[0.06] rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all" style={{ width: `${stats.totalReplied > 0 ? (stats.toOfferCount / stats.totalReplied) * 100 : 0}%` }} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-700 dark:text-white/80 font-medium">已无后续 / 流程结束</span>
+                      <span className="text-slate-500 dark:text-white/45 font-semibold">{stats.endedCount} 个 ({stats.totalReplied > 0 ? Math.round((stats.endedCount / stats.totalReplied) * 100) : 0}%)</span>
+                    </div>
+                    <div className="h-2 bg-slate-200 dark:bg-white/[0.06] rounded-full overflow-hidden">
+                      <div className="h-full bg-slate-400 dark:bg-white/30 rounded-full transition-all" style={{ width: `${stats.totalReplied > 0 ? (stats.endedCount / stats.totalReplied) * 100 : 0}%` }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detail table */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">收到回复岗位明细（{jobs.length}）</h3>
+
+                <div className="overflow-x-auto max-h-[300px] overflow-y-auto rounded-xl border border-slate-200 dark:border-white/[0.06]">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-slate-100 dark:bg-gray-950 z-10">
+                      <tr className="text-slate-500 dark:text-white/45 border-b border-slate-200 dark:border-white/[0.06]">
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">公司</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">岗位</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">当前状态</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">最高阶段</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">结束原因</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {jobs.map((j) => (
+                        <tr key={j.id} className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                          <td className="py-2.5 px-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{j.companyName}</td>
+                          <td className="py-2.5 px-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{j.jobTitle}</td>
+                          <td className="py-2.5 px-3">
+                            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            {getReplyStageBadge(j)}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-500 dark:text-white/55 max-w-[140px] truncate" title={j.endReason || '-'}>{j.endReason || '-'}</td>
+                        </tr>
+                      ))}
+                      {jobs.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="text-center py-8 text-slate-500 dark:text-white/45">
+                            暂无收到回复的岗位记录
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </GlowCard>
+      </div>
+    </div>
+  )
+}
+
+
