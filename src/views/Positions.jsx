@@ -208,15 +208,61 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
     else confirmDelete()
   }
 
+  const formatTimeline = (timeline) => {
+    if (!timeline || !Array.isArray(timeline) || timeline.length === 0) return ''
+    return timeline
+      .map((t) => {
+        const parts = []
+        if (t.date) parts.push(`[${t.date}]`)
+        if (t.action) parts.push(t.action)
+        if (t.detail) parts.push(`(${t.detail})`)
+        return parts.join(' ')
+      })
+      .join('\n')
+  }
+
+  const formatInterviewRounds = (rounds) => {
+    if (!rounds || !Array.isArray(rounds) || rounds.length === 0) return ''
+    return rounds
+      .map((r) => {
+        const parts = []
+        if (r.round) parts.push(r.round)
+        if (r.status) parts.push(`[${r.status}]`)
+        if (r.date) parts.push(r.date)
+        if (r.result) parts.push(`结果: ${r.result}`)
+        if (r.notes) parts.push(`备注: ${r.notes}`)
+        return parts.join(' ')
+      })
+      .join('\n')
+  }
+
   const handleExport = () => {
     if (filteredJobs.length === 0) {
       addToast('没有可导出的数据', 'error')
       return
     }
-    const header = '公司,岗位,状态,城市,薪资范围,渠道,投递日期,优先级,联系人,下一步行动'
+    const header = '公司,岗位,状态,结束原因,优先级,城市,工作模式,薪资范围,渠道,投递日期,联系人,联系方式,下一步行动,岗位链接,备注,JD原文,面试记录,时间线'
     const rows = filteredJobs.map((j) =>
-      [j.companyName, j.jobTitle, j.status, j.city, j.salaryRange, j.channel, j.appliedDate, j.priority, j.contactName, j.nextAction]
-        .map((v) => `"${(v || '').replace(/"/g, '""')}"`).join(',')
+      [
+        j.companyName,
+        j.jobTitle,
+        j.status,
+        j.endReason,
+        j.priority,
+        j.city,
+        j.workMode,
+        j.salaryRange,
+        j.channel,
+        j.appliedDate,
+        j.contactName,
+        j.contactInfo,
+        j.nextAction,
+        j.jobLink,
+        j.notes,
+        j.jdText,
+        formatInterviewRounds(j.interviewRounds),
+        formatTimeline(j.timeline),
+      ].map((v) => `"${(v || '').replace(/"/g, '""')}"`).join(',')
     )
     const csv = '﻿' + header + '\n' + rows.join('\n')
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
