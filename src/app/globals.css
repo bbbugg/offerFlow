@@ -36,6 +36,7 @@
 
 /* ===== Light Theme (default) ===== */
 :root {
+  color-scheme: light;
   --offer-bg: #f8fafc;
   --offer-card: #ffffff;
   --offer-text: #0f172a;
@@ -68,6 +69,7 @@
 
 /* ===== Dark Theme — Linear-inspired cold dark ===== */
 .dark {
+  color-scheme: dark;
   --offer-bg: #0E1015;
   --offer-card: #13151A;
   --offer-text: #F2F2F2;
@@ -164,18 +166,35 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
   transform: translateY(0);
 }
 
-::-webkit-scrollbar {
-  width: 6px;
+/* ===== Universal Scrollbar Standard ===== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-scrollbar, #cbd5e1) transparent;
 }
-::-webkit-scrollbar-track {
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
   background: transparent;
 }
-::-webkit-scrollbar-thumb {
-  background: var(--c-scrollbar, #27272A);
-  border-radius: 3px;
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: var(--c-scrollbar, #cbd5e1);
+  border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--c-scrollbar-hover, #3F3F46);
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--c-scrollbar-hover, #94a3b8);
+}
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner,
+::-webkit-resizer,
+*::-webkit-resizer {
+  background: transparent;
 }
 
 /* ===== bg-gray-950 in page content uses theme bg (selects, dropdowns) ===== */
@@ -687,12 +706,18 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
 }
 
 /* ===== Dark mode scrollbar refinement ===== */
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.08);
-  border-radius: 3px;
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.15);
+
+.dark ::-webkit-scrollbar-thumb,
+.dark *::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb:hover,
+.dark *::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 /* ===== Focus ring for dark mode inputs ===== */
