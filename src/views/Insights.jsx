@@ -558,7 +558,7 @@ function InterviewDetailModal({ open, onClose, stats, jobs, offerCount }) {
                       <tr className="text-slate-500 dark:text-white/45 border-b border-slate-200 dark:border-white/[0.06]">
                         <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">公司</th>
                         <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">岗位</th>
-                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">当前状态</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap">当前状态</th>
                         <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">最高轮次</th>
                         <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">结束原因</th>
                       </tr>
@@ -568,8 +568,8 @@ function InterviewDetailModal({ open, onClose, stats, jobs, offerCount }) {
                         <tr key={j.id} className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
                           <td className="py-2.5 px-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{j.companyName}</td>
                           <td className="py-2.5 px-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{j.jobTitle}</td>
-                          <td className="py-2.5 px-3">
-                            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
+                          <td className="py-2.5 px-3 whitespace-nowrap">
+                            <span className={`inline-flex items-center shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
                           </td>
                           <td className="py-2.5 px-3">{getHighestRoundBadge(j)}</td>
                           <td className="py-2.5 px-3 text-slate-500 dark:text-white/55 max-w-[140px] truncate" title={j.endReason || '-'}>{j.endReason || '-'}</td>
@@ -719,7 +719,7 @@ function ReplyDetailModal({ open, onClose, stats, jobs }) {
                       <tr className="text-slate-500 dark:text-white/45 border-b border-slate-200 dark:border-white/[0.06]">
                         <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">公司</th>
                         <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">岗位</th>
-                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">当前状态</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap">当前状态</th>
                         <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">最高阶段</th>
                         <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">结束原因</th>
                       </tr>
@@ -729,8 +729,8 @@ function ReplyDetailModal({ open, onClose, stats, jobs }) {
                         <tr key={j.id} className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
                           <td className="py-2.5 px-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{j.companyName}</td>
                           <td className="py-2.5 px-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{j.jobTitle}</td>
-                          <td className="py-2.5 px-3">
-                            <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
+                          <td className="py-2.5 px-3 whitespace-nowrap">
+                            <span className={`inline-flex items-center shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
                           </td>
                           <td className="py-2.5 px-3">
                             {getReplyStageBadge(j)}

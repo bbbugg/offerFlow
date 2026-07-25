@@ -461,8 +461,8 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                         </td>
                       )}
                       <td className="px-4 py-3 text-white font-medium whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>{j.jobTitle}</td>
-                      <td className="px-4 py-3" onMouseEnter={handleTdMouseEnter}>
-                        <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
+                      <td className="px-4 py-3 whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>
+                        <span className={`inline-flex items-center shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
                       </td>
                       <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>{j.city || '-'}</td>
                       <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>{j.channel || '-'}</td>
