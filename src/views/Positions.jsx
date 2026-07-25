@@ -5,6 +5,7 @@ import JobModal from '../components/JobModal'
 import JobDetailModal from '../components/JobDetailModal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import CustomSelect from '../components/CustomSelect'
+import SearchOptionsPopover, { DEFAULT_SEARCH_SCOPE } from '../components/SearchOptionsPopover'
 import { formatLocalDate, getElapsedLocalDays, parseLocalDate } from '../lib/dateUtils'
 import { JOB_STATUSES } from '../lib/jobStatus'
 import { JOB_STATUS_BADGE, NEUTRAL_BADGE } from '../lib/badgeStyles'
@@ -43,6 +44,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
 
   // Filter state
   const [search, setSearch] = useState('')
+  const [searchScope, setSearchScope] = useState(DEFAULT_SEARCH_SCOPE)
   const [statusFilter, setStatusFilter] = useState('全部')
   const [channelFilter, setChannelFilter] = useState('全部')
   const [cityFilter, setCityFilter] = useState('全部')
@@ -80,11 +82,15 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
       if (search) {
         const q = search.toLowerCase()
         const match = (s) => (s || '').toLowerCase().includes(q)
-        if (!match(j.companyName) && !match(j.jobTitle) && !match(j.city) && !match(j.channel)) return false
+        const matchCompany = searchScope.includes('companyName') && match(j.companyName)
+        const matchJobTitle = searchScope.includes('jobTitle') && match(j.jobTitle)
+        const matchCity = searchScope.includes('city') && match(j.city)
+        const matchChannel = searchScope.includes('channel') && match(j.channel)
+        if (!matchCompany && !matchJobTitle && !matchCity && !matchChannel) return false
       }
       return true
     })
-  }, [jobs, search, statusFilter, channelFilter, cityFilter, priorityFilter])
+  }, [jobs, search, statusFilter, channelFilter, cityFilter, priorityFilter, searchScope])
 
   // Group filtered jobs by company for grouped table display
   const groupedJobs = useMemo(() => {
@@ -238,16 +244,24 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
       <div className="card-modern relative z-10 mb-5 min-w-0 space-y-4 p-4 md:p-5">
         {/* Row 1: Search + Add + Batch delete + Export */}
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <div className="relative w-full min-w-0 md:max-w-xs md:flex-1">
-            <svg className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-white/45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              placeholder="搜索公司、岗位、城市、渠道..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setSelectedIds(new Set()) }}
-              className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 !pl-12 pr-4 text-sm text-white placeholder:text-gray-500 dark:placeholder:text-white/45 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20"
+          <div className="relative w-full min-w-0 md:max-w-md md:flex-1 flex items-center gap-2">
+            <div className="relative flex-1">
+              <svg className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-white/45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="搜索公司、岗位、城市、渠道..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setSelectedIds(new Set()) }}
+                className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 !pl-12 pr-4 text-sm text-white placeholder:text-gray-500 dark:placeholder:text-white/45 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20"
+              />
+            </div>
+            <SearchOptionsPopover
+              searchScope={searchScope}
+              onScopeChange={setSearchScope}
+              onClear={() => { setSearch(''); setSelectedIds(new Set()) }}
+              hasQuery={!!search.trim()}
             />
           </div>
 

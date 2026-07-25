@@ -9,6 +9,7 @@ import JobDetailModal from './JobDetailModal'
 import JobModal from './JobModal'
 import TaskPopover from './TaskPopover'
 import TaskModal from './TaskModal'
+import SearchOptionsPopover, { DEFAULT_SEARCH_SCOPE } from './SearchOptionsPopover'
 import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
 
 export default function Navbar() {
@@ -18,6 +19,7 @@ export default function Navbar() {
   const { addToast, tasks, jobs, deleteJob } = useApp()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchScope, setSearchScope] = useState(DEFAULT_SEARCH_SCOPE)
   const [showSearchResults, setShowSearchResults] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [popoverOpen, setPopoverOpen] = useState(false)
@@ -36,10 +38,14 @@ export default function Navbar() {
     if (!searchQuery.trim()) return []
     const lowerQuery = searchQuery.toLowerCase()
     const match = (s) => (s || '').toLowerCase().includes(lowerQuery)
-    return jobs.filter((job) =>
-      match(job.companyName) || match(job.jobTitle) || match(job.city) || match(job.channel)
-    )
-  }, [searchQuery, jobs])
+    return jobs.filter((job) => {
+      const matchCompany = searchScope.includes('companyName') && match(job.companyName)
+      const matchJobTitle = searchScope.includes('jobTitle') && match(job.jobTitle)
+      const matchCity = searchScope.includes('city') && match(job.city)
+      const matchChannel = searchScope.includes('channel') && match(job.channel)
+      return matchCompany || matchJobTitle || matchCity || matchChannel
+    })
+  }, [searchQuery, jobs, searchScope])
 
   // Close search results on click outside / Escape
   useEffect(() => {
@@ -164,12 +170,12 @@ export default function Navbar() {
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-offer-primary to-offer-accent flex items-center justify-center text-white font-bold text-sm">
           O
         </div>
-        <span className="hidden text-lg font-bold tracking-tight text-theme-text min-[400px]:inline">OfferFlow</span>
+        <span className="hidden text-lg font-bold tracking-tight text-theme-text md:inline">OfferFlow</span>
       </div>
 
       {/* Center: Search */}
-      <div className="mx-2 flex-1 sm:mx-4 sm:max-w-md md:mx-6">
-        <div className="relative" ref={searchContainerRef}>
+      <div className="mx-2 flex-1 sm:mx-4 sm:max-w-md md:mx-6 flex items-center gap-2">
+        <div className="relative flex-1" ref={searchContainerRef}>
           <svg
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-theme-muted"
             fill="none"
@@ -226,6 +232,14 @@ export default function Navbar() {
             </div>
           )}
         </div>
+
+        {/* 搜索选项按钮与弹出面板 */}
+        <SearchOptionsPopover
+          searchScope={searchScope}
+          onScopeChange={setSearchScope}
+          onClear={() => setSearchQuery('')}
+          hasQuery={!!searchQuery.trim()}
+        />
       </div>
 
       {/* Right: Actions */}

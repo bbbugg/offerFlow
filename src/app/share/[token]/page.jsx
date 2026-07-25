@@ -9,6 +9,7 @@ import Positions from '@/views/Positions'
 import Schedule from '@/views/Schedule'
 import Insights from '@/views/Insights'
 import JobDetailModal from '@/components/JobDetailModal'
+import SearchOptionsPopover, { DEFAULT_SEARCH_SCOPE } from '@/components/SearchOptionsPopover'
 
 const menuItems = [
   { key: 'dashboard', label: '仪表盘', icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm12 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
@@ -32,6 +33,7 @@ export default function SharePage({ params: paramsPromise }) {
   const [username, setUsername] = useState('')
 
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchScope, setSearchScope] = useState(DEFAULT_SEARCH_SCOPE)
   const [showSearchResults, setShowSearchResults] = useState(false)
   const [detailJobId, setDetailJobId] = useState(null)
 
@@ -41,10 +43,14 @@ export default function SharePage({ params: paramsPromise }) {
     if (!searchQuery.trim()) return []
     const lowerQuery = searchQuery.toLowerCase()
     const match = (s) => (s || '').toLowerCase().includes(lowerQuery)
-    return jobs.filter((job) =>
-      match(job.companyName) || match(job.jobTitle) || match(job.city) || match(job.channel)
-    )
-  }, [searchQuery, jobs])
+    return jobs.filter((job) => {
+      const matchCompany = searchScope.includes('companyName') && match(job.companyName)
+      const matchJobTitle = searchScope.includes('jobTitle') && match(job.jobTitle)
+      const matchCity = searchScope.includes('city') && match(job.city)
+      const matchChannel = searchScope.includes('channel') && match(job.channel)
+      return matchCompany || matchJobTitle || matchCity || matchChannel
+    })
+  }, [searchQuery, jobs, searchScope])
 
   // Close search results on click outside / Escape
   useEffect(() => {
@@ -158,8 +164,8 @@ export default function SharePage({ params: paramsPromise }) {
         </Link>
 
         {/* 中间：搜索栏 */}
-        <div className="mx-2 flex-1 sm:mx-4 sm:max-w-md md:mx-6">
-          <div className="relative" ref={searchContainerRef}>
+        <div className="mx-2 flex-1 sm:mx-4 sm:max-w-md md:mx-6 flex items-center gap-2">
+          <div className="relative flex-1" ref={searchContainerRef}>
             <svg
               className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-theme-muted"
               fill="none"
@@ -216,6 +222,14 @@ export default function SharePage({ params: paramsPromise }) {
               </div>
             )}
           </div>
+
+          {/* 搜索选项按钮与弹出面板 */}
+          <SearchOptionsPopover
+            searchScope={searchScope}
+            onScopeChange={setSearchScope}
+            onClear={() => setSearchQuery('')}
+            hasQuery={!!searchQuery.trim()}
+          />
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
