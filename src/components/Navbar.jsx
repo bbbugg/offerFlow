@@ -204,7 +204,7 @@ export default function Navbar() {
           {/* Search Dropdown */}
           {showSearchResults && searchQuery.trim() && (
             <div className="absolute top-full left-0 right-0 mt-2 z-50 animate-fade-in origin-top">
-              <div className="rounded-xl bg-white dark:bg-[#13151A] border border-slate-200 dark:border-white/[0.08] shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] max-h-[300px] overflow-auto">
+              <div className="rounded-xl bg-white dark:bg-[#1C1F26] border border-slate-200 dark:border-white/[0.18] shadow-xl dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)] max-h-[300px] overflow-auto">
                 {searchResults.length > 0 ? (
                   <ul className="py-2 min-w-min">
                     {searchResults.map(job => (
@@ -309,7 +309,7 @@ export default function Navbar() {
               ref={menuRef}
               className="absolute right-0 top-full mt-2 w-56 z-50 animate-fade-in origin-top-right"
             >
-              <div className="rounded-xl bg-white dark:bg-[#13151A] border border-slate-200 dark:border-white/[0.08] shadow-xl dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden">
+              <div className="rounded-xl bg-white dark:bg-[#1C1F26] border border-slate-200 dark:border-white/[0.18] shadow-xl dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)] overflow-hidden">
                 {/* User info header */}
                 <div className="px-4 py-3.5 border-b border-slate-100 dark:border-white/[0.06]">
                   <div className="flex items-center gap-3">

@@ -56,7 +56,7 @@ export default function CustomSelect({ value, onChange, options, placeholder = '
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-[80] mt-1 max-h-56 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 dark:border-white/10 dark:bg-[#111318] dark:shadow-black/40">
+        <div className="absolute left-0 right-0 top-full z-[80] mt-1 max-h-56 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 dark:border-white/[0.18] dark:bg-[#1C1F26] dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)]">
           {normalized.map((option) => {
             const isSelected = option.value === value
             return (

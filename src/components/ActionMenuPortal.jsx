@@ -68,7 +68,7 @@ export default function ActionMenuPortal({ open, anchorRef, onClose, children, m
     <div
       ref={menuRef}
       style={style}
-      className="w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-900/15 dark:border-white/10 dark:bg-[#181B22] dark:shadow-black/40"
+      className="w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-900/15 dark:border-white/[0.18] dark:bg-[#1C1F26] dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)]"
     >
       {children}
     </div>,
