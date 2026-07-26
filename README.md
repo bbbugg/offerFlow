@@ -176,7 +176,7 @@ ghcr.io/<GitHub 用户或组织>/<仓库名>:latest
 
 ### 如何切换数据库？
 - 本地开发（推荐）：`npm run db:sqlite` → SQLite 零配置
-- 生产部署：`npm run db:pg` → PostgreSQL（需自行搭建或使用 Neon）
+- 生产部署：`npm run db:pg` → PostgreSQL（需自行搭建或使用 Neon，并会同步数据库表结构）
 
 ### 可以在手机上用吗？
 目前未针对移动端做完整适配，但核心功能在手机浏览器上基本可用。

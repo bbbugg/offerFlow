@@ -34,12 +34,13 @@ function getWeekStart(date) {
   return start
 }
 
-export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly = false }) {
+export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly = false, shareSchedule = true }) {
   const appContext = useApp()
   const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
   const tasks = isReadOnly ? (propTasks || []) : appContext.tasks
   const addToast = isReadOnly ? () => {} : appContext.addToast
   const deleteJob = isReadOnly ? async () => {} : appContext.deleteJob
+  const showScheduleSection = !isReadOnly || shareSchedule
 
   const [detailJobId, setDetailJobId] = useState(null)
   const [editingJob, setEditingJob] = useState(null)
@@ -129,8 +130,8 @@ export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly
         ))}
       </div>
 
-      {/* Two columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {/* Content Layout */}
+      <div className={`grid grid-cols-1 ${showScheduleSection ? 'md:grid-cols-2' : ''} gap-5`}>
         {/* Recent Activity */}
         <div className="card-modern p-4 md:p-5">
           <h2 className="text-base font-semibold text-white mb-4">最近动态</h2>
@@ -158,54 +159,56 @@ export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly
           </div>
         </div>
 
-        {/* Upcoming */}
-        <div className="card-modern p-4 md:p-5">
-          <h2 className="text-base font-semibold text-white mb-4">待办事项</h2>
-          <div className="space-y-3">
-            {upcomingTasks.length > 0 ? upcomingTasks.map((t) => {
-              const job = t.jobId ? jobs.find((j) => j.id === t.jobId) : null
-              return (
-                <div key={t.id} className="flex items-start gap-3 border-b border-white/10 pb-3 last:border-0">
-                  <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
-                    t.type === '面试' ? 'bg-green-500' : t.type === 'OA / 笔试' || t.type === 'Deadline' ? 'bg-amber-500' : t.type === 'Follow-up' ? 'bg-teal-500' : 'bg-blue-500'
-                  }`} />
-                  <div className="flex-1 min-w-0">
-                    {isReadOnly ? (
-                      <div className="block w-full min-w-0 text-left">
-                        <p className="truncate text-sm text-white">{t.title}</p>
-                        <p className="mt-0.5 text-xs text-gray-500 dark:text-white/45">{t.date} {t.startTime || ''}</p>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => openTask(t)}
-                        className="block w-full min-w-0 cursor-pointer text-left"
-                      >
-                        <p className="truncate text-sm text-white transition-colors hover:text-offer-accent">{t.title}</p>
-                        <p className="mt-0.5 text-xs text-gray-500 transition-colors hover:text-offer-accent dark:text-white/45">{t.date} {t.startTime || ''}</p>
-                      </button>
-                    )}
-                    {job && (
-                      <button
-                        onClick={() => setDetailJobId(job.id)}
-                        className="mt-1 block max-w-full cursor-pointer truncate text-xs text-offer-accent/70 transition-colors hover:text-offer-primary hover:underline"
-                        title={`${job.companyName} - ${job.jobTitle}`}
-                      >
-                        {job.companyName}
-                      </button>
-                    )}
+        {/* Upcoming Tasks Section (Only rendered if showScheduleSection is true) */}
+        {showScheduleSection && (
+          <div className="card-modern p-4 md:p-5">
+            <h2 className="text-base font-semibold text-white mb-4">待办事项</h2>
+            <div className="space-y-3">
+              {upcomingTasks.length > 0 ? upcomingTasks.map((t) => {
+                const job = t.jobId ? jobs.find((j) => j.id === t.jobId) : null
+                return (
+                  <div key={t.id} className="flex items-start gap-3 border-b border-white/10 pb-3 last:border-0">
+                    <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
+                      t.type === '面试' ? 'bg-green-500' : t.type === 'OA / 笔试' || t.type === 'Deadline' ? 'bg-amber-500' : t.type === 'Follow-up' ? 'bg-teal-500' : 'bg-blue-500'
+                    }`} />
+                    <div className="flex-1 min-w-0">
+                      {isReadOnly ? (
+                        <div className="block w-full min-w-0 text-left">
+                          <p className="truncate text-sm text-white">{t.title}</p>
+                          <p className="mt-0.5 text-xs text-gray-500 dark:text-white/45">{t.date} {t.startTime || ''}</p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => openTask(t)}
+                          className="block w-full min-w-0 cursor-pointer text-left"
+                        >
+                          <p className="truncate text-sm text-white transition-colors hover:text-offer-accent">{t.title}</p>
+                          <p className="mt-0.5 text-xs text-gray-500 transition-colors hover:text-offer-accent dark:text-white/45">{t.date} {t.startTime || ''}</p>
+                        </button>
+                      )}
+                      {job && (
+                        <button
+                          onClick={() => setDetailJobId(job.id)}
+                          className="mt-1 block max-w-full cursor-pointer truncate text-xs text-offer-accent/70 transition-colors hover:text-offer-primary hover:underline"
+                          title={`${job.companyName} - ${job.jobTitle}`}
+                        >
+                          {job.companyName}
+                        </button>
+                      )}
+                    </div>
                   </div>
+                )
+              }) : (
+                <div className="flex flex-col items-center justify-center py-8 text-gray-500 dark:text-white/45">
+                  <svg className="w-12 h-12 mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-sm">暂无待办事项</p>
                 </div>
-              )
-            }) : (
-              <div className="flex flex-col items-center justify-center py-8 text-gray-500 dark:text-white/45">
-                <svg className="w-12 h-12 mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p className="text-sm">暂无待办事项</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
       <JobDetailModal
         open={!!detailJobId}

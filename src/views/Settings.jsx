@@ -5,8 +5,11 @@ import { useRouter } from 'next/navigation'
 export default function Settings() {
   const router = useRouter()
   const [shareToken, setShareToken] = useState(null)
+  const [shareSchedule, setShareSchedule] = useState(true)
+  const [shareUsername, setShareUsername] = useState(true)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
+  const [scopeLoading, setScopeLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
 
@@ -17,6 +20,10 @@ export default function Settings() {
         if (res.ok) {
           const data = await res.json()
           setShareToken(data.shareToken)
+          if (data.shareSettings) {
+            if (typeof data.shareSettings.shareSchedule === 'boolean') setShareSchedule(data.shareSettings.shareSchedule)
+            if (typeof data.shareSettings.shareUsername === 'boolean') setShareUsername(data.shareSettings.shareUsername)
+          }
         }
       } catch (err) {
         console.error('获取分享状态失败', err)
@@ -35,10 +42,45 @@ export default function Settings() {
       if (!res.ok) throw new Error('生成分享链接失败')
       const data = await res.json()
       setShareToken(data.shareToken)
+      if (data.shareSettings) {
+        if (typeof data.shareSettings.shareSchedule === 'boolean') setShareSchedule(data.shareSettings.shareSchedule)
+        if (typeof data.shareSettings.shareUsername === 'boolean') setShareUsername(data.shareSettings.shareUsername)
+      }
     } catch (err) {
       setError(err.message)
     } finally {
       setActionLoading(false)
+    }
+  }
+
+  const handleToggleScope = async (key, newValue) => {
+    if (scopeLoading) return
+
+    setError('')
+    const previousSettings = { shareSchedule, shareUsername }
+    const nextSettings = { ...previousSettings, [key]: newValue }
+    if (key === 'shareSchedule') setShareSchedule(newValue)
+    if (key === 'shareUsername') setShareUsername(newValue)
+    setScopeLoading(true)
+
+    try {
+      const res = await fetch('/api/share/token', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shareSettings: nextSettings })
+      })
+      if (!res.ok) throw new Error('更新分享范围失败')
+      const data = await res.json()
+      if (data.shareSettings) {
+        if (typeof data.shareSettings.shareSchedule === 'boolean') setShareSchedule(data.shareSettings.shareSchedule)
+        if (typeof data.shareSettings.shareUsername === 'boolean') setShareUsername(data.shareSettings.shareUsername)
+      }
+    } catch (err) {
+      setError(err.message)
+      setShareSchedule(previousSettings.shareSchedule)
+      setShareUsername(previousSettings.shareUsername)
+    } finally {
+      setScopeLoading(false)
     }
   }
 
@@ -105,7 +147,7 @@ export default function Settings() {
               )}
 
               {shareToken ? (
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
                     <label className="text-xs text-offer-muted block mb-1.5 font-medium">公开分享链接 (有效期无限)</label>
                     <div className="flex flex-col sm:flex-row gap-3">
@@ -132,9 +174,44 @@ export default function Settings() {
                       </div>
                     </div>
                   </div>
+
+                  {/* 分享范围配置 */}
+                  <div className="pt-3 border-t border-white/10">
+                    <label className="text-xs text-white/70 block mb-3 font-semibold tracking-wide">分享范围设置</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <label className="flex items-start gap-3 p-3 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-colors cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={shareSchedule}
+                          disabled={scopeLoading}
+                          onChange={(e) => handleToggleScope('shareSchedule', e.target.checked)}
+                          className="mt-0.5 h-4 w-4 rounded border-white/20 text-purple-600 focus:ring-purple-500/20 focus:ring-offset-0 bg-white/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-white">日程待办显示</span>
+                          <span className="text-xs text-offer-muted mt-0.5">包含日程待办独立页面及首页仪表盘的待办区域</span>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-3 p-3 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-colors cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={shareUsername}
+                          disabled={scopeLoading}
+                          onChange={(e) => handleToggleScope('shareUsername', e.target.checked)}
+                          className="mt-0.5 h-4 w-4 rounded border-white/20 text-purple-600 focus:ring-purple-500/20 focus:ring-offset-0 bg-white/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-white">用户名分享</span>
+                          <span className="text-xs text-offer-muted mt-0.5">控制公开分享页面右上角的用户名提示语显示</span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
                   <div className="text-xs text-offer-muted flex items-center gap-1.5 mt-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    当前分享链接处于启用状态，任何持有该链接的用户均可免密只读查看。
+                    当前分享链接处于启用状态，任何持有该链接的用户均可免密只读查看所选范围。
                   </div>
                 </div>
               ) : (

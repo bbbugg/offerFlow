@@ -31,6 +31,8 @@ export default function SharePage({ params: paramsPromise }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [username, setUsername] = useState('')
+  const [shareSchedule, setShareSchedule] = useState(true)
+  const [shareUsername, setShareUsername] = useState(true)
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchScope, setSearchScope] = useState(DEFAULT_SEARCH_SCOPE)
@@ -38,6 +40,13 @@ export default function SharePage({ params: paramsPromise }) {
   const [detailJobId, setDetailJobId] = useState(null)
 
   const searchContainerRef = useRef(null)
+
+  const visibleMenuItems = useMemo(() => {
+    if (!shareSchedule) {
+      return menuItems.filter(item => item.key !== 'schedule')
+    }
+    return menuItems
+  }, [shareSchedule])
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return []
@@ -90,6 +99,9 @@ export default function SharePage({ params: paramsPromise }) {
         setJobs(data.jobs || [])
         setTasks(data.tasks || [])
         setUsername(data.username || '')
+        const settings = data.shareSettings || {}
+        setShareSchedule(settings.shareSchedule ?? true)
+        setShareUsername(settings.shareUsername ?? true)
       } catch (err) {
         setError(err.message)
       } finally {
@@ -130,17 +142,19 @@ export default function SharePage({ params: paramsPromise }) {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard jobs={jobs} tasks={tasks} isReadOnly={true} />
+        return <Dashboard jobs={jobs} tasks={tasks} isReadOnly={true} shareSchedule={shareSchedule} />
       case 'board':
         return <Board jobs={jobs} isReadOnly={true} />
       case 'positions':
         return <Positions jobs={jobs} isReadOnly={true} />
       case 'schedule':
-        return <Schedule jobs={jobs} tasks={tasks} isReadOnly={true} />
+        return shareSchedule
+          ? <Schedule jobs={jobs} tasks={tasks} isReadOnly={true} />
+          : <Dashboard jobs={jobs} tasks={tasks} isReadOnly={true} shareSchedule={shareSchedule} />
       case 'insights':
         return <Insights jobs={jobs} isReadOnly={true} />
       default:
-        return <Dashboard jobs={jobs} tasks={tasks} isReadOnly={true} />
+        return <Dashboard jobs={jobs} tasks={tasks} isReadOnly={true} shareSchedule={shareSchedule} />
     }
   }
 
@@ -233,9 +247,11 @@ export default function SharePage({ params: paramsPromise }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-          <span className="hidden sm:inline text-xs text-offer-muted">
-            正在查看 <strong className="text-theme-text font-semibold">{username}</strong> 的求职进度
-          </span>
+          {shareUsername && username && (
+            <span className="hidden sm:inline text-xs text-offer-muted">
+              正在查看 <strong className="text-theme-text font-semibold">{username}</strong> 的求职进度
+            </span>
+          )}
           <button
             onClick={toggleTheme}
             className="h-8.5 w-8.5 sm:h-9 sm:w-9 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer
@@ -265,7 +281,7 @@ export default function SharePage({ params: paramsPromise }) {
         {/* Share Sidebar */}
         <aside className="hidden lg:flex self-start my-4 ml-4 h-[calc(100vh-5.5rem)] w-[300px] rounded-[28px] py-6 px-5 bg-white/80 backdrop-blur-xl border border-slate-200/70 shadow-sm dark:bg-offer-card dark:border-white/[0.06] overflow-visible flex-col shrink-0">
           <nav className="relative z-10 ml-4 flex flex-col gap-2.5 flex-1 pt-3">
-            {menuItems.map((item) => {
+            {visibleMenuItems.map((item) => {
               const active = activeTab === item.key
               return (
                 <button
@@ -310,7 +326,7 @@ export default function SharePage({ params: paramsPromise }) {
       {/* Share Bottom Navbar for Mobile */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-theme-border bg-offer-card/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_18px_rgba(0,0,0,0.06)] backdrop-blur-md lg:hidden">
         <div className="flex h-16 w-full items-center justify-start overflow-x-auto overscroll-x-contain">
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const active = activeTab === item.key
             return (
               <button
