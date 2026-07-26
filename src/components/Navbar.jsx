@@ -243,29 +243,7 @@ export default function Navbar() {
       </div>
 
       {/* Right: Actions */}
-      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 md:gap-3">
-        <button
-          onClick={toggleTheme}
-          className="h-8.5 w-8.5 sm:h-9 sm:w-9 md:h-10 md:w-10 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer
-            dark:border-white/25 dark:bg-white/[0.12] dark:text-white/80 dark:shadow-lg dark:shadow-black/20
-            dark:hover:bg-white/[0.2] dark:hover:text-white dark:hover:scale-105
-            border-slate-300 bg-white text-slate-600 shadow-sm
-            hover:border-slate-400 hover:text-slate-800 hover:shadow-md
-            active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
-          aria-label={isDark ? '切换亮色模式' : '切换暗色模式'}
-          title={isDark ? '切换亮色模式' : '切换暗色模式'}
-        >
-          {isDark ? (
-            <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          ) : (
-            <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-          )}
-        </button>
-
+      <div className="flex shrink-0 items-center gap-2 md:gap-3">
         <div className="relative">
           <button
             ref={bellRef}
@@ -326,6 +304,28 @@ export default function Navbar() {
                     </div>
                   </div>
                 </div>
+
+                {/* Theme Toggle */}
+                <button
+                  onClick={toggleTheme}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm text-slate-700 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-white/[0.02] border-b border-slate-100 dark:border-white/[0.06] transition-colors duration-150 cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    {isDark ? (
+                      <svg className="w-4 h-4 shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                      </svg>
+                    )}
+                    <span>外观模式</span>
+                  </div>
+                  <span className="text-xs text-slate-400 dark:text-white/40 font-medium">
+                    {isDark ? '暗色' : '亮色'}
+                  </span>
+                </button>
 
                 {/* Settings */}
                 <button
