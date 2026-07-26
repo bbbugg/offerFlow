@@ -151,7 +151,7 @@ export default function SharePage({ params: paramsPromise }) {
       <div className="app-glow-br" />
 
       {/* Share Topbar Navbar */}
-      <header className="h-16 shrink-0 border-b border-theme-border bg-offer-card px-4 md:px-6 flex items-center justify-between relative z-20">
+      <header className="h-16 shrink-0 border-b border-theme-border bg-offer-card px-3 sm:px-4 md:px-6 flex items-center justify-between relative z-20">
         <Link href="/" className="flex shrink-0 items-center gap-2 hover:opacity-90 transition-opacity">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-offer-primary to-offer-accent flex items-center justify-center text-white font-bold text-sm shrink-0">
             O
@@ -164,7 +164,7 @@ export default function SharePage({ params: paramsPromise }) {
         </Link>
 
         {/* 中间：搜索栏 */}
-        <div className="mx-2 flex-1 sm:mx-4 sm:max-w-md md:mx-6 flex items-center gap-2">
+        <div className="mx-1.5 flex-1 sm:mx-4 sm:max-w-md md:mx-6 flex items-center gap-1.5 sm:gap-2">
           <div className="relative flex-1" ref={searchContainerRef}>
             <svg
               className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-theme-muted"
@@ -181,14 +181,14 @@ export default function SharePage({ params: paramsPromise }) {
             </svg>
             <input
               type="text"
-              placeholder="搜索公司、岗位、城市、渠道..."
+              placeholder="搜索公司、岗位、城市..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value)
                 setShowSearchResults(true)
               }}
               onFocus={() => setShowSearchResults(true)}
-              className="min-h-[40px] w-full rounded-xl border border-theme-border bg-theme-card py-2 pl-9 pr-3 text-sm text-theme-text placeholder:text-theme-muted outline-none transition-all duration-200 focus:border-offer-primary/70 focus:ring-2 focus:ring-offer-primary/20"
+              className="min-h-[38px] sm:min-h-[40px] w-full rounded-xl border border-theme-border bg-theme-card py-1.5 sm:py-2 pl-8 sm:pl-9 pr-2.5 sm:pr-3 text-xs sm:text-sm text-theme-text placeholder:text-theme-muted outline-none transition-all duration-200 focus:border-offer-primary/70 focus:ring-2 focus:ring-offer-primary/20"
             />
 
             {/* 搜索下拉框 */}
@@ -232,13 +232,13 @@ export default function SharePage({ params: paramsPromise }) {
           />
         </div>
 
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <span className="hidden sm:inline text-xs text-offer-muted">
             正在查看 <strong className="text-theme-text font-semibold">{username}</strong> 的求职进度
           </span>
           <button
             onClick={toggleTheme}
-            className="h-9 w-9 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer
+            className="h-8.5 w-8.5 sm:h-9 sm:w-9 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer
               dark:border-white/25 dark:bg-white/[0.12] dark:text-white/80 dark:shadow-lg dark:shadow-black/20
               dark:hover:bg-white/[0.2] dark:hover:text-white dark:hover:scale-105
               border-slate-300 bg-white text-slate-600 shadow-sm
@@ -248,11 +248,11 @@ export default function SharePage({ params: paramsPromise }) {
             title={isDark ? '切换亮色模式' : '切换暗色模式'}
           >
             {isDark ? (
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             ) : (
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
               </svg>
             )}
