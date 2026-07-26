@@ -871,3 +871,19 @@ html[data-offerflow-splash-shown="true"] [data-offerflow-auth-content] {
     transform: none;
   }
 }
+
+/* 日期与时间选择器图标及输入框鼠标悬停手型指示 */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"] {
+  cursor: pointer;
+}
+

@@ -428,12 +428,12 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
                 </div>
                 <div>
                   <label className="text-xs text-offer-muted block mb-1">日期</label>
-                  <input type="date" value={taskForm.date} onChange={(e) => setTaskForm((p) => ({ ...p, date: e.target.value }))} className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
+                  <input type="date" value={taskForm.date} onChange={(e) => setTaskForm((p) => ({ ...p, date: e.target.value }))} onClick={(e) => { try { e.target.showPicker?.() } catch (_) {} }} className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 cursor-pointer" />
                 </div>
               </div>
               <div>
                 <label className="text-xs text-offer-muted block mb-1">时间</label>
-                <input type="time" value={taskForm.startTime} onChange={(e) => setTaskForm((p) => ({ ...p, startTime: e.target.value }))} className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
+                <input type="time" value={taskForm.startTime} onChange={(e) => setTaskForm((p) => ({ ...p, startTime: e.target.value }))} onClick={(e) => { try { e.target.showPicker?.() } catch (_) {} }} className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 cursor-pointer" />
               </div>
               <div>
                 <label className="text-xs text-offer-muted block mb-1">备注</label>

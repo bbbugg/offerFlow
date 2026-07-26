@@ -153,17 +153,20 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
 
           <Field label="日期">
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
-              className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
+              onClick={(e) => { try { e.target.showPicker?.() } catch (_) {} }}
+              className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 cursor-pointer" />
           </Field>
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <Field label="开始时间">
               <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)}
-                className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
+                onClick={(e) => { try { e.target.showPicker?.() } catch (_) {} }}
+                className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 cursor-pointer" />
             </Field>
             <Field label="结束时间">
               <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)}
-                className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20" />
+                onClick={(e) => { try { e.target.showPicker?.() } catch (_) {} }}
+                className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 cursor-pointer" />
             </Field>
           </div>
 

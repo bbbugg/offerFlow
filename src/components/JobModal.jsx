@@ -21,6 +21,7 @@ const emptyForm = {
 
 // Stable helper components defined OUTSIDE JobModal to prevent remount on every render
 function Input({ label, value, onChange, placeholder, type = 'text', large, ...rest }) {
+  const isDateTime = type === 'date' || type === 'time' || type === 'datetime-local' || type === 'month'
   return (
     <div className={large ? 'min-w-0 md:col-span-2' : 'min-w-0'}>
       <label className="text-sm text-offer-muted block mb-1">{label}</label>
@@ -39,7 +40,12 @@ function Input({ label, value, onChange, placeholder, type = 'text', large, ...r
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20"
+          onClick={(e) => {
+            if (isDateTime && e.target.showPicker) {
+              try { e.target.showPicker() } catch (_) {}
+            }
+          }}
+          className={`min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 ${isDateTime ? 'cursor-pointer' : ''}`}
           {...rest}
         />
       )}
