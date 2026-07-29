@@ -10,15 +10,36 @@ function normalizeOption(option) {
   }
 }
 
-export default function CustomSelect({ value, onChange, options, placeholder = '请选择', disabled = false, className = '' }) {
+export default function CustomSelect({
+  value,
+  onChange,
+  options,
+  placeholder = '请选择',
+  disabled = false,
+  className = '',
+  searchable = false,
+  searchPlaceholder = '搜索...',
+}) {
   const [open, setOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const rootRef = useRef(null)
+  const searchInputRef = useRef(null)
+
   const normalized = options.map(normalizeOption)
   const selected = normalized.find((option) => option.value === value)
   const display = selected ? (selected.value === '' ? placeholder : selected.label) : placeholder
 
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      setSearchQuery('')
+      return
+    }
+
+    if (searchable) {
+      setTimeout(() => {
+        searchInputRef.current?.focus()
+      }, 50)
+    }
 
     const handlePointerDown = (event) => {
       if (!rootRef.current?.contains(event.target)) setOpen(false)
@@ -33,13 +54,19 @@ export default function CustomSelect({ value, onChange, options, placeholder = '
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [open])
+  }, [open, searchable])
 
   const selectOption = (option) => {
     if (option.disabled) return
     onChange(option.value)
     setOpen(false)
   }
+
+  const filteredOptions = normalized.filter((option) => {
+    if (!searchable || !searchQuery.trim()) return true
+    const query = searchQuery.trim().toLowerCase()
+    return option.label.toLowerCase().includes(query)
+  })
 
   return (
     <div ref={rootRef} className={`relative min-w-0 ${className}`}>
@@ -56,27 +83,65 @@ export default function CustomSelect({ value, onChange, options, placeholder = '
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-[80] mt-1 max-h-56 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 dark:border-white/[0.18] dark:bg-[#1C1F26] dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)]">
-          {normalized.map((option) => {
-            const isSelected = option.value === value
-            return (
-              <button
-                key={option.value || 'empty'}
-                type="button"
-                disabled={option.disabled}
-                onClick={() => selectOption(option)}
-                className={`block w-full min-w-0 truncate rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                  option.disabled
-                    ? 'cursor-not-allowed text-slate-400 dark:text-white/25'
-                    : isSelected
-                      ? 'cursor-pointer bg-purple-50 text-purple-700 dark:bg-purple-500/20 dark:text-white'
-                      : 'cursor-pointer text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-white/80 dark:hover:bg-white/[0.07] dark:hover:text-white'
-                }`}
-              >
-                {option.value === '' ? placeholder : option.label}
-              </button>
-            )
-          })}
+        <div className="absolute left-0 right-0 top-full z-[80] mt-1 max-h-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-white/[0.18] dark:bg-[#1C1F26] dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)] flex flex-col">
+          {searchable && (
+            <div className="p-2 border-b border-slate-200 dark:border-white/10 shrink-0">
+              <div className="relative flex items-center">
+                <svg className="w-4 h-4 absolute left-2.5 text-slate-400 dark:text-white/40 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 border border-transparent focus:border-purple-400/50 focus:bg-white dark:focus:bg-white/[0.1] outline-none transition-all"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSearchQuery('')
+                    }}
+                    className="absolute right-2 text-slate-400 hover:text-slate-600 dark:text-white/40 dark:hover:text-white/80 p-0.5 text-xs rounded cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+          <div className="max-h-52 overflow-y-auto p-1">
+            {filteredOptions.length === 0 ? (
+              <div className="px-3 py-2 text-xs text-slate-400 dark:text-white/40 text-center">
+                无匹配选项
+              </div>
+            ) : (
+              filteredOptions.map((option) => {
+                const isSelected = option.value === value
+                return (
+                  <button
+                    key={option.value || 'empty'}
+                    type="button"
+                    disabled={option.disabled}
+                    onClick={() => selectOption(option)}
+                    className={`block w-full min-w-0 truncate rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                      option.disabled
+                        ? 'cursor-not-allowed text-slate-400 dark:text-white/25'
+                        : isSelected
+                          ? 'cursor-pointer bg-purple-50 text-purple-700 dark:bg-purple-500/20 dark:text-white'
+                          : 'cursor-pointer text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-white/80 dark:hover:bg-white/[0.07] dark:hover:text-white'
+                    }`}
+                  >
+                    {option.value === '' ? placeholder : option.label}
+                  </button>
+                )
+              })
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -175,6 +175,8 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
               value={jobId}
               onChange={setJobId}
               placeholder="不关联"
+              searchable={true}
+              searchPlaceholder="搜索岗位或公司..."
               options={[
                 { value: '', label: '不关联' },
                 ...sortedJobs.map((j) => ({
