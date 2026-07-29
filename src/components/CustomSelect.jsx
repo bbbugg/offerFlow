@@ -114,32 +114,34 @@ export default function CustomSelect({
               </div>
             </div>
           )}
-          <div className="max-h-52 overflow-y-auto p-1">
+          <div className="max-h-52 overflow-auto p-1">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-2 text-xs text-slate-400 dark:text-white/40 text-center">
+              <div className="px-3 py-2 text-xs text-slate-400 dark:text-white/40 text-center whitespace-nowrap">
                 无匹配选项
               </div>
             ) : (
-              filteredOptions.map((option) => {
-                const isSelected = option.value === value
-                return (
-                  <button
-                    key={option.value || 'empty'}
-                    type="button"
-                    disabled={option.disabled}
-                    onClick={() => selectOption(option)}
-                    className={`block w-full min-w-0 truncate rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                      option.disabled
-                        ? 'cursor-not-allowed text-slate-400 dark:text-white/25'
-                        : isSelected
-                          ? 'cursor-pointer bg-purple-50 text-purple-700 dark:bg-purple-500/20 dark:text-white'
-                          : 'cursor-pointer text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-white/80 dark:hover:bg-white/[0.07] dark:hover:text-white'
-                    }`}
-                  >
-                    {option.value === '' ? placeholder : option.label}
-                  </button>
-                )
-              })
+              <div className="min-w-full w-max flex flex-col">
+                {filteredOptions.map((option) => {
+                  const isSelected = option.value === value
+                  return (
+                    <button
+                      key={option.value || 'empty'}
+                      type="button"
+                      disabled={option.disabled}
+                      onClick={() => selectOption(option)}
+                      className={`block w-full whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                        option.disabled
+                          ? 'cursor-not-allowed text-slate-400 dark:text-white/25'
+                          : isSelected
+                            ? 'cursor-pointer bg-purple-50 text-purple-700 dark:bg-purple-500/20 dark:text-white'
+                            : 'cursor-pointer text-slate-700 hover:bg-slate-100 hover:text-slate-950 dark:text-white/80 dark:hover:bg-white/[0.07] dark:hover:text-white'
+                      }`}
+                    >
+                      {option.value === '' ? placeholder : option.label}
+                    </button>
+                  )
+                })}
+              </div>
             )}
           </div>
         </div>

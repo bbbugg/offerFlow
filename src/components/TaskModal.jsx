@@ -176,12 +176,12 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
               onChange={setJobId}
               placeholder="不关联"
               searchable={true}
-              searchPlaceholder="搜索岗位或公司..."
+              searchPlaceholder="搜索岗位、公司、进度..."
               options={[
                 { value: '', label: '不关联' },
                 ...sortedJobs.map((j) => ({
                   value: j.id,
-                  label: `${j.companyName} - ${j.jobTitle}${j.status === '已结束' ? ' (已结束)' : ''}`,
+                  label: `${j.companyName} - ${j.jobTitle}${j.status ? ` (${j.status})` : ''}`,
                 })),
               ]}
             />
