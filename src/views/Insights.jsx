@@ -6,6 +6,9 @@ import {
 import { useApp, isAppliedJob, isRepliedJob, hasOaExperience, hasInterviewExperience, getInterviewRoundCount, isOfferJob } from '../store/AppContext'
 import ModalHeader from '../components/ModalHeader'
 import GlowCard from '../components/GlowCard'
+import JobDetailModal from '../components/JobDetailModal'
+import JobModal from '../components/JobModal'
+import ConfirmDialog from '../components/ConfirmDialog'
 import { parseLocalDate } from '../lib/dateUtils'
 import { JOB_STATUS_BADGE, NEUTRAL_BADGE } from '../lib/badgeStyles'
 
@@ -103,6 +106,10 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
   const [timeRange, setTimeRange] = useState('全部')
   const [detailOpen, setDetailOpen] = useState(false)
   const [replyDetailOpen, setReplyDetailOpen] = useState(false)
+  const [detailJobId, setDetailJobId] = useState(null)
+  const [editingJob, setEditingJob] = useState(null)
+  const [jobModalOpen, setJobModalOpen] = useState(false)
+  const [deletingJob, setDeletingJob] = useState(null)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -113,16 +120,38 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
   }, [])
 
   useEffect(() => {
-    if (!detailOpen && !replyDetailOpen) return
+    if (!detailOpen && !replyDetailOpen && !detailJobId) return
     const handler = (e) => {
       if (e.key === 'Escape') {
-        setDetailOpen(false)
-        setReplyDetailOpen(false)
+        if (detailJobId) {
+          setDetailJobId(null)
+        } else {
+          setDetailOpen(false)
+          setReplyDetailOpen(false)
+        }
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [detailOpen, replyDetailOpen])
+  }, [detailOpen, replyDetailOpen, detailJobId])
+
+  const handleEditFromDetail = (job) => {
+    setDetailJobId(null)
+    setEditingJob(job)
+    setJobModalOpen(true)
+  }
+
+  const handleDeleteFromDetail = (job) => {
+    setDetailJobId(null)
+    setDeletingJob(job)
+  }
+
+  const confirmDeleteJob = async () => {
+    if (!deletingJob) return
+    await appContext.deleteJob(deletingJob.id)
+    appContext.addToast('已删除岗位记录', 'success')
+    setDeletingJob(null)
+  }
 
   const timeFilter = useMemo(() => makeTimeFilter(timeRange), [timeRange])
 
@@ -386,6 +415,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
       <InterviewDetailModal
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
+        onSelectJob={(id) => setDetailJobId(id)}
         stats={{
           totalRounds: data.interviewedCount,
           interviewedPeople: data.interviewedPeopleCount,
@@ -401,6 +431,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
       <ReplyDetailModal
         open={replyDetailOpen}
         onClose={() => setReplyDetailOpen(false)}
+        onSelectJob={(id) => setDetailJobId(id)}
         stats={{
           totalReplied: data.repliedCount,
           appliedCount: data.appliedCount,
@@ -414,6 +445,30 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
         }}
         jobs={data.repliedJobs}
       />
+
+      {/* ===== Job Detail Modal ===== */}
+      <JobDetailModal
+        open={!!detailJobId}
+        jobId={detailJobId}
+        onClose={() => setDetailJobId(null)}
+        onEdit={handleEditFromDetail}
+        onDelete={handleDeleteFromDetail}
+        jobs={jobs}
+        isReadOnly={isReadOnly}
+      />
+
+      {!isReadOnly && (
+        <>
+          <JobModal open={jobModalOpen} job={editingJob} onClose={() => { setJobModalOpen(false); setEditingJob(null) }} />
+          <ConfirmDialog
+            open={!!deletingJob}
+            title="确认删除"
+            message={`确定要删除「${deletingJob?.companyName || ''} - ${deletingJob?.jobTitle || ''}」这条岗位记录吗？此操作不可恢复。`}
+            onConfirm={confirmDeleteJob}
+            onCancel={() => setDeletingJob(null)}
+          />
+        </>
+      )}
     </div>
   )
 }
@@ -491,7 +546,7 @@ function getHighestRoundBadge(job) {
   )
 }
 
-function InterviewDetailModal({ open, onClose, stats, jobs, offerCount }) {
+function InterviewDetailModal({ open, onClose, onSelectJob, stats, jobs, offerCount }) {
   if (!open) return null
 
   const roundInfo = [
@@ -565,7 +620,12 @@ function InterviewDetailModal({ open, onClose, stats, jobs, offerCount }) {
                     </thead>
                     <tbody>
                       {jobs.map((j) => (
-                        <tr key={j.id} className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                        <tr
+                          key={j.id}
+                          onClick={() => onSelectJob?.(j.id)}
+                          className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                          title="点击查看岗位详情"
+                        >
                           <td className="py-2.5 px-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{j.companyName}</td>
                           <td className="py-2.5 px-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{j.jobTitle}</td>
                           <td className="py-2.5 px-3 whitespace-nowrap">
@@ -629,7 +689,7 @@ function getReplyStageBadge(job) {
   )
 }
 
-function ReplyDetailModal({ open, onClose, stats, jobs }) {
+function ReplyDetailModal({ open, onClose, onSelectJob, stats, jobs }) {
   if (!open) return null
 
   return (
@@ -726,7 +786,12 @@ function ReplyDetailModal({ open, onClose, stats, jobs }) {
                     </thead>
                     <tbody>
                       {jobs.map((j) => (
-                        <tr key={j.id} className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                        <tr
+                          key={j.id}
+                          onClick={() => onSelectJob?.(j.id)}
+                          className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                          title="点击查看岗位详情"
+                        >
                           <td className="py-2.5 px-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{j.companyName}</td>
                           <td className="py-2.5 px-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{j.jobTitle}</td>
                           <td className="py-2.5 px-3 whitespace-nowrap">
