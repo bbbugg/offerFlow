@@ -1,12 +1,12 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import { generateMockData, defaultSettings } from './mockData'
 import Toast from '../components/Toast'
 import { useAuth } from './AuthContext'
 import { APPLIED_STATUSES, canSelectInterviewStatus, canSelectJobStatus } from '../lib/jobStatus'
 
 const AppContext = createContext(null)
+const defaultSettings = {}
 
 // ---- Centralized statistics helpers ----
 
@@ -153,9 +153,8 @@ export function AppProvider({ children }) {
       } else {
         console.error('[AppContext] API load failed, falling back to localStorage', err)
         addToast('数据加载失败，使用本地缓存', 'error')
-        const mock = generateMockData()
-        setJobsRaw(loadFromStorage('offerFlow_jobs', mock.jobs))
-        setTasksRaw(loadFromStorage('offerFlow_tasks', mock.tasks))
+        setJobsRaw(loadFromStorage('offerFlow_jobs', []))
+        setTasksRaw(loadFromStorage('offerFlow_tasks', []))
       }
     } finally {
       setDataLoading(false)

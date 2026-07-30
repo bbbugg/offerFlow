@@ -28,7 +28,5 @@ pnpm-debug.log*
 *.sqlite3
 *.sqlite3-*
 
-public/uploads
-
 *.local
 .DS_Store
