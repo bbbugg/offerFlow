@@ -1,5 +1,7 @@
 # OfferFlow — 求职全流程管理平台
 
+二改自 [xuuuu-cpu/offerFlow-llm-feature](https://github.com/xuuuu-cpu/offerFlow-llm-feature)。
+
 一站式求职管理工具，帮助你系统化追踪岗位、投递进度、面试轮次与待办事项。
 
 **技术栈**: Next.js 16 + React 19 + Tailwind CSS v4 + Prisma + SQLite/PostgreSQL
@@ -277,4 +279,7 @@ offerFlow/
 
 ## License
 
-MIT © 2026 xuuuu-cpu
+原项目在 README 中标注为 MIT License。
+
+- 原始项目 © 2026 [xuuuu-cpu](https://github.com/xuuuu-cpu)
+- 二次修改 © 2026 bbbugg
