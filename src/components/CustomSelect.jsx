@@ -25,6 +25,7 @@ export default function CustomSelect({
   const [searchQuery, setSearchQuery] = useState('')
   const rootRef = useRef(null)
   const searchInputRef = useRef(null)
+  const dropdownRef = useRef(null)
 
   const normalized = options.map(normalizeOption)
   const selected = normalized.find((option) => option.value === value)
@@ -36,26 +37,61 @@ export default function CustomSelect({
       return
     }
 
+    // 自动滑动至下拉面板的最底部，确保展开后的整个区域完整呈现不被遮挡
+    const scrollTimer = setTimeout(() => {
+      if (dropdownRef.current) {
+        dropdownRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      } else {
+        rootRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+      }
+    }, 150)
+
     if (searchable && autoFocusSearch) {
       setTimeout(() => {
         searchInputRef.current?.focus()
       }, 50)
     }
 
+    let startX = 0
+    let startY = 0
+    let isPointerDownOutside = false
+
     const handlePointerDown = (event) => {
-      if (!rootRef.current?.contains(event.target)) setOpen(false)
+      if (!rootRef.current?.contains(event.target)) {
+        isPointerDownOutside = true
+        startX = event.clientX
+        startY = event.clientY
+      } else {
+        isPointerDownOutside = false
+      }
     }
+
+    const handlePointerUp = (event) => {
+      if (isPointerDownOutside) {
+        const moveX = Math.abs(event.clientX - startX)
+        const moveY = Math.abs(event.clientY - startY)
+        // 只有当移动距离小于 10px 时才视作真正的“外部点击”，防止滑动面板时误收起下拉框
+        if (moveX < 10 && moveY < 10) {
+          setOpen(false)
+        }
+      }
+      isPointerDownOutside = false
+    }
+
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') setOpen(false)
     }
 
     document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('pointerup', handlePointerUp)
     document.addEventListener('keydown', handleKeyDown)
     return () => {
+      clearTimeout(scrollTimer)
       document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('pointerup', handlePointerUp)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [open, searchable])
+  }, [open, searchable, autoFocusSearch])
 
   const selectOption = (option) => {
     if (option.disabled) return
@@ -84,7 +120,7 @@ export default function CustomSelect({
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-[80] mt-1 max-h-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-white/[0.18] dark:bg-[#1C1F26] dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)] flex flex-col">
+        <div ref={dropdownRef} className="absolute left-0 right-0 top-full z-[80] mt-1 max-h-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-white/[0.18] dark:bg-[#1C1F26] dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)] flex flex-col">
           {searchable && (
             <div className="p-2 border-b border-slate-200 dark:border-white/10 shrink-0">
               <div className="relative flex items-center">
@@ -96,6 +132,11 @@ export default function CustomSelect({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => {
+                    setTimeout(() => {
+                      dropdownRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                    }, 150)
+                  }}
                   placeholder={searchPlaceholder}
                   className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 border border-transparent focus:border-purple-400/50 focus:bg-white dark:focus:bg-white/[0.1] outline-none transition-all"
                   onClick={(e) => e.stopPropagation()}
