@@ -1,15 +1,12 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: offerflow:latest
+    image: ghcr.io/bbbugg/offerflow:latest
     restart: unless-stopped
     ports:
-      - "${PORT:-3000}:3000"
+      - "8543:3000"
     environment:
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
-      REGISTER_ALLOWED_USERNAMES: ${REGISTER_ALLOWED_USERNAMES:-}
+      JWT_SECRET: ${JWT_SECRET:?请在 .env 中设置 JWT_SECRET}
+      REGISTER_ALLOWED_USERNAMES: ${REGISTER_ALLOWED_USERNAMES:?请在 .env 中设置 REGISTER_ALLOWED_USERNAMES}
     volumes:
       - offerflow-data:/app/data
 

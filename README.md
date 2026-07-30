@@ -81,62 +81,74 @@ npm run dev
 
 ### Docker 部署
 
-Docker 部署默认使用 SQLite，适合个人服务器、NAS 或单机长期运行。
+Docker 部署默认使用 SQLite，适合个人服务器、NAS 或单机长期运行。官方镜像支持
+`linux/amd64` 和 `linux/arm64`：
+
+```text
+ghcr.io/bbbugg/offerflow:latest
+```
+
+新建 `compose.yml`：
+
+```yaml
+services:
+  app:
+    image: ghcr.io/bbbugg/offerflow:latest
+    restart: unless-stopped
+    ports:
+      - "8543:3000"
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?请在 .env 中设置 JWT_SECRET}
+      REGISTER_ALLOWED_USERNAMES: ${REGISTER_ALLOWED_USERNAMES:?请在 .env 中设置 REGISTER_ALLOWED_USERNAMES}
+    volumes:
+      - offerflow-data:/app/data
+
+volumes:
+  offerflow-data:
+```
+
+在同一目录新建 `.env`，填写 JWT 密钥和允许注册的用户名：
+
+```dotenv
+JWT_SECRET=请替换为足够长的随机字符串
+REGISTER_ALLOWED_USERNAMES=alice,bob
+```
+
+多个用户名使用英文逗号分隔。未列入 `REGISTER_ALLOWED_USERNAMES` 的用户名无法注册。
+
+启动服务：
 
 ```bash
-# 构建并启动
-docker compose up -d --build
+docker compose up -d
+```
 
+启动后访问 `http://服务器地址:8543`。常用维护命令：
+
+```bash
 # 查看日志
 docker compose logs -f app
+
+# 更新镜像并重建容器
+docker compose pull
+docker compose up -d
 ```
 
-启动后访问 http://localhost:3000。`docker-compose.yml` 会创建两个持久化卷：
+`offerflow-data` 卷保存 SQLite 数据库 `/app/data/dev.db`。删除或重建容器不会丢失数据，
+但执行 `docker compose down -v` 会删除数据卷，请谨慎使用。建议定期备份该数据卷。
 
-- `offerflow-data`：SQLite 数据库，默认文件为 `/app/data/dev.db`
+容器默认设置 `PRISMA_DB_PUSH=true`，首次启动时会自动创建数据库并同步表结构。
 
-环境变量在运行时注入即可。最少建议设置 `JWT_SECRET` 和允许注册的用户名：
-
-```bash
-JWT_SECRET=your-random-secret REGISTER_ALLOWED_USERNAMES=alice,bob docker compose up -d
-```
-
-如果不用 compose，也可以直接运行镜像：
+如果不用 Compose，也可以直接运行：
 
 ```bash
 docker run -d \
   --name offerflow \
-  -p 3000:3000 \
+  --restart unless-stopped \
+  -p 8543:3000 \
   -e JWT_SECRET=your-random-secret \
   -e REGISTER_ALLOWED_USERNAMES=alice,bob \
   -v offerflow-data:/app/data \
-  ghcr.io/<owner>/<repo>:latest
-```
-
-默认 `PRISMA_DB_PUSH=true`，容器启动时会执行 `prisma db push` 初始化/同步表结构。
-
-使用已发布镜像时，将 compose 中 `app` 服务的 `build` 段删除，并保留：
-
-```yaml
-app:
-  image: ghcr.io/<owner>/<repo>:latest
-  restart: unless-stopped
-```
-
-### Docker 镜像自动打包
-
-仓库已添加 `.github/workflows/docker-publish.yml`，逻辑与 `gemini-balance` 的 Docker workflow 保持一致：
-
-- `push`：构建并推送镜像到 GitHub Container Registry
-- `pull_request` 到 `main`：只构建验证，不推送
-- `workflow_dispatch`：支持手动触发
-- 多架构：`linux/amd64`、`linux/arm64`
-- 标签：分支名、语义化版本 tag、默认分支的 `latest`
-
-镜像地址格式：
-
-```text
-ghcr.io/<GitHub 用户或组织>/<仓库名>:latest
+  ghcr.io/bbbugg/offerflow:latest
 ```
 
 ---
