@@ -120,6 +120,49 @@ const CustomXAxisTick = ({ x, y, payload, isMobile }) => {
   )
 }
 
+const CustomYAxisTick = ({ x, y, payload, isMobile, width }) => {
+  if (!payload) return null
+  const text = String(payload.value || '')
+  const fontSize = isMobile ? 10 : 11
+
+  let textWidth = 0
+  for (let i = 0; i < text.length; i++) {
+    textWidth += text.charCodeAt(i) > 255 ? fontSize : fontSize * 0.55
+  }
+
+  const availableWidth = width - 8
+  let displayLine = text
+  if (textWidth > availableWidth) {
+    let currentW = 0
+    let cutIndex = 0
+    for (let i = 0; i < text.length; i++) {
+      const w = text.charCodeAt(i) > 255 ? fontSize : fontSize * 0.55
+      if (currentW + w + fontSize > availableWidth) {
+        break
+      }
+      currentW += w
+      cutIndex = i + 1
+    }
+    displayLine = cutIndex > 0 ? `${text.slice(0, cutIndex)}…` : text
+  }
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={-width + 6}
+        y={0}
+        dy={4}
+        fill="#AAAAAA"
+        fontSize={fontSize}
+        textAnchor="start"
+      >
+        <title>{text}</title>
+        {displayLine}
+      </text>
+    </g>
+  )
+}
+
 export default function Insights({ jobs: propJobs, isReadOnly = false }) {
   const appContext = useApp()
   const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
@@ -282,6 +325,23 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
     }
   }, [jobs, timeFilter])
 
+  const cityYAxisWidth = useMemo(() => {
+    if (!data.cityDistribution || data.cityDistribution.length === 0) return isMobile ? 60 : 70
+    const fontSize = isMobile ? 10 : 11
+    const maxLenPx = Math.max(
+      ...data.cityDistribution.map((item) => {
+        const str = item.city || ''
+        let count = 0
+        for (let i = 0; i < str.length; i++) {
+          count += str.charCodeAt(i) > 255 ? fontSize : fontSize * 0.55
+        }
+        return count
+      })
+    )
+    const calculated = Math.ceil(maxLenPx + 20)
+    return Math.min(220, Math.max(isMobile ? 60 : 70, calculated))
+  }, [data.cityDistribution, isMobile])
+
   return (
     <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -395,7 +455,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
             <BarChart
               data={data.cityDistribution}
               layout="vertical"
-              margin={{ top: 5, right: isMobile ? 15 : 60, left: isMobile ? -15 : 60, bottom: 5 }}
+              margin={{ top: 5, right: isMobile ? 15 : 40, left: 5, bottom: 5 }}
               barSize={28}
             >
               <CartesianGrid stroke="rgba(148,163,184,0.2)" horizontal={false} />
@@ -403,10 +463,10 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
               <YAxis
                 dataKey="city"
                 type="category"
-                tick={{ fill: '#AAAAAA', fontSize: isMobile ? 10 : 11 }}
+                tick={(props) => <CustomYAxisTick {...props} isMobile={isMobile} width={cityYAxisWidth} />}
                 axisLine={false}
                 tickLine={false}
-                width={isMobile ? 50 : 60}
+                width={cityYAxisWidth}
               />
               <Tooltip
                 content={<CustomChartTooltip />}
