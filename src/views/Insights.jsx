@@ -397,9 +397,9 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
         {data.cityDistribution.length > 0 ? (
           <div className="flex items-start">
             {/* 左侧城市名称文本栏，由 CSS whitespace-nowrap 自动根据文字实际长度撑开 */}
-            <div className="flex flex-col shrink-0 pt-[8px] pb-[32px] text-xs select-none">
+            <div className="flex flex-col shrink-0 pt-[8px] pb-[32px] select-none">
               {data.cityDistribution.map((item) => (
-                <div key={item.city} className="flex items-center h-[44px] whitespace-nowrap pr-3 font-medium text-slate-400 dark:text-white/60" title={item.city}>
+                <div key={item.city} className="flex items-center h-[44px] whitespace-nowrap pr-3 text-[#AAAAAA] text-[11px] max-md:text-[10px] font-normal" title={item.city}>
                   {item.city}
                 </div>
               ))}
