@@ -220,8 +220,8 @@ npm run db:pg
 ```
 
 `DATABASE_URL` 和 `DIRECT_URL` 由 PostgreSQL 服务商提供；如果服务商只提供一个连接地址，
-可先将两个变量填写为相同的地址。`npm run db:sqlite` 和 `npm run db:pg` 都会覆盖当前
-`.env` 与 Prisma schema，切换前请备份已有配置。
+可先将两个变量填写为相同的地址。`npm run db:sqlite` 和 `npm run db:pg` 只会在 `.env`
+不存在时从对应模板创建，不会覆盖已有配置；Prisma schema 会切换为对应数据库版本。
 
 ### 可以在手机上用吗？
 主要页面已提供响应式布局；看板和岗位表格在较小屏幕上可能需要横向滚动。
