@@ -10,7 +10,6 @@ export const metadata = {
     ],
     shortcut: '/favicon.svg',
   },
-  manifest: '/manifest.webmanifest',
 }
 
 export default function RootLayout({ children }) {
