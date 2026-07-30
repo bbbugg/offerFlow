@@ -10,8 +10,12 @@
 
 ## 核心功能
 
+### 仪表盘（Dashboard）
+- 汇总岗位、待办和近期求职进展
+- 快速查看关键指标与下一步行动
+
 ### 看板管理（Board）
-- 9 列 Kanban 看板，覆盖求职全流程：感兴趣 → 已投递 → 笔试 → 一面 → 二面 → ... → Offer → 已结束
+- 9 阶段求职看板：感兴趣 → 已投递 → OA / 笔试 → 一面中 → 二面中 → 三面中 → 终面中 → Offer → 已结束
 - HTML5 原生拖拽，拖拽即可变更岗位状态
 - 每个岗位卡片展示公司、职位、优先级、近期动态
 
@@ -19,9 +23,10 @@
 - 表格视图管理所有投递记录，支持按状态/公司/城市筛选
 - 快速编辑岗位信息：JD 链接、薪资范围、工作模式、联系人
 - 内嵌时间线，记录每个岗位的关键节点
+- 支持导出 CSV
 
 ### 日程待办（Schedule）
-- 任务按类型分组：面试、笔试、投递、推进、会议、其他
+- 任务类型包括：面试、OA / 笔试、Deadline、Follow-up、准备任务、其他
 - 标记完成、设置优先级、关联岗位
 
 ### 数据洞察（Insights）
@@ -30,8 +35,9 @@
 - 按时间范围筛选，跟踪求职进展
 
 ### 公开分享（Share）
-- 一键生成永久分享链接，通过链接分享整个求职空间给他人
-- 访客无需注册，直接查看仪表盘、投递看板、岗位库、日程待办、数据洞察全部五个视图
+- 一键生成长期有效的随机分享链接，关闭分享前持续有效
+- 访客无需注册，可查看仪表盘、投递看板、岗位库和数据洞察；日程待办可选择是否公开
+- 可选择是否在分享页展示用户名
 - 分享页支持深色 / 浅色模式切换，界面与主系统完全一致
 - **严格只读**：访客无法拖拽看板、新建/编辑/删除任何数据；所有写操作入口在前端已隐藏，后端接口层（JWT 中间件）亦拦截未授权请求
 - 可随时在「系统设置」中关闭并销毁分享链接
@@ -42,7 +48,8 @@
 
 ### 前置条件
 
-- **Node.js 18+**（[下载 LTS 版本](https://nodejs.org/)）
+- **本地源码运行**：需要 Node.js 20.9+，推荐使用 Node.js 22 LTS（[下载](https://nodejs.org/)）
+- **Docker 部署**：只需要 Docker 和 Docker Compose，无需安装 Node.js 或 npm
 
 ### Windows 一键部署
 
@@ -50,32 +57,29 @@
 1. 解压下载的 zip 文件
 2. 双击项目根目录的 setup.bat
    脚本自动完成：安装依赖 → 切换 SQLite → 生成数据库 → 初始化配置
-3. 在目录中打开终端（或在 VS Code 中点 + 号新开终端，cd 到解压后文件夹的位置）
-4. 运行 npm run dev
+3. 编辑 `.env`，修改 `JWT_SECRET`，并将 `REGISTER_ALLOWED_USERNAMES` 设置为允许注册的用户名
+4. 在项目目录打开终端，运行 `npm run dev`
 5. 浏览器打开 http://localhost:3000
-6. 注册账号并开始使用
+6. 使用白名单中的用户名注册并开始使用
 ```
 
 ### 手动部署（Windows / macOS / Linux）
 
 ```bash
 # 1. 克隆
-git clone https://github.com/xuuuu-cpu/offerFlow-llm-feature.git
-cd offerFlow-llm-feature
+git clone https://github.com/bbbugg/offerFlow.git
+cd offerFlow
 
 # 2. 安装依赖
 npm install
 
-# 3. 切换到 SQLite 模式
+# 3. 切换到 SQLite 模式并初始化数据库
 npm run db:sqlite
 
-# 4. 配置环境变量
-cp .env.example .env          # macOS/Linux
-copy .env.example .env         # Windows
+# 4. 编辑生成的 .env
+# 修改 JWT_SECRET，并设置 REGISTER_ALLOWED_USERNAMES
 
-# 5. 编辑 .env，修改 JWT_SECRET，并设置允许注册的用户名 REGISTER_ALLOWED_USERNAMES
-
-# 6. 启动
+# 5. 启动
 npm run dev
 ```
 
@@ -83,7 +87,7 @@ npm run dev
 
 ### Docker 部署
 
-Docker 部署默认使用 SQLite，适合个人服务器、NAS 或单机长期运行。官方镜像支持
+Docker 部署默认使用 SQLite，适合个人服务器、NAS 或单机长期运行。预构建镜像支持
 `linux/amd64` 和 `linux/arm64`：
 
 ```text
@@ -183,20 +187,47 @@ docker run -d \
 确认 `npm run dev` 正常启动，访问 http://localhost:3000。如果端口被占用，Next.js 会自动尝试下一个可用端口。
 
 ### 注册失败或登录不了？
-确保 `.env` 文件中的 `JWT_SECRET` 已设置（任意随机字符串均可），且已执行 `npm run db:sqlite` 创建数据库。
+确保已执行 `npm run db:sqlite` 创建数据库，并检查 `.env`：
+
+- `JWT_SECRET` 已设置为足够长的随机字符串
+- 注册用户名已包含在 `REGISTER_ALLOWED_USERNAMES` 中，多个用户名使用英文逗号分隔
 
 ### 数据存在哪里？
 本地运行时数据存储在项目根目录的 `prisma/dev.db`（SQLite 文件），该文件由 Prisma 按需创建且已被 Git 忽略。
 
 ### 如何切换数据库？
-- 本地开发（推荐）：`npm run db:sqlite` → SQLite 零配置
-- 生产部署：`npm run db:pg` → PostgreSQL（需自行搭建或使用 Neon，并会同步数据库表结构）
+
+默认使用 SQLite，普通用户和 Docker 部署无需配置 PostgreSQL。
+
+```bash
+npm run db:sqlite
+```
+
+只有已经准备好 PostgreSQL 数据库的用户才需要切换。切换时，在项目根目录新建
+`.env.pg` 文件：
+
+```dotenv
+DATABASE_URL="你的 PostgreSQL 连接地址"
+DIRECT_URL="你的 PostgreSQL 直连地址"
+JWT_SECRET="请替换为足够长的随机字符串"
+REGISTER_ALLOWED_USERNAMES="alice,bob"
+```
+
+保存后运行：
+
+```bash
+npm run db:pg
+```
+
+`DATABASE_URL` 和 `DIRECT_URL` 由 PostgreSQL 服务商提供；如果服务商只提供一个连接地址，
+可先将两个变量填写为相同的地址。`npm run db:sqlite` 和 `npm run db:pg` 都会覆盖当前
+`.env` 与 Prisma schema，切换前请备份已有配置。
 
 ### 可以在手机上用吗？
-目前未针对移动端做完整适配，但核心功能在手机浏览器上基本可用。
+主要页面已提供响应式布局；看板和岗位表格在较小屏幕上可能需要横向滚动。
 
 ### 多人如何共享数据？
-本项目为单用户设计，数据按用户 ID 隔离。如需多人共享，可自行搭建 PostgreSQL 部署到服务器。
+应用支持白名单内的多个账号，业务数据按用户 ID 隔离。SQLite 适合个人或低并发使用；多人同时使用时建议切换 PostgreSQL。
 
 ---
 
@@ -210,7 +241,7 @@ docker run -d \
 - 退出登录时自动清除本地缓存的业务数据
 
 ### 公开分享的安全机制
-- 分享链接基于随机生成的 UUID Token，无法枚举猜测
+- 分享链接使用随机生成的 64 位十六进制 Token，难以枚举猜测
 - 分享页访客**没有 Cookie / JWT**，后端中间件对所有写接口（`/api/jobs`、`/api/tasks` 等）统一返回 `401 Unauthorized`，即使绕过前端直接调用接口也无法修改任何数据
 - 仅 `/api/share/board`（只读数据查询）对分享访客开放
 - 关闭分享后，对应 Token 立即从数据库删除，原链接永久失效
@@ -229,7 +260,7 @@ docker run -d \
 
 如果你遇到 Bug 或有功能建议，欢迎提交 Issue：
 
-- **GitHub Issues**: [https://github.com/xuuuu-cpu/offerFlow-llm-feature/issues](https://github.com/xuuuu-cpu/offerFlow-llm-feature/issues)
+- **GitHub Issues**: [https://github.com/bbbugg/offerFlow/issues](https://github.com/bbbugg/offerFlow/issues)
 - 提交时请附上：
   - 操作步骤和预期行为
   - 错误截图或日志（如有）
@@ -237,11 +268,11 @@ docker run -d \
 
 ### 贡献代码
 
-1. Fork 本仓库
+1. Fork [bbbugg/offerFlow](https://github.com/bbbugg/offerFlow)
 2. 创建你的特性分支：`git checkout -b feat/your-feature`
 3. 提交你的修改：`git commit -m 'feat: add some feature'`
 4. 推送到分支：`git push origin feat/your-feature`
-5. 提交 Pull Request
+5. 向 [当前仓库](https://github.com/bbbugg/offerFlow/pulls) 提交 Pull Request
 
 ### 开发建议
 
@@ -262,13 +293,13 @@ offerFlow/
 ├── docker/              # Docker 启动脚本
 ├── src/
 │   ├── app/             # Next.js App Router
-│   │   ├── api/         # 后端 API（认证、岗位与任务 CRUD）
+│   │   ├── api/         # 后端 API（认证、岗位、任务、公开分享）
 │   │   ├── auth/        # 登录/注册页
 │   │   └── (main)/      # 主应用页面
 │   ├── components/      # 可复用 UI 组件
 │   ├── views/           # 页面视图组件
 │   ├── lib/             # 工具库（Prisma、JWT 等）
-│   ├── store/           # 全局状态管理（Context）
+│   └── store/           # 全局状态管理（Context）
 ├── setup.bat            # Windows 快速部署脚本
 ├── Dockerfile           # Docker 生产镜像
 ├── docker-compose.yml   # Docker Compose 部署

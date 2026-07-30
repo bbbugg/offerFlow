@@ -53,13 +53,17 @@ if not exist .env (
     if exist .env.example (
         copy .env.example .env >nul
         echo 已从 .env.example 生成 .env 文件。
-        echo 请用记事本打开 .env 文件，修改 JWT_SECRET 为一个随机字符串。
     ) else (
         echo [警告] 未找到 .env.example，请手动创建 .env 文件。
     )
 ) else (
     echo .env 已存在，跳过。
 )
+echo.
+echo 请打开 .env 文件，确认以下配置：
+echo   1. 将 JWT_SECRET 修改为足够长的随机字符串
+echo   2. 将 REGISTER_ALLOWED_USERNAMES 设置为允许注册的用户名
+echo      多个用户名使用英文逗号分隔，例如：alice,bob
 
 echo.
 echo ============================================
