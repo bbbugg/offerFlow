@@ -1,6 +1,51 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 
+function scrollAfterViewportSettles(scroll) {
+  const viewport = window.visualViewport
+  let settleTimer
+  let viewportChanged = false
+  let lastHeight = viewport?.height
+  let lastOffsetTop = viewport?.offsetTop
+
+  const cleanup = () => {
+    clearTimeout(fallbackTimer)
+    clearTimeout(settleTimer)
+    clearTimeout(maxWaitTimer)
+    viewport?.removeEventListener('resize', handleViewportChange)
+    viewport?.removeEventListener('scroll', handleViewportChange)
+  }
+
+  const handleViewportChange = () => {
+    const heightChanged = Math.abs((viewport?.height ?? 0) - (lastHeight ?? 0)) > 0.5
+    const offsetChanged = Math.abs((viewport?.offsetTop ?? 0) - (lastOffsetTop ?? 0)) > 0.5
+    if (!heightChanged && !offsetChanged) return
+
+    viewportChanged = true
+    lastHeight = viewport?.height
+    lastOffsetTop = viewport?.offsetTop
+    clearTimeout(settleTimer)
+    settleTimer = setTimeout(() => {
+      cleanup()
+      scroll()
+    }, 160)
+  }
+
+  viewport?.addEventListener('resize', handleViewportChange)
+  viewport?.addEventListener('scroll', handleViewportChange)
+
+  const fallbackTimer = setTimeout(() => {
+    if (!viewportChanged) scroll()
+  }, 180)
+
+  const maxWaitTimer = setTimeout(() => {
+    cleanup()
+    if (viewportChanged) scroll()
+  }, 1200)
+
+  return cleanup
+}
+
 function normalizeOption(option) {
   if (typeof option === 'string') return { value: option, label: option, disabled: false }
   return {
@@ -26,6 +71,7 @@ export default function CustomSelect({
   const rootRef = useRef(null)
   const searchInputRef = useRef(null)
   const dropdownRef = useRef(null)
+  const viewportScrollCleanupRef = useRef(null)
 
   const normalized = options.map(normalizeOption)
   const selected = normalized.find((option) => option.value === value)
@@ -37,17 +83,17 @@ export default function CustomSelect({
       return
     }
 
-    // 自动滑动至下拉面板的最底部，确保展开后的整个区域完整呈现不被遮挡
-    const scrollTimer = setTimeout(() => {
-      if (dropdownRef.current) {
-        dropdownRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      } else {
-        rootRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-      }
-    }, 150)
+    const scrollToDropdownBottom = () => {
+      const target = dropdownRef.current || rootRef.current
+      target?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
 
+    viewportScrollCleanupRef.current?.()
+    viewportScrollCleanupRef.current = scrollAfterViewportSettles(scrollToDropdownBottom)
+
+    let focusTimer
     if (searchable && autoFocusSearch) {
-      setTimeout(() => {
+      focusTimer = setTimeout(() => {
         searchInputRef.current?.focus()
       }, 50)
     }
@@ -86,7 +132,9 @@ export default function CustomSelect({
     document.addEventListener('pointerup', handlePointerUp)
     document.addEventListener('keydown', handleKeyDown)
     return () => {
-      clearTimeout(scrollTimer)
+      clearTimeout(focusTimer)
+      viewportScrollCleanupRef.current?.()
+      viewportScrollCleanupRef.current = null
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('pointerup', handlePointerUp)
       document.removeEventListener('keydown', handleKeyDown)
@@ -133,9 +181,10 @@ export default function CustomSelect({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => {
-                    setTimeout(() => {
-                      dropdownRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-                    }, 150)
+                    viewportScrollCleanupRef.current?.()
+                    viewportScrollCleanupRef.current = scrollAfterViewportSettles(() => {
+                      dropdownRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+                    })
                   }}
                   placeholder={searchPlaceholder}
                   className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 border border-transparent focus:border-purple-400/50 focus:bg-white dark:focus:bg-white/[0.1] outline-none transition-all"
