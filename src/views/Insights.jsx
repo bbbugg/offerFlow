@@ -120,48 +120,7 @@ const CustomXAxisTick = ({ x, y, payload, isMobile }) => {
   )
 }
 
-const CustomYAxisTick = ({ x, y, payload, isMobile, width }) => {
-  if (!payload) return null
-  const text = String(payload.value || '')
-  const fontSize = isMobile ? 10 : 11
 
-  let textWidth = 0
-  for (let i = 0; i < text.length; i++) {
-    textWidth += text.charCodeAt(i) > 255 ? fontSize : fontSize * 0.55
-  }
-
-  const availableWidth = width - 8
-  let displayLine = text
-  if (textWidth > availableWidth) {
-    let currentW = 0
-    let cutIndex = 0
-    for (let i = 0; i < text.length; i++) {
-      const w = text.charCodeAt(i) > 255 ? fontSize : fontSize * 0.55
-      if (currentW + w + fontSize > availableWidth) {
-        break
-      }
-      currentW += w
-      cutIndex = i + 1
-    }
-    displayLine = cutIndex > 0 ? `${text.slice(0, cutIndex)}…` : text
-  }
-
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text
-        x={-width + 6}
-        y={0}
-        dy={4}
-        fill="#AAAAAA"
-        fontSize={fontSize}
-        textAnchor="start"
-      >
-        <title>{text}</title>
-        {displayLine}
-      </text>
-    </g>
-  )
-}
 
 export default function Insights({ jobs: propJobs, isReadOnly = false }) {
   const appContext = useApp()
@@ -325,22 +284,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
     }
   }, [jobs, timeFilter])
 
-  const cityYAxisWidth = useMemo(() => {
-    if (!data.cityDistribution || data.cityDistribution.length === 0) return isMobile ? 60 : 70
-    const fontSize = isMobile ? 10 : 11
-    const maxLenPx = Math.max(
-      ...data.cityDistribution.map((item) => {
-        const str = item.city || ''
-        let count = 0
-        for (let i = 0; i < str.length; i++) {
-          count += str.charCodeAt(i) > 255 ? fontSize : fontSize * 0.55
-        }
-        return count
-      })
-    )
-    const calculated = Math.ceil(maxLenPx + 20)
-    return Math.min(220, Math.max(isMobile ? 60 : 70, calculated))
-  }, [data.cityDistribution, isMobile])
+
 
   return (
     <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
@@ -451,34 +395,41 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
       <div className="card-modern mb-6 min-h-[340px] p-4 md:mb-8 md:min-h-[380px] md:p-6">
         <h2 className="text-lg font-semibold text-white mb-5">投递城市分布</h2>
         {data.cityDistribution.length > 0 ? (
-          <ResponsiveContainer width="100%" height={Math.max(200, data.cityDistribution.length * 44 + 20)}>
-            <BarChart
-              data={data.cityDistribution}
-              layout="vertical"
-              margin={{ top: 5, right: isMobile ? 15 : 40, left: 5, bottom: 5 }}
-              barSize={28}
-            >
-              <CartesianGrid stroke="rgba(148,163,184,0.2)" horizontal={false} />
-              <XAxis type="number" domain={[0, 'dataMax']} allowDecimals={false} tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis
-                dataKey="city"
-                type="category"
-                tick={(props) => <CustomYAxisTick {...props} isMobile={isMobile} width={cityYAxisWidth} />}
-                axisLine={false}
-                tickLine={false}
-                width={cityYAxisWidth}
-              />
-              <Tooltip
-                content={<CustomChartTooltip />}
-                cursor={{ fill: 'rgba(168, 85, 247, 0.08)' }}
-              />
-              <Bar dataKey="count" radius={[0, 6, 6, 0]}>
-                {data.cityDistribution.map((entry, i) => (
-                  <Cell key={i} fill={entry.city === '其他' ? '#666666' : `hsl(${265 - i * 18}, 55%, ${58 - i * 2.5}%)`} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="flex items-start">
+            {/* 左侧城市名称文本栏，由 CSS whitespace-nowrap 自动根据文字实际长度撑开 */}
+            <div className="flex flex-col shrink-0 pt-[8px] pb-[32px] text-xs select-none">
+              {data.cityDistribution.map((item) => (
+                <div key={item.city} className="flex items-center h-[44px] whitespace-nowrap pr-3 font-medium text-slate-400 dark:text-white/60" title={item.city}>
+                  {item.city}
+                </div>
+              ))}
+            </div>
+
+            {/* 右侧 BarChart 柱状图 */}
+            <div className="flex-1 min-w-0">
+              <ResponsiveContainer width="100%" height={Math.max(200, data.cityDistribution.length * 44 + 32)}>
+                <BarChart
+                  data={data.cityDistribution}
+                  layout="vertical"
+                  margin={{ top: 5, right: isMobile ? 15 : 40, left: 0, bottom: 5 }}
+                  barSize={24}
+                >
+                  <CartesianGrid stroke="rgba(148,163,184,0.2)" horizontal={false} />
+                  <XAxis type="number" domain={[0, 'dataMax']} allowDecimals={false} tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis dataKey="city" type="category" hide />
+                  <Tooltip
+                    content={<CustomChartTooltip />}
+                    cursor={{ fill: 'rgba(168, 85, 247, 0.08)' }}
+                  />
+                  <Bar dataKey="count" radius={[0, 6, 6, 0]}>
+                    {data.cityDistribution.map((entry, i) => (
+                      <Cell key={i} fill={entry.city === '其他' ? '#666666' : `hsl(${265 - i * 18}, 55%, ${58 - i * 2.5}%)`} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         ) : (
           <div className="py-12 text-center text-offer-muted text-sm">
             暂无投递城市数据
