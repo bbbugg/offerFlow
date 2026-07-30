@@ -100,6 +100,26 @@ const CustomChartTooltip = ({ active, payload, label }) => {
   )
 }
 
+const CustomXAxisTick = ({ x, y, payload, isMobile }) => {
+  if (!payload) return null
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={0}
+        y={0}
+        dx={isMobile ? -4 : 0}
+        dy={isMobile ? 15 : 10}
+        fill="#AAAAAA"
+        fontSize={isMobile ? 10 : 11}
+        textAnchor="middle"
+        transform={isMobile ? 'rotate(-30)' : undefined}
+      >
+        {payload.value}
+      </text>
+    </g>
+  )
+}
+
 export default function Insights({ jobs: propJobs, isReadOnly = false }) {
   const appContext = useApp()
   const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
@@ -306,19 +326,14 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart
               data={data.funnel}
-              margin={{ top: 5, right: 10, left: -15, bottom: isMobile ? 25 : 5 }}
+              margin={{ top: 5, right: 10, left: -20, bottom: isMobile ? 25 : 5 }}
               barSize={36}
               maxBarSize={50}
             >
               <CartesianGrid stroke="rgba(148,163,184,0.2)" vertical={false} />
               <XAxis
                 dataKey="name"
-                tick={{
-                  fill: '#AAAAAA',
-                  fontSize: isMobile ? 10 : 11,
-                  angle: isMobile ? -30 : 0,
-                  textAnchor: isMobile ? 'end' : 'middle',
-                }}
+                tick={(props) => <CustomXAxisTick {...props} isMobile={isMobile} />}
                 axisLine={false}
                 tickLine={false}
                 interval={0}
@@ -821,5 +836,3 @@ function ReplyDetailModal({ open, onClose, onSelectJob, stats, jobs }) {
     </div>
   )
 }
-
-
