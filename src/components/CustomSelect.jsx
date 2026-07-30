@@ -18,6 +18,7 @@ export default function CustomSelect({
   disabled = false,
   className = '',
   searchable = false,
+  autoFocusSearch = false,
   searchPlaceholder = '搜索...',
 }) {
   const [open, setOpen] = useState(false)
@@ -35,7 +36,7 @@ export default function CustomSelect({
       return
     }
 
-    if (searchable) {
+    if (searchable && autoFocusSearch) {
       setTimeout(() => {
         searchInputRef.current?.focus()
       }, 50)
