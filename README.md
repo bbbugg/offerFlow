@@ -187,7 +187,7 @@ docker run -d \
 ## 常见问题
 
 ### 启动后页面空白或无法访问？
-确认 `npm run dev` 正常启动，访问 http://localhost:3000。如果端口被占用，Next.js 会自动尝试下一个可用端口。
+确认 `npm run dev` 正常启动，访问 [http://localhost:3000](http://localhost:3000)。如果端口被占用，Next.js 会自动尝试下一个可用端口。
 
 ### 注册失败或登录不了？
 确保已执行 `npm run db:sqlite` 创建数据库，并检查 `.env`：
