@@ -27,7 +27,7 @@ export default function Sidebar() {
               key={item.key}
               onClick={() => router.push('/' + item.key)}
               className={`
-                group relative flex w-full items-center gap-3 rounded-2xl py-3 pl-5 pr-4 text-[17px] font-medium transition-all duration-200
+                group relative flex w-full items-center gap-3 rounded-2xl py-3 pl-5 pr-4 text-[17px] font-medium transition-all duration-200 focus:outline-none focus:ring-0 select-none
                 ${active
                   ? 'text-[oklch(0.21_0.04_278)] bg-[oklch(0.21_0.04_278/0.10)] font-semibold scale-[1.02] shadow-sm dark:text-[#A78BFA] dark:bg-[rgba(167,139,250,0.12)]'
                   : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100 dark:text-white/68 dark:hover:text-white/80 dark:hover:bg-white/10'

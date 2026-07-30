@@ -273,7 +273,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
         <div className="flex flex-wrap items-center gap-2">
           {TIME_RANGES.map((r) => (
             <button key={r} onClick={() => setTimeRange(r)}
-              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${timeRange === r ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>{r}</button>
+              className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer focus:outline-none focus:ring-0 select-none ${timeRange === r ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>{r}</button>
           ))}
         </div>
       </div>
@@ -477,7 +477,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
 
 function MetricCard({ label, value, sub, accent, danger, onClick }) {
   return (
-    <div onClick={onClick} className={`card-modern relative flex min-h-[128px] flex-col justify-between overflow-visible p-4 md:min-h-[148px] md:p-6 ${onClick ? 'cursor-pointer card-hover' : ''}`}>
+    <div onClick={onClick} className={`card-modern relative flex min-h-[128px] flex-col justify-between overflow-visible p-4 md:min-h-[148px] md:p-6 focus:outline-none focus:ring-0 select-none ${onClick ? 'cursor-pointer card-hover' : ''}`}>
       <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/[0.02] to-transparent rounded-bl-full" />
       <div className="space-y-2">
         <p className="text-offer-muted text-sm font-medium leading-6 tracking-wide">{label}</p>
