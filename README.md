@@ -63,6 +63,8 @@
 6. 使用白名单中的用户名注册并开始使用
 ```
 
+本地 SQLite 数据库文件位于项目目录下的 `prisma/dev.db`。
+
 ### 手动部署（Windows / macOS / Linux）
 
 ```bash
@@ -75,6 +77,7 @@ npm install
 
 # 3. 切换到 SQLite 模式并初始化数据库
 npm run db:sqlite
+# 数据库文件位置：prisma/dev.db
 
 # 4. 编辑生成的 .env
 # 修改 JWT_SECRET，并设置 REGISTER_ALLOWED_USERNAMES

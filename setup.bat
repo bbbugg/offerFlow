@@ -45,6 +45,7 @@ if %ERRORLEVEL% NEQ 0 (
     pause
     exit /b 1
 )
+echo 本地数据库位置：%CD%\prisma\dev.db
 echo.
 
 :: 4. 初始化 .env（如不存在）
