@@ -8,6 +8,24 @@ function getBeijingDateString() {
   return formatBeijingDate()
 }
 
+function timestampAppendedTimelineEvents(existingTimeline, nextTimeline) {
+  if (!Array.isArray(nextTimeline)) return nextTimeline
+
+  const existingLength = Array.isArray(existingTimeline) ? existingTimeline.length : 0
+  if (nextTimeline.length <= existingLength) return nextTimeline
+
+  return nextTimeline.map((event, index) => {
+    if (index < existingLength) return event
+
+    const createdAt = new Date()
+    return {
+      ...event,
+      date: formatBeijingDate(createdAt),
+      createdAt: createdAt.toISOString(),
+    }
+  })
+}
+
 export async function GET() {
   const user = await getAuthUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -75,6 +93,9 @@ export async function PUT(request) {
   }
 
   const updateData = { ...data }
+  if ('timeline' in updateData) {
+    updateData.timeline = timestampAppendedTimelineEvents(existing.timeline, updateData.timeline)
+  }
   if (updateData.status && statusImpliesApplied(updateData.status) && !existing.appliedDate && !updateData.appliedDate) {
     updateData.appliedDate = getBeijingDateString()
   }

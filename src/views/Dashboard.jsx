@@ -8,6 +8,28 @@ import TaskModal from '../components/TaskModal'
 import { addDaysToDateString, getBeijingWeekStart } from '../lib/dateUtils'
 import useBeijingToday from '../hooks/useBeijingToday'
 
+function getTimestamp(value) {
+  const timestamp = new Date(value || 0).getTime()
+  return Number.isNaN(timestamp) ? 0 : timestamp
+}
+
+function compareTimelineEvents(a, b) {
+  const dateOrder = String(b.date || '').localeCompare(String(a.date || ''))
+  if (dateOrder) return dateOrder
+
+  const aCreatedAt = getTimestamp(a.createdAt)
+  const bCreatedAt = getTimestamp(b.createdAt)
+  if (aCreatedAt && bCreatedAt) {
+    const createdAtOrder = bCreatedAt - aCreatedAt
+    if (createdAtOrder) return createdAtOrder
+  }
+
+  if (a.jobId === b.jobId) return b.timelineIndex - a.timelineIndex
+  if (Boolean(aCreatedAt) !== Boolean(bCreatedAt)) return bCreatedAt ? 1 : -1
+
+  return getTimestamp(b.jobUpdatedAt) - getTimestamp(a.jobUpdatedAt)
+}
+
 export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly = false, shareSchedule = true }) {
   const appContext = useApp()
   const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
@@ -44,8 +66,14 @@ export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly
 
   // Recent timeline entries across all active jobs
   const timelineEvents = jobs
-    .flatMap((j) => (j.timeline || []).map((t) => ({ ...t, company: j.companyName, jobId: j.id })))
-    .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
+    .flatMap((j) => (j.timeline || []).map((t, timelineIndex) => ({
+      ...t,
+      company: j.companyName,
+      jobId: j.id,
+      jobUpdatedAt: j.updatedAt,
+      timelineIndex,
+    })))
+    .sort(compareTimelineEvents)
     .slice(0, 6)
 
   // Upcoming tasks
@@ -107,8 +135,8 @@ export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly
         <div className="card-modern p-4 md:p-5">
           <h2 className="text-base font-semibold text-white mb-4">最近动态</h2>
           <div className="space-y-3">
-            {timelineEvents.length > 0 ? timelineEvents.map((e, i) => (
-              <div key={i} className="flex items-start gap-3 pb-3 border-b border-white/10 last:border-0">
+            {timelineEvents.length > 0 ? timelineEvents.map((e) => (
+              <div key={`${e.jobId}-${e.timelineIndex}`} className="flex items-start gap-3 pb-3 border-b border-white/10 last:border-0">
                 <div className="w-2 h-2 rounded-full bg-offer-primary mt-2 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-white truncate">
