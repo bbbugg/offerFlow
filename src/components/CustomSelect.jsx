@@ -83,13 +83,8 @@ export default function CustomSelect({
       return
     }
 
-    const scrollToDropdownTop = () => {
-      const target = searchInputRef.current || dropdownRef.current || rootRef.current
-      target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-
     viewportScrollCleanupRef.current?.()
-    viewportScrollCleanupRef.current = scrollAfterViewportSettles(scrollToDropdownTop)
+    viewportScrollCleanupRef.current = null
 
     let focusTimer
     if (searchable && autoFocusSearch) {
