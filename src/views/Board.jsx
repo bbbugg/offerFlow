@@ -7,7 +7,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import ModalHeader from '../components/ModalHeader'
 import GlowCard from '../components/GlowCard'
 import ActionMenuPortal from '../components/ActionMenuPortal'
-import { formatBeijingDate, formatLocalDate, getElapsedLocalDays } from '../lib/dateUtils'
+import { formatBeijingDate, getElapsedBeijingDays } from '../lib/dateUtils'
 import { statusImpliesApplied } from '../lib/jobStatus'
 
 const COLUMNS = [
@@ -92,7 +92,7 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
     const patch = {
       status: targetStatus,
       timeline: [...timeline, {
-        date: formatLocalDate(),
+        date: formatBeijingDate(),
         action: '状态变更',
         detail: `从 ${job.status} 更新为 ${targetStatus}`,
       }],
@@ -215,7 +215,7 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
       status: newStatus,
       endReason: newStatus === '已结束' ? '手动标记' : '',
       timeline: [...timeline, {
-        date: formatLocalDate(),
+        date: formatBeijingDate(),
         action: `标记为 ${label}`,
         detail: newStatus === '已结束' ? '' : '',
       }],
@@ -423,7 +423,7 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
 
 /* ---- Card Component (stable, outside Board) ---- */
 function Card({ job, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, onDragEnd, onEditFromMenu, onDelete, onMarkOffer, onMarkEnded, onFollowUp, isReadOnly = false }) {
-  const days = getElapsedLocalDays(job.appliedDate)
+  const days = getElapsedBeijingDays(job.appliedDate)
   const actionBtnRef = useRef(null)
 
   const priorityColor = job.priority === '高' ? 'text-red-700 dark:text-red-300 bg-red-500/[0.15] border-red-500/30'

@@ -10,7 +10,8 @@ import JobModal from './JobModal'
 import TaskPopover from './TaskPopover'
 import TaskModal from './TaskModal'
 import SearchOptionsPopover, { DEFAULT_SEARCH_SCOPE } from './SearchOptionsPopover'
-import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
+import { addDaysToDateString } from '../lib/dateUtils'
+import useBeijingToday from '../hooks/useBeijingToday'
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme()
@@ -33,6 +34,7 @@ export default function Navbar() {
   const menuRef = useRef(null)
   const avatarRef = useRef(null)
   const bellRef = useRef(null)
+  const today = useBeijingToday()
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return []
@@ -89,10 +91,9 @@ export default function Navbar() {
   }, [menuOpen])
 
   const hasUpcomingTasks = useMemo(() => {
-    const today = formatBeijingDate()
     const endStr = addDaysToDateString(today, 3)
     return tasks.some((t) => !t.done && t.date >= today && t.date <= endStr)
-  }, [tasks])
+  }, [tasks, today])
 
   // Close popover on click outside / Escape
   useEffect(() => {

@@ -4,7 +4,7 @@ import { useApp, canSelectJobStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 import CustomSelect from './CustomSelect'
-import { formatBeijingDate, formatLocalDate } from '../lib/dateUtils'
+import { formatBeijingDate } from '../lib/dateUtils'
 import { JOB_STATUSES, statusImpliesApplied } from '../lib/jobStatus'
 
 const WORK_MODE_OPTIONS = ['onsite', 'remote', 'hybrid']
@@ -138,7 +138,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
         patch.timeline = [
           ...(job.timeline || []),
           {
-            date: formatLocalDate(),
+            date: formatBeijingDate(),
             action: '状态变更',
             detail: `从 ${job.status} 更新为 ${payload.status}`,
           },

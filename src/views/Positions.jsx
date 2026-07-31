@@ -6,7 +6,7 @@ import JobDetailModal from '../components/JobDetailModal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import CustomSelect from '../components/CustomSelect'
 import SearchOptionsPopover, { DEFAULT_SEARCH_SCOPE } from '../components/SearchOptionsPopover'
-import { formatLocalDate, getElapsedLocalDays, parseLocalDate } from '../lib/dateUtils'
+import { formatBeijingDate, getElapsedBeijingDays, parseBeijingDate } from '../lib/dateUtils'
 import { JOB_STATUSES } from '../lib/jobStatus'
 import { JOB_STATUS_BADGE, NEUTRAL_BADGE } from '../lib/badgeStyles'
 
@@ -15,7 +15,7 @@ const PRIORITY_OPTIONS = ['全部', '高', '中', '低']
 
 function getAppliedDateTimestamp(job) {
   if (!job.appliedDate) return 0
-  const timestamp = parseLocalDate(job.appliedDate)?.getTime() ?? 0
+  const timestamp = parseBeijingDate(job.appliedDate)?.getTime() ?? 0
   return Number.isNaN(timestamp) ? 0 : timestamp
 }
 
@@ -269,7 +269,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `岗位库_${formatLocalDate()}.csv`
+    a.download = `岗位库_${formatBeijingDate()}.csv`
     a.click()
     URL.revokeObjectURL(url)
     addToast(`已导出 ${filteredJobs.length} 条记录`, 'success')
@@ -442,7 +442,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
             <tbody onMouseLeave={() => setHoveredRowId(null)}>
               {groupedJobs.map(({ company, jobs }) =>
                 jobs.map((j, idx) => {
-                  const days = getElapsedLocalDays(j.appliedDate)
+                  const days = getElapsedBeijingDays(j.appliedDate)
                   const isCompanyHovered = jobs.some((job) => job.id === hoveredRowId)
                   const handleTdMouseEnter = () => setHoveredRowId(j.id)
                   return (

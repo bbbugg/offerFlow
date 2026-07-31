@@ -5,34 +5,8 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import JobDetailModal from '../components/JobDetailModal'
 import JobModal from '../components/JobModal'
 import TaskModal from '../components/TaskModal'
-import { formatBeijingDate } from '../lib/dateUtils'
-
-function parseLocalDate(value) {
-  if (!value) return null
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value
-  }
-
-  if (typeof value === 'string') {
-    const dateOnly = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-    if (dateOnly) {
-      const [, year, month, day] = dateOnly
-      return new Date(Number(year), Number(month) - 1, Number(day))
-    }
-  }
-
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
-function getWeekStart(date) {
-  const start = new Date(date)
-  start.setHours(0, 0, 0, 0)
-  const day = start.getDay()
-  start.setDate(start.getDate() + (day === 0 ? -6 : 1 - day))
-  return start
-}
+import { addDaysToDateString, getBeijingWeekStart } from '../lib/dateUtils'
+import useBeijingToday from '../hooks/useBeijingToday'
 
 export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly = false, shareSchedule = true }) {
   const appContext = useApp()
@@ -48,16 +22,16 @@ export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly
   const [editingTask, setEditingTask] = useState(null)
   const [taskModalOpen, setTaskModalOpen] = useState(false)
   const [deletingJob, setDeletingJob] = useState(null)
+  const today = useBeijingToday()
 
   const activeJobs = jobs.filter((j) => !['已结束', 'Offer'].includes(j.status))
   const interviewJobs = jobs.filter((j) => ['一面中', '二面中', '三面中', '终面中'].includes(j.status))
   const offerJobs = jobs.filter((j) => j.status === 'Offer')
-  const weekStart = getWeekStart(new Date())
-  const nextWeekStart = new Date(weekStart)
-  nextWeekStart.setDate(nextWeekStart.getDate() + 7)
+  const weekStart = getBeijingWeekStart(new Date(`${today}T12:00:00+08:00`))
+  const nextWeekStart = addDaysToDateString(weekStart, 7)
   const weekJobs = jobs.filter((j) => {
     if (!isAppliedJob(j)) return false
-    const appliedDate = parseLocalDate(j.appliedDate)
+    const appliedDate = j.appliedDate
     return appliedDate && appliedDate >= weekStart && appliedDate < nextWeekStart
   })
 
@@ -71,17 +45,14 @@ export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly
   // Recent timeline entries across all active jobs
   const timelineEvents = jobs
     .flatMap((j) => (j.timeline || []).map((t) => ({ ...t, company: j.companyName, jobId: j.id })))
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
     .slice(0, 6)
 
   // Upcoming tasks
-  const today = formatBeijingDate()
-  const todayStart = parseLocalDate(today)
   const upcomingTasks = tasks
     .filter((t) => {
       if (t.done || !t.date) return false
-      const taskDate = parseLocalDate(t.date)
-      return taskDate && todayStart && taskDate >= todayStart
+      return t.date >= today
     })
     .sort((a, b) => `${a.date || ''} ${a.startTime || ''}`.localeCompare(`${b.date || ''} ${b.startTime || ''}`))
     .slice(0, 4)

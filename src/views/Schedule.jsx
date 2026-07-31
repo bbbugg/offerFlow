@@ -4,6 +4,7 @@ import { useApp } from '../store/AppContext'
 import TaskModal from '../components/TaskModal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
+import useBeijingToday from '../hooks/useBeijingToday'
 import { NEUTRAL_BADGE, TASK_TYPE_BADGE } from '../lib/badgeStyles'
 
 const TYPE_DOT = {
@@ -21,19 +22,15 @@ const PRIORITY_CLASS = {
   '低': 'text-gray-500 dark:text-offer-muted',
 }
 
-function todayStr() {
-  return formatBeijingDate()
-}
-
 function getYearMonth(dateStr) {
   const [year, month] = dateStr.split('-').map(Number)
   return { year, month: month - 1 }
 }
 
 function formatWeekday(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00')
+  const d = new Date(dateStr + 'T00:00:00Z')
   const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-  return days[d.getDay()]
+  return days[d.getUTCDay()]
 }
 
 export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly = false }) {
@@ -53,7 +50,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
 
-  const today = todayStr()
+  const today = useBeijingToday()
 
   const jobMap = useMemo(() => {
     const map = {}
@@ -100,8 +97,8 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
   // Month calendar data
   const monthData = useMemo(() => {
     const { year, month } = currentMonth
-    const firstDay = new Date(year, month, 1).getDay()
-    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    const firstDay = new Date(Date.UTC(year, month, 1)).getUTCDay()
+    const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
 
     const cells = []
     for (let i = 0; i < firstDay; i++) cells.push(null)

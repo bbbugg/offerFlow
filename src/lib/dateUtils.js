@@ -1,13 +1,6 @@
 const DAY_MS = 24 * 60 * 60 * 1000
 const DATE_ONLY_RE = /^(\d{4})-(\d{2})-(\d{2})$/
 
-export function formatLocalDate(date = new Date()) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
 export function formatBeijingDate(date = new Date()) {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Shanghai',
@@ -20,8 +13,35 @@ export function formatBeijingDate(date = new Date()) {
   return `${values.year}-${values.month}-${values.day}`
 }
 
+export function normalizeBeijingDate(value) {
+  const text = String(value || '').trim()
+  if (!text) return ''
+
+  const match = text.match(DATE_ONLY_RE)
+  if (match) {
+    const year = Number(match[1])
+    const month = Number(match[2])
+    const day = Number(match[3])
+    const date = new Date(Date.UTC(year, month - 1, day))
+
+    if (
+      date.getUTCFullYear() !== year
+      || date.getUTCMonth() + 1 !== month
+      || date.getUTCDate() !== day
+    ) {
+      return ''
+    }
+
+    return `${match[1]}-${match[2]}-${match[3]}`
+  }
+
+  const date = new Date(text)
+  return Number.isNaN(date.getTime()) ? '' : formatBeijingDate(date)
+}
+
 export function addDaysToDateString(value, days) {
-  const match = String(value || '').trim().match(DATE_ONLY_RE)
+  const normalized = normalizeBeijingDate(value)
+  const match = normalized.match(DATE_ONLY_RE)
   if (!match) return ''
 
   const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + days))
@@ -31,36 +51,31 @@ export function addDaysToDateString(value, days) {
   return `${year}-${month}-${day}`
 }
 
-export function parseLocalDate(value) {
-  const text = String(value || '').trim()
-  if (!text) return null
+export function parseBeijingDate(value) {
+  const normalized = normalizeBeijingDate(value)
+  if (!normalized) return null
 
-  const match = text.match(DATE_ONLY_RE)
-  if (match) {
-    const year = Number(match[1])
-    const month = Number(match[2]) - 1
-    const day = Number(match[3])
-    const date = new Date(year, month, day)
-
-    if (date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day) {
-      return null
-    }
-
-    return date
-  }
-
-  const date = new Date(text)
-  if (Number.isNaN(date.getTime())) return null
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const [year, month, day] = normalized.split('-').map(Number)
+  return new Date(Date.UTC(year, month - 1, day))
 }
 
-export function getElapsedLocalDays(value, now = new Date()) {
-  const date = parseLocalDate(value)
+export function getElapsedBeijingDays(value, now = new Date()) {
+  const date = parseBeijingDate(value)
   if (!date) return null
 
-  const start = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
-  const diff = Math.floor((today - start) / DAY_MS)
+  const today = parseBeijingDate(formatBeijingDate(now))
+  const diff = Math.floor((today.getTime() - date.getTime()) / DAY_MS)
 
   return Math.max(0, diff)
+}
+
+export function getBeijingWeekStart(now = new Date()) {
+  const today = formatBeijingDate(now)
+  const weekday = parseBeijingDate(today).getUTCDay()
+  return addDaysToDateString(today, weekday === 0 ? -6 : 1 - weekday)
+}
+
+export function getMillisecondsUntilNextBeijingDay(now = new Date()) {
+  const tomorrow = addDaysToDateString(formatBeijingDate(now), 1)
+  return Math.max(1000, new Date(`${tomorrow}T00:00:00+08:00`).getTime() - now.getTime())
 }

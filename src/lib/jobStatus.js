@@ -1,4 +1,4 @@
-import { formatLocalDate } from './dateUtils'
+import { formatBeijingDate } from './dateUtils'
 
 export const JOB_STATUSES = ['感兴趣', '已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
 export const APPLIED_STATUSES = ['已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
@@ -8,7 +8,7 @@ export const INTERVIEW_STATUS_ORDER = ['一面中', '二面中', '三面中', '�
 const CANCELED_END_REASONS = new Set(['岗位关闭', '自己放弃', '流程太慢', '薪资不匹配', '地点不合适'])
 
 function todayStr() {
-  return formatLocalDate()
+  return formatBeijingDate()
 }
 
 export function statusImpliesApplied(status) {

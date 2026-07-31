@@ -4,7 +4,7 @@ import { useApp, canSelectJobStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 import CustomSelect from './CustomSelect'
-import { formatBeijingDate, formatLocalDate, getElapsedLocalDays } from '../lib/dateUtils'
+import { formatBeijingDate, getElapsedBeijingDays } from '../lib/dateUtils'
 import { statusImpliesApplied } from '../lib/jobStatus'
 import { JOB_STATUS_ACTION_BADGE, JOB_STATUS_BADGE, NEUTRAL_BADGE, ROUND_STATUS_BADGE } from '../lib/badgeStyles'
 
@@ -122,7 +122,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
 
   if (!open || !job) return null
 
-  const waitingDays = getElapsedLocalDays(job.appliedDate)
+  const waitingDays = getElapsedBeijingDays(job.appliedDate)
 
   // ---- Status change ----
   const changeStatus = async (newStatus, label) => {
@@ -138,7 +138,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
     try {
       const patch = {
         status: newStatus,
-        timeline: [...(existing.timeline || []), { date: formatLocalDate(), action: `标记为 ${label}`, detail: `从 ${existing.status} 更新为 ${newStatus}` }],
+        timeline: [...(existing.timeline || []), { date: formatBeijingDate(), action: `标记为 ${label}`, detail: `从 ${existing.status} 更新为 ${newStatus}` }],
         endReason: newStatus === '已结束' ? endReason : '',
       }
       if (statusImpliesApplied(newStatus) && !existing.appliedDate) {

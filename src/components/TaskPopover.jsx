@@ -1,14 +1,16 @@
 'use client'
 import { useMemo } from 'react'
-import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
+import { addDaysToDateString } from '../lib/dateUtils'
 import { NEUTRAL_BADGE, TASK_TYPE_BADGE } from '../lib/badgeStyles'
+import useBeijingToday from '../hooks/useBeijingToday'
 
 function formatShort(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00')
-  return `${d.getMonth() + 1}/${d.getDate()}`
+  const [, month, day] = dateStr.split('-').map(Number)
+  return `${month}/${day}`
 }
 
 export default function TaskPopover({ open, tasks, jobs, onTaskClick, onJobClick }) {
+  const today = useBeijingToday()
   const jobMap = useMemo(() => {
     const map = {}
     jobs.forEach((j) => { map[j.id] = j })
@@ -16,7 +18,6 @@ export default function TaskPopover({ open, tasks, jobs, onTaskClick, onJobClick
   }, [jobs])
 
   const dayList = useMemo(() => {
-    const today = formatBeijingDate()
     const days = []
     for (let i = 0; i <= 3; i++) {
       const dateStr = addDaysToDateString(today, i)
@@ -24,7 +25,7 @@ export default function TaskPopover({ open, tasks, jobs, onTaskClick, onJobClick
       days.push({ dateStr, label })
     }
     return days
-  }, [])
+  }, [today])
 
   const grouped = useMemo(() => {
     return dayList.map(({ dateStr, label }) => ({

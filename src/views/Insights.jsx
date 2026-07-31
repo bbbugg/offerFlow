@@ -9,21 +9,20 @@ import GlowCard from '../components/GlowCard'
 import JobDetailModal from '../components/JobDetailModal'
 import JobModal from '../components/JobModal'
 import ConfirmDialog from '../components/ConfirmDialog'
-import { parseLocalDate } from '../lib/dateUtils'
+import { addDaysToDateString, normalizeBeijingDate } from '../lib/dateUtils'
 import { JOB_STATUS_BADGE, NEUTRAL_BADGE } from '../lib/badgeStyles'
+import useBeijingToday from '../hooks/useBeijingToday'
 
 const TIME_RANGES = ['全部', '最近 7 天', '最近 30 天', '最近 90 天']
 
-function makeTimeFilter(range) {
+function makeTimeFilter(range, today) {
   if (range === '全部') return () => true
-  const now = new Date()
   const days = { '最近 7 天': 7, '最近 30 天': 30, '最近 90 天': 90 }[range]
-  const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  cutoff.setDate(cutoff.getDate() - days)
+  const cutoff = addDaysToDateString(today, -days)
   return (j) => {
     const date = j.appliedDate || j.createdAt
-    const parsed = parseLocalDate(date)
-    return parsed ? parsed >= cutoff : true
+    const normalized = normalizeBeijingDate(date)
+    return normalized ? normalized >= cutoff : true
   }
 }
 
@@ -175,7 +174,8 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
     setDeletingJob(null)
   }
 
-  const timeFilter = useMemo(() => makeTimeFilter(timeRange), [timeRange])
+  const today = useBeijingToday()
+  const timeFilter = useMemo(() => makeTimeFilter(timeRange, today), [timeRange, today])
 
   const data = useMemo(() => {
     const filteredJobs = jobs.filter(timeFilter)
