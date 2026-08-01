@@ -100,6 +100,8 @@ function saveToStorage(key, data) {
 
 export function AppProvider({ children }) {
   const { user, loading: authLoading } = useAuth()
+  const jobsStorageKey = user ? `offerFlow_jobs:${user.id}` : null
+  const tasksStorageKey = user ? `offerFlow_tasks:${user.id}` : null
 
   const [jobs, setJobsRaw] = useState([])
   const [tasks, setTasksRaw] = useState([])
@@ -132,6 +134,8 @@ export function AppProvider({ children }) {
       setDataLoading(false)
       return
     }
+    setJobsRaw([])
+    setTasksRaw([])
     setDataLoading(true)
     try {
       const [j, t] = await Promise.all([
@@ -142,8 +146,8 @@ export function AppProvider({ children }) {
       setJobsRaw(j)
       setTasksRaw(t)
 
-      saveToStorage('offerFlow_jobs', j)
-      saveToStorage('offerFlow_tasks', t)
+      saveToStorage(jobsStorageKey, j)
+      saveToStorage(tasksStorageKey, t)
     } catch (err) {
       // If unauthorized, just show empty data instead of falling
       // back to a potentially stale localStorage from another user.
@@ -153,8 +157,8 @@ export function AppProvider({ children }) {
       } else {
         console.error('[AppContext] API load failed, falling back to localStorage', err)
         addToast('数据加载失败，使用本地缓存', 'error')
-        setJobsRaw(loadFromStorage('offerFlow_jobs', []))
-        setTasksRaw(loadFromStorage('offerFlow_tasks', []))
+        setJobsRaw(loadFromStorage(jobsStorageKey, []))
+        setTasksRaw(loadFromStorage(tasksStorageKey, []))
       }
     } finally {
       setDataLoading(false)
@@ -166,25 +170,25 @@ export function AppProvider({ children }) {
   const setJobs = useCallback((value) => {
     setJobsRaw((prev) => {
       const next = typeof value === 'function' ? value(prev) : value
-      saveToStorage('offerFlow_jobs', next)
+      if (jobsStorageKey) saveToStorage(jobsStorageKey, next)
       return next
     })
-  }, [])
+  }, [jobsStorageKey])
 
   const setTasks = useCallback((value) => {
     setTasksRaw((prev) => {
       const next = typeof value === 'function' ? value(prev) : value
-      saveToStorage('offerFlow_tasks', next)
+      if (tasksStorageKey) saveToStorage(tasksStorageKey, next)
       return next
     })
-  }, [])
+  }, [tasksStorageKey])
 
   const reloadJobs = useCallback(async () => {
     const nextJobs = await apiFetch('/api/jobs')
     setJobsRaw(nextJobs)
-    saveToStorage('offerFlow_jobs', nextJobs)
+    if (jobsStorageKey) saveToStorage(jobsStorageKey, nextJobs)
     return nextJobs
-  }, [])
+  }, [jobsStorageKey])
 
   // ---- Async CRUD methods ----
 

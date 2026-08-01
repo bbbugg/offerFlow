@@ -55,13 +55,15 @@ export function AuthProvider({ children }) {
       throw new Error(data.error || '退出失败')
     }
     // Clear client-side caches so the next user starts fresh
-    localStorage.removeItem('offerFlow_jobs')
-    localStorage.removeItem('offerFlow_tasks')
+    if (user?.id) {
+      localStorage.removeItem(`offerFlow_jobs:${user.id}`)
+      localStorage.removeItem(`offerFlow_tasks:${user.id}`)
+    }
     // Reset SplashScreen so it shows again on next auth visit
     sessionStorage.removeItem('offerflow_splash_shown')
     delete document.documentElement.dataset.offerflowSplashShown
     setUser(null)
-  }, [])
+  }, [user?.id])
 
   const value = {
     user,
