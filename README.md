@@ -97,6 +97,8 @@ Docker 部署默认使用 SQLite，适合个人服务器、NAS 或单机长期�
 ghcr.io/bbbugg/offerflow:latest
 ```
 
+#### 1. 创建 Compose 配置
+
 新建 `compose.yml`：
 
 ```yaml
@@ -117,6 +119,8 @@ volumes:
   offerflow-data:
 ```
 
+#### 2. 配置环境变量
+
 在同一目录新建 `.env`，填写 JWT 密钥：
 
 ```dotenv
@@ -127,15 +131,15 @@ REGISTER_ENABLED=true
 REGISTER_ALLOWED_USERNAMES=alice,bob
 ```
 
-`REGISTER_ENABLED` 未设置或设为 `true` 时开放注册，设为 `false` 时完全关闭新用户注册。开放注册时，`REGISTER_ALLOWED_USERNAMES` 未设置或留空代表允许任意用户名；设置后则启用逗号分隔的白名单。
-
-启动服务：
+#### 3. 启动服务
 
 ```bash
 docker compose up -d
 ```
 
-启动后访问 `http://服务器地址:8543`。常用维护命令：
+启动后访问 `http://服务器地址:8543`。
+
+#### 常用维护命令
 
 ```bash
 # 查看日志
@@ -149,9 +153,9 @@ docker compose up -d
 `offerflow-data` 卷保存 SQLite 数据库 `/app/data/dev.db`。删除或重建容器不会丢失数据，
 但执行 `docker compose down -v` 会删除数据卷，请谨慎使用。建议定期备份该数据卷。
 
-容器默认设置 `PRISMA_DB_PUSH=true`，首次启动时会自动创建数据库并同步表结构。
+#### 不使用 Compose 直接运行
 
-如果不用 Compose，也可以直接运行：
+也可以直接运行：
 
 ```bash
 docker run -d \
@@ -169,8 +173,8 @@ docker run -d \
 
 | 环境变量 | 默认值 | 是否必填 | 说明 |
 | --- | --- | --- | --- |
-| `DATABASE_URL` | 本地：`file:./dev.db`<br>Docker：`file:/app/data/dev.db` | 是 | 数据库连接地址。本地和 Docker 默认使用 SQLite，切换 PostgreSQL 时填写对应连接地址。 |
-| `DIRECT_URL` | 无 | 仅 PostgreSQL | PostgreSQL 直连地址，用于 Prisma 数据库结构同步；SQLite 无需设置。 |
+| `DATABASE_URL` | 本地：`file:./dev.db`<br>Docker：`file:/app/data/dev.db` | 是 | 数据库连接地址。普通本地或 Docker 部署无需修改，切换 PostgreSQL 时才需填写对应连接地址。 |
+| `DIRECT_URL` | 无 | 仅 PostgreSQL | PostgreSQL 直连地址。普通本地或 Docker 部署无需设置，切换 PostgreSQL 时才需填写。 |
 | `JWT_SECRET` | `change-me-to-a-random-string` | 是 | 用于签发和验证登录凭证。部署前必须替换为足够长的随机字符串。 |
 | `REGISTER_ENABLED` | `true` | 否 | 新用户注册总开关。未设置或设为 `true` 时开放注册；设为 `false` 时完全关闭注册。 |
 | `REGISTER_ALLOWED_USERNAMES` | 空 | 否 | 可选用户名白名单。未设置或留空时不限制用户名；设置后仅允许名单内用户注册，多个用户名用英文逗号分隔。 |
