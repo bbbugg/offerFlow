@@ -3,6 +3,10 @@ import bcrypt from 'bcryptjs'
 import prisma from '@/lib/prisma'
 import { signToken, cookieOptions } from '@/lib/jwt'
 
+function isRegistrationEnabled() {
+  return process.env.REGISTER_ENABLED?.trim().toLowerCase() !== 'false'
+}
+
 function getAllowedRegisterUsernames() {
   return (process.env.REGISTER_ALLOWED_USERNAMES || '')
     .split(',')
@@ -12,13 +16,18 @@ function getAllowedRegisterUsernames() {
 
 export async function POST(request) {
   try {
+    if (!isRegistrationEnabled()) {
+      return NextResponse.json({ error: '当前未开放新用户注册' }, { status: 403 })
+    }
+
     const { username: rawUsername, password } = await request.json()
     const username = typeof rawUsername === 'string' ? rawUsername.trim() : ''
 
     if (!username || !password) {
       return NextResponse.json({ error: '用户名和密码不能为空' }, { status: 400 })
     }
-    if (!getAllowedRegisterUsernames().includes(username)) {
+    const allowedUsernames = getAllowedRegisterUsernames()
+    if (allowedUsernames.length > 0 && !allowedUsernames.includes(username)) {
       return NextResponse.json({ error: '该用户名不在允许注册列表中' }, { status: 403 })
     }
     if (username.length < 2 || username.length > 20) {
