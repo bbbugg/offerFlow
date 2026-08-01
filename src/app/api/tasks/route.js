@@ -2,6 +2,18 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
 
+const UPDATABLE_TASK_FIELDS = [
+  'title',
+  'type',
+  'date',
+  'startTime',
+  'endTime',
+  'priority',
+  'done',
+  'jobId',
+  'notes',
+]
+
 function normalizeJobId(jobId) {
   return jobId?.trim() || null
 }
@@ -48,9 +60,14 @@ export async function PUT(request) {
   if (!user) return NextResponse.json({ error: '未登录' }, { status: 401 })
 
   const body = await request.json()
-  const { id, ...data } = body
+  const { id } = body
 
   if (!id) return NextResponse.json({ error: '缺少 id' }, { status: 400 })
+
+  const data = {}
+  for (const field of UPDATABLE_TASK_FIELDS) {
+    if (Object.hasOwn(body, field)) data[field] = body[field]
+  }
 
   const existing = await prisma.task.findUnique({ where: { id } })
   if (!existing || existing.userId !== user.id) {
@@ -62,7 +79,7 @@ export async function PUT(request) {
   }
 
   const task = await prisma.task.update({
-    where: { id },
+    where: { id, userId: user.id },
     data,
   })
 

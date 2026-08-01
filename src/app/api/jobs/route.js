@@ -4,6 +4,27 @@ import { getAuthUser } from '@/lib/auth'
 import { canSelectJobStatus, statusImpliesApplied, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
 import { formatBeijingDate } from '@/lib/dateUtils'
 
+const UPDATABLE_JOB_FIELDS = [
+  'companyName',
+  'jobTitle',
+  'status',
+  'city',
+  'salaryRange',
+  'workMode',
+  'channel',
+  'priority',
+  'appliedDate',
+  'jobLink',
+  'jdText',
+  'contactName',
+  'contactInfo',
+  'nextAction',
+  'notes',
+  'endReason',
+  'interviewRounds',
+  'timeline',
+]
+
 function getBeijingDateString() {
   return formatBeijingDate()
 }
@@ -79,9 +100,14 @@ export async function PUT(request) {
   if (!user) return NextResponse.json({ error: '未登录' }, { status: 401 })
 
   const body = await request.json()
-  const { id, ...data } = body
+  const { id } = body
 
   if (!id) return NextResponse.json({ error: '缺少 id' }, { status: 400 })
+
+  const data = {}
+  for (const field of UPDATABLE_JOB_FIELDS) {
+    if (Object.hasOwn(body, field)) data[field] = body[field]
+  }
 
   const existing = await prisma.job.findUnique({ where: { id } })
   if (!existing || existing.userId !== user.id) {
@@ -109,7 +135,7 @@ export async function PUT(request) {
   }
 
   const job = await prisma.job.update({
-    where: { id },
+    where: { id, userId: user.id },
     data: updateData,
   })
 
