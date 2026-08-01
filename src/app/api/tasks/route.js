@@ -15,7 +15,19 @@ const UPDATABLE_TASK_FIELDS = [
 ]
 
 function normalizeJobId(jobId) {
-  return jobId?.trim() || null
+  if (jobId == null) return null
+  if (typeof jobId !== 'string') return undefined
+  return jobId.trim() || null
+}
+
+async function canLinkJob(jobId, userId) {
+  if (!jobId) return true
+
+  const job = await prisma.job.findFirst({
+    where: { id: jobId, userId },
+    select: { id: true },
+  })
+  return Boolean(job)
 }
 
 export async function GET() {
@@ -36,6 +48,12 @@ export async function POST(request) {
   const body = await request.json()
   const { title, type, date, startTime, endTime, priority, done, jobId, notes } = body
   const normalizedJobId = normalizeJobId(jobId)
+  if (normalizedJobId === undefined) {
+    return NextResponse.json({ error: '岗位 id 格式不正确' }, { status: 400 })
+  }
+  if (!(await canLinkJob(normalizedJobId, user.id))) {
+    return NextResponse.json({ error: '无权关联此岗位' }, { status: 403 })
+  }
 
   const task = await prisma.task.create({
     data: {
@@ -76,6 +94,12 @@ export async function PUT(request) {
 
   if ('jobId' in data) {
     data.jobId = normalizeJobId(data.jobId)
+    if (data.jobId === undefined) {
+      return NextResponse.json({ error: '岗位 id 格式不正确' }, { status: 400 })
+    }
+    if (!(await canLinkJob(data.jobId, user.id))) {
+      return NextResponse.json({ error: '无权关联此岗位' }, { status: 403 })
+    }
   }
 
   const task = await prisma.task.update({
