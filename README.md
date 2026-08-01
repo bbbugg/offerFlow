@@ -48,7 +48,7 @@
 
 ### 前置条件
 
-- **本地源码运行**：需要 Node.js 20.9+，推荐使用 Node.js 22 LTS（[下载](https://nodejs.org/)）
+- **本地源码运行（包括 Windows 一键部署和手动部署）**：默认使用 SQLite；需要 Node.js 20.9+，推荐使用 Node.js 22 LTS（[下载](https://nodejs.org/)）
 - **Docker 部署**：只需要 Docker 和 Docker Compose，无需安装 Node.js 或 npm
 
 ### Windows 一键部署
@@ -224,8 +224,8 @@ docker run -d \
 npm run db:sqlite
 ```
 
-只有已经准备好 PostgreSQL 数据库的用户才需要切换。切换时，在项目根目录新建
-`.env.pg` 文件：
+只有已经准备好 PostgreSQL 数据库的用户才需要切换。切换时，在项目根目录的
+`.env` 文件中配置：
 
 ```dotenv
 DATABASE_URL="你的 PostgreSQL 连接地址"
@@ -244,8 +244,9 @@ npm run db:pg
 ```
 
 `DATABASE_URL` 和 `DIRECT_URL` 由 PostgreSQL 服务商提供；如果服务商只提供一个连接地址，
-可先将两个变量填写为相同的地址。`npm run db:sqlite` 和 `npm run db:pg` 只会在 `.env`
-不存在时从对应模板创建，不会覆盖已有配置；Prisma schema 会切换为对应数据库版本。
+可先将两个变量填写为相同的地址。`npm run db:sqlite` 仅在 `.env` 不存在时从
+`.env.example` 创建，不会覆盖已有配置；`npm run db:pg` 直接使用当前 `.env` 或部署平台环境变量。
+Prisma schema 会切换为对应数据库版本。
 
 ### 可以在手机上用吗？
 主要页面已提供响应式布局；看板和岗位表格在较小屏幕上可能需要横向滚动。
