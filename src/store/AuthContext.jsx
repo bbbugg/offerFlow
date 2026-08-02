@@ -1,17 +1,21 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
+  const router = useRouter()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const handlingUnauthorizedRef = useRef(false)
 
   const fetchUser = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/me')
       const data = await res.json()
+      handlingUnauthorizedRef.current = false
       setUser(data.user || null)
     } catch {
       setUser(null)
@@ -32,6 +36,7 @@ export function AuthProvider({ children }) {
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || '登录失败')
+    handlingUnauthorizedRef.current = false
     setUser(data.user)
     return data.user
   }, [])
@@ -44,6 +49,7 @@ export function AuthProvider({ children }) {
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || '注册失败')
+    handlingUnauthorizedRef.current = false
     setUser(data.user)
     return data.user
   }, [])
@@ -65,6 +71,15 @@ export function AuthProvider({ children }) {
     setUser(null)
   }, [user])
 
+  const handleUnauthorized = useCallback(() => {
+    if (handlingUnauthorizedRef.current) return
+    handlingUnauthorizedRef.current = true
+
+    const callbackUrl = `${window.location.pathname}${window.location.search}`
+    setUser(null)
+    router.replace(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+  }, [router])
+
   const value = {
     user,
     loading,
@@ -72,6 +87,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    handleUnauthorized,
   }
 
   return (

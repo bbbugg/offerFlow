@@ -1,9 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/store/AuthContext'
 
 export default function Settings() {
   const router = useRouter()
+  const { handleUnauthorized } = useAuth()
   const [shareToken, setShareToken] = useState(null)
   const [shareSchedule, setShareSchedule] = useState(true)
   const [shareUsername, setShareUsername] = useState(true)
@@ -17,6 +19,10 @@ export default function Settings() {
     async function fetchShareToken() {
       try {
         const res = await fetch('/api/share/token')
+        if (res.status === 401) {
+          handleUnauthorized()
+          return
+        }
         if (!res.ok) throw new Error('分享设置加载失败，请刷新页面')
         const data = await res.json()
         setShareToken(data.shareToken)
@@ -32,13 +38,17 @@ export default function Settings() {
       }
     }
     fetchShareToken()
-  }, [])
+  }, [handleUnauthorized])
 
   const handleCreateShare = async () => {
     setActionLoading(true)
     setError('')
     try {
       const res = await fetch('/api/share/token', { method: 'POST' })
+      if (res.status === 401) {
+        handleUnauthorized()
+        return
+      }
       if (!res.ok) throw new Error('生成分享链接失败')
       const data = await res.json()
       setShareToken(data.shareToken)
@@ -69,6 +79,10 @@ export default function Settings() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ shareSettings: nextSettings })
       })
+      if (res.status === 401) {
+        handleUnauthorized()
+        return
+      }
       if (!res.ok) throw new Error('更新分享范围失败')
       const data = await res.json()
       if (data.shareSettings) {
@@ -90,6 +104,10 @@ export default function Settings() {
     setError('')
     try {
       const res = await fetch('/api/share/token', { method: 'DELETE' })
+      if (res.status === 401) {
+        handleUnauthorized()
+        return
+      }
       if (!res.ok) throw new Error('关闭分享链接失败')
       setShareToken(null)
     } catch (err) {

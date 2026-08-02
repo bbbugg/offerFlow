@@ -75,10 +75,16 @@ async function apiFetch(url, options = {}) {
     try {
       data = JSON.parse(text)
     } catch {
-      throw new Error(res.ok ? '服务器返回了无效响应' : text)
+      const error = new Error(res.ok ? '服务器返回了无效响应' : text)
+      error.status = res.status
+      throw error
     }
   }
-  if (!res.ok) throw new Error(data.error || '请求失败')
+  if (!res.ok) {
+    const error = new Error(data.error || '请求失败')
+    error.status = res.status
+    throw error
+  }
   return data
 }
 
@@ -100,7 +106,7 @@ function saveToStorage(key, data) {
 }
 
 export function AppProvider({ children }) {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, handleUnauthorized } = useAuth()
   const jobsStorageKey = user ? `offerFlow_jobs:${user.id}` : null
   const tasksStorageKey = user ? `offerFlow_tasks:${user.id}` : null
   const activeUserIdRef = useRef(user?.id ?? null)
@@ -151,9 +157,10 @@ export function AppProvider({ children }) {
       if (activeUserIdRef.current !== requestUserId) return
       // If unauthorized, just show empty data instead of falling
       // back to a potentially stale localStorage from another user.
-      if (err.message === 'Unauthorized') {
+      if (err.status === 401) {
         setJobsRaw([])
         setTasksRaw([])
+        handleUnauthorized()
       } else {
         console.error('[AppContext] API load failed, falling back to localStorage', err)
         addToast('数据加载失败，使用本地缓存', 'error')
@@ -163,7 +170,7 @@ export function AppProvider({ children }) {
     } finally {
       if (activeUserIdRef.current === requestUserId) setDataLoading(false)
     }
-  }, [addToast, jobsStorageKey, tasksStorageKey, user])
+  }, [addToast, handleUnauthorized, jobsStorageKey, tasksStorageKey, user])
 
   // ---- Data loading: re-fetch when auth state changes (login/logout) ----
   useEffect(() => {
@@ -211,6 +218,7 @@ export function AppProvider({ children }) {
       return await reloadJobs(requestUserId)
     } catch (err) {
       if (activeUserIdRef.current !== requestUserId) return false
+      if (err.status === 401) throw err
       console.error('[AppContext] Job saved but latest list refresh failed', err)
       setJobsRaw((prev) => {
         if (activeUserIdRef.current !== requestUserId) return prev
@@ -229,6 +237,7 @@ export function AppProvider({ children }) {
       return await reloadTasks(requestUserId)
     } catch (err) {
       if (activeUserIdRef.current !== requestUserId) return false
+      if (err.status === 401) throw err
       console.error('[AppContext] Task saved but latest list refresh failed', err)
       setTasksRaw((prev) => {
         if (activeUserIdRef.current !== requestUserId) return prev
@@ -240,6 +249,15 @@ export function AppProvider({ children }) {
       return true
     }
   }, [reloadTasks, addToast])
+
+  const handleMutationError = useCallback((err, requestUserId) => {
+    if (activeUserIdRef.current !== requestUserId) return
+    if (err.status === 401) {
+      handleUnauthorized()
+      return
+    }
+    addToast(err.message, 'error')
+  }, [addToast, handleUnauthorized])
 
   // ---- Async CRUD methods ----
 
@@ -255,10 +273,10 @@ export function AppProvider({ children }) {
       if (!isActiveUser) return null
       return result.job
     } catch (err) {
-      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
+      handleMutationError(err, requestUserId)
       return null
     }
-  }, [user?.id, syncJobsAfterMutation, addToast])
+  }, [user?.id, syncJobsAfterMutation, handleMutationError])
 
   const updateJob = useCallback(async (id, patch) => {
     const requestUserId = user?.id
@@ -271,10 +289,10 @@ export function AppProvider({ children }) {
       if (!isActiveUser) return null
       return result.job
     } catch (err) {
-      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
+      handleMutationError(err, requestUserId)
       return null
     }
-  }, [user?.id, syncJobsAfterMutation, addToast])
+  }, [user?.id, syncJobsAfterMutation, handleMutationError])
 
   const deleteJob = useCallback(async (ids) => {
     const idList = Array.isArray(ids) ? ids : [ids]
@@ -294,10 +312,10 @@ export function AppProvider({ children }) {
       if (!jobsSynced || !tasksSynced) return []
       return deletedIds
     } catch (err) {
-      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
+      handleMutationError(err, requestUserId)
       return []
     }
-  }, [user?.id, syncJobsAfterMutation, syncTasksAfterMutation, addToast])
+  }, [user?.id, syncJobsAfterMutation, syncTasksAfterMutation, handleMutationError])
 
   // Tasks
   const addTask = useCallback(async (formData) => {
@@ -315,10 +333,10 @@ export function AppProvider({ children }) {
       if (!isActiveUser) return null
       return newTask
     } catch (err) {
-      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
+      handleMutationError(err, requestUserId)
       return null
     }
-  }, [user?.id, syncTasksAfterMutation, addToast])
+  }, [user?.id, syncTasksAfterMutation, handleMutationError])
 
   const updateTask = useCallback(async (id, patch) => {
     const requestUserId = user?.id
@@ -334,10 +352,10 @@ export function AppProvider({ children }) {
       if (!isActiveUser) return null
       return result.task
     } catch (err) {
-      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
+      handleMutationError(err, requestUserId)
       return null
     }
-  }, [user?.id, syncTasksAfterMutation, addToast])
+  }, [user?.id, syncTasksAfterMutation, handleMutationError])
 
   const deleteTask = useCallback(async (id) => {
     const requestUserId = user?.id
@@ -349,10 +367,10 @@ export function AppProvider({ children }) {
       if (!isActiveUser) return false
       return true
     } catch (err) {
-      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
+      handleMutationError(err, requestUserId)
       return false
     }
-  }, [user?.id, syncTasksAfterMutation, addToast])
+  }, [user?.id, syncTasksAfterMutation, handleMutationError])
 
   // Settings (localStorage only)
   const setSettings = useCallback((value) => {
