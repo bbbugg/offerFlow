@@ -3,8 +3,6 @@ import { useState, useEffect } from 'react'
 import GlowCard from './GlowCard'
 
 export default function ConfirmDialog({ open, title, message, onConfirm, onCancel }) {
-  if (!open) return null
-
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -27,6 +25,8 @@ export default function ConfirmDialog({ open, title, message, onConfirm, onCance
       setIsSubmitting(false)
     }
   }
+
+  if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onCancel}>

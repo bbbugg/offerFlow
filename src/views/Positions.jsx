@@ -10,6 +10,7 @@ import { formatBeijingDate, getElapsedBeijingDays, parseBeijingDate } from '../l
 import { JOB_STATUSES } from '../lib/jobStatus'
 import { JOB_STATUS_BADGE, NEUTRAL_BADGE } from '../lib/badgeStyles'
 
+const EMPTY_JOBS = []
 const STATUS_OPTIONS = ['全部', ...JOB_STATUSES]
 const PRIORITY_OPTIONS = ['全部', '高', '中', '低']
 
@@ -35,7 +36,7 @@ function getMostRecentJob(jobs) {
 
 export default function Positions({ jobs: propJobs, isReadOnly = false }) {
   const appContext = useApp()
-  const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
+  const jobs = isReadOnly ? (propJobs || EMPTY_JOBS) : appContext.jobs
   const addToast = isReadOnly ? () => {} : appContext.addToast
   const deleteJob = isReadOnly ? async () => {} : appContext.deleteJob
 

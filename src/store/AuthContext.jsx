@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
     sessionStorage.removeItem('offerflow_splash_shown')
     delete document.documentElement.dataset.offerflowSplashShown
     setUser(null)
-  }, [user?.id])
+  }, [user])
 
   const value = {
     user,

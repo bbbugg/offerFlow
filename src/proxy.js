@@ -9,7 +9,7 @@ async function getTokenPayload(request) {
   return verifyToken(token)
 }
 
-export default async function middleware(request) {
+export async function proxy(request) {
   const { pathname } = request.nextUrl
 
   // Public routes — always allow

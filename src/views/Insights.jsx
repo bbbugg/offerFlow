@@ -13,6 +13,7 @@ import { addDaysToDateString, normalizeBeijingDate } from '../lib/dateUtils'
 import { JOB_STATUS_BADGE, NEUTRAL_BADGE } from '../lib/badgeStyles'
 import useBeijingToday from '../hooks/useBeijingToday'
 
+const EMPTY_JOBS = []
 const TIME_RANGES = ['全部', '最近 7 天', '最近 30 天', '最近 90 天']
 
 function makeTimeFilter(range, today) {
@@ -123,7 +124,7 @@ const CustomXAxisTick = ({ x, y, payload, isMobile }) => {
 
 export default function Insights({ jobs: propJobs, isReadOnly = false }) {
   const appContext = useApp()
-  const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
+  const jobs = isReadOnly ? (propJobs || EMPTY_JOBS) : appContext.jobs
   const [timeRange, setTimeRange] = useState('全部')
   const [detailOpen, setDetailOpen] = useState(false)
   const [replyDetailOpen, setReplyDetailOpen] = useState(false)

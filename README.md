@@ -53,9 +53,9 @@
 ```
 1. 解压下载的 zip 文件
 2. 双击项目根目录的 setup.bat
-   脚本自动完成：安装依赖 → 切换 SQLite → 生成数据库 → 初始化配置
+   脚本自动完成：安装依赖 → 切换 SQLite → 生成数据库 → 初始化配置 → 构建生产版本
 3. 编辑 `.env` 并修改 `JWT_SECRET`；按需设置注册开关或用户名白名单
-4. 在项目目录打开终端，运行 `npm run dev`
+4. 在项目目录打开终端，运行 `npm start`
 5. 浏览器打开 http://localhost:3000
 6. 注册账号并开始使用
 ```
@@ -79,11 +79,15 @@ npm run db:sqlite
 # 4. 编辑生成的 .env
 # 修改 JWT_SECRET；REGISTER_ENABLED 和 REGISTER_ALLOWED_USERNAMES 可按需设置
 
-# 5. 启动
-npm run dev
+# 5. 构建生产版本
+npm run build
+
+# 6. 启动
+npm start
 ```
 
 浏览器打开 http://localhost:3000 即可使用。
+以后每次更新项目代码或依赖后，需要重新执行 `npm install` 和 `npm run build`，再运行 `npm start`。
 
 ### Docker 部署
 
@@ -205,7 +209,7 @@ docker run -d \
 ## 常见问题
 
 ### 启动后页面空白或无法访问？
-确认 `npm run dev` 正常启动，访问 [http://localhost:3000](http://localhost:3000)。如果端口被占用，Next.js 会自动尝试下一个可用端口。
+确认已成功执行 `npm run build` 和 `npm start`，然后访问 [http://localhost:3000](http://localhost:3000)。如果 3000 端口已被占用，先结束占用该端口的程序，或设置 `PORT` 后启动：PowerShell 使用 `$env:PORT=3001; npm start`，Windows CMD 使用 `set PORT=3001 && npm start`，macOS / Linux 使用 `PORT=3001 npm start`。
 
 ### 注册失败或登录不了？
 确保已执行 `npm run db:sqlite` 创建数据库，并检查 `.env`：
@@ -301,6 +305,9 @@ Prisma schema 会切换为对应数据库版本。
 5. 向 [当前仓库](https://github.com/bbbugg/offerFlow/pulls) 提交 Pull Request
 
 ### 开发建议
+
+如果需要修改代码并使用热更新，可改用 `npm run dev`。开发模式不执行生产环境的页面预加载，首次切换页面可能较慢。
+代码提交或部署前可执行 `npm run check`，一次完成代码检查和生产构建验证。
 
 提交信息格式参考 [Conventional Commits](https://www.conventionalcommits.org/)：
 - `feat:` 新功能

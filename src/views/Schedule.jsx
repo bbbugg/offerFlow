@@ -7,6 +7,9 @@ import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
 import useBeijingToday from '../hooks/useBeijingToday'
 import { NEUTRAL_BADGE, TASK_TYPE_BADGE } from '../lib/badgeStyles'
 
+const EMPTY_JOBS = []
+const EMPTY_TASKS = []
+
 const TYPE_DOT = {
   '面试': 'bg-blue-500',
   'OA / 笔试': 'bg-cyan-500',
@@ -35,8 +38,8 @@ function formatWeekday(dateStr) {
 
 export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly = false }) {
   const appContext = useApp()
-  const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
-  const tasks = isReadOnly ? (propTasks || []) : appContext.tasks
+  const jobs = isReadOnly ? (propJobs || EMPTY_JOBS) : appContext.jobs
+  const tasks = isReadOnly ? (propTasks || EMPTY_TASKS) : appContext.tasks
   const addToast = isReadOnly ? () => {} : appContext.addToast
   const updateTask = isReadOnly ? async () => {} : appContext.updateTask
   const deleteTask = isReadOnly ? async () => {} : appContext.deleteTask

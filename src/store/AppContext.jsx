@@ -120,13 +120,7 @@ export function AppProvider({ children }) {
     }, 3000)
   }, [])
 
-  // ---- Data loading: re-fetch when auth state changes (login/logout) ----
-  useEffect(() => {
-    if (authLoading) return
-    loadAllData()
-  }, [user?.id, authLoading])
-
-  async function loadAllData() {
+  const loadAllData = useCallback(async () => {
     // 未登录时（如分享页访客）直接跳过，不发请求，避免产生无意义的 401
     if (!user) {
       setJobsRaw([])
@@ -163,7 +157,13 @@ export function AppProvider({ children }) {
     } finally {
       setDataLoading(false)
     }
-  }
+  }, [addToast, jobsStorageKey, tasksStorageKey, user])
+
+  // ---- Data loading: re-fetch when auth state changes (login/logout) ----
+  useEffect(() => {
+    if (authLoading) return
+    loadAllData()
+  }, [authLoading, loadAllData])
 
   // ---- Setters with localStorage sync ----
 
