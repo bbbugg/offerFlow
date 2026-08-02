@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/store/AuthContext'
 import GlowCard from '@/components/GlowCard'
+import { sanitizeCallbackUrl } from '@/lib/mainViews'
 
 function LoginForm() {
   const [tab, setTab] = useState('login')
@@ -16,7 +17,7 @@ function LoginForm() {
   const { login, register } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/'
+  const callbackUrl = sanitizeCallbackUrl(searchParams.get('callbackUrl'))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -34,7 +35,7 @@ function LoginForm() {
       } else {
         await login(username, password)
       }
-      router.push(callbackUrl)
+      router.replace(callbackUrl)
     } catch (err) {
       setError(err.message)
     } finally {

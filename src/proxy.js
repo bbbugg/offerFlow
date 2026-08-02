@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/jwt'
+import { getLegacyMainView } from '@/lib/mainViews'
 
 const COOKIE_NAME = 'session'
 
@@ -11,6 +12,13 @@ async function getTokenPayload(request) {
 
 export async function proxy(request) {
   const { pathname } = request.nextUrl
+
+  const legacyView = getLegacyMainView(pathname)
+  if (legacyView) {
+    const url = new URL('/', request.url)
+    url.searchParams.set('view', legacyView)
+    return NextResponse.redirect(url)
+  }
 
   // Public routes — always allow
   if (
@@ -40,7 +48,7 @@ export async function proxy(request) {
   const payload = await getTokenPayload(request)
   if (!payload) {
     const url = new URL('/auth/login', request.url)
-    url.searchParams.set('callbackUrl', pathname)
+    url.searchParams.set('callbackUrl', `${pathname}${request.nextUrl.search}`)
     return NextResponse.redirect(url)
   }
 

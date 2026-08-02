@@ -27,7 +27,7 @@ function getViewFromUrl() {
   return normalizeMainView(new URLSearchParams(window.location.search).get('view'))
 }
 
-export default function MainPageClient({ initialView }) {
+export default function MainPageClient({ initialView, canonicalViewParam }) {
   const { theme } = useTheme()
   const { dataLoading } = useApp()
   const [activeView, setActiveView] = useState(initialView)
@@ -39,6 +39,18 @@ export default function MainPageClient({ initialView }) {
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
+
+  useEffect(() => {
+    if (canonicalViewParam === null) return
+
+    const url = new URL(window.location.href)
+    if (canonicalViewParam) {
+      url.searchParams.set('view', canonicalViewParam)
+    } else {
+      url.searchParams.delete('view')
+    }
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`)
+  }, [canonicalViewParam])
 
   const changeView = useCallback((view) => {
     const nextView = normalizeMainView(view)
