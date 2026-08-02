@@ -111,7 +111,8 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
     if (saving || !task) return
     setSaving(true)
     try {
-      await deleteTask(task.id)
+      const deleted = await deleteTask(task.id)
+      if (!deleted) return
       addToast('事项已删除', 'success')
       setConfirmOpen(false)
       onClose()

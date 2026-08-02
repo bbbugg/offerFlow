@@ -170,7 +170,8 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
 
   const confirmDeleteJob = async () => {
     if (!deletingJob) return
-    await appContext.deleteJob(deletingJob.id)
+    const deletedIds = await appContext.deleteJob(deletingJob.id)
+    if (!deletedIds?.length) return
     appContext.addToast('已删除岗位记录', 'success')
     setDeletingJob(null)
   }

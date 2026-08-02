@@ -155,7 +155,8 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
 
   const handleDelete = async () => {
     if (isReadOnly) return
-    await deleteTask(deletingId)
+    const deleted = await deleteTask(deletingId)
+    if (!deleted) return
     setConfirmOpen(false)
     setDeletingId(null)
     addToast('事项已删除', 'success')
@@ -166,7 +167,8 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
     const task = tasks.find((t) => t.id === id)
     if (!task) return
     const newDone = !task.done
-    await updateTask(id, { done: newDone })
+    const savedTask = await updateTask(id, { done: newDone })
+    if (!savedTask) return
     addToast(newDone ? '事项已完成' : '已取消完成', 'success')
   }
 

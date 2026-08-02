@@ -144,7 +144,8 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
       if (statusImpliesApplied(newStatus) && !existing.appliedDate) {
         patch.appliedDate = formatBeijingDate()
       }
-      await updateJob(jobId, patch)
+      const savedJob = await updateJob(jobId, patch)
+      if (!savedJob) return
       addToast(`已标记为「${label}」`, 'success')
       setShowEndForm(false)
     } finally {
@@ -164,11 +165,12 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
     
     setIsSubmittingTask(true)
     try {
-      await addTask({
+      const savedTask = await addTask({
         title: taskForm.title, type: taskForm.type,
         date: taskForm.date, startTime: taskForm.startTime,
         jobId, notes: taskForm.notes,
       })
+      if (!savedTask) return
       addToast('日程已创建', 'success')
       setTaskForm({ title: '', type: '其他', date: formatBeijingDate(), startTime: '', notes: '' })
       setShowTaskForm(false)

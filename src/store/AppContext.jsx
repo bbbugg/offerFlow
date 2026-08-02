@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import Toast from '../components/Toast'
 import { useAuth } from './AuthContext'
 import { APPLIED_STATUSES, canSelectInterviewStatus, canSelectJobStatus } from '../lib/jobStatus'
@@ -66,6 +66,7 @@ export function isOfferJob(job) {
 async function apiFetch(url, options = {}) {
   const res = await fetch(url, {
     headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
     ...options,
   })
   const text = await res.text()
@@ -102,6 +103,8 @@ export function AppProvider({ children }) {
   const { user, loading: authLoading } = useAuth()
   const jobsStorageKey = user ? `offerFlow_jobs:${user.id}` : null
   const tasksStorageKey = user ? `offerFlow_tasks:${user.id}` : null
+  const activeUserIdRef = useRef(user?.id ?? null)
+  activeUserIdRef.current = user?.id ?? null
 
   const [jobs, setJobsRaw] = useState([])
   const [tasks, setTasksRaw] = useState([])
@@ -128,6 +131,7 @@ export function AppProvider({ children }) {
       setDataLoading(false)
       return
     }
+    const requestUserId = user.id
     setJobsRaw([])
     setTasksRaw([])
     setDataLoading(true)
@@ -136,6 +140,7 @@ export function AppProvider({ children }) {
         apiFetch('/api/jobs'),
         apiFetch('/api/tasks'),
       ])
+      if (activeUserIdRef.current !== requestUserId) return
 
       setJobsRaw(j)
       setTasksRaw(t)
@@ -143,6 +148,7 @@ export function AppProvider({ children }) {
       saveToStorage(jobsStorageKey, j)
       saveToStorage(tasksStorageKey, t)
     } catch (err) {
+      if (activeUserIdRef.current !== requestUserId) return
       // If unauthorized, just show empty data instead of falling
       // back to a potentially stale localStorage from another user.
       if (err.message === 'Unauthorized') {
@@ -155,7 +161,7 @@ export function AppProvider({ children }) {
         setTasksRaw(loadFromStorage(tasksStorageKey, []))
       }
     } finally {
-      setDataLoading(false)
+      if (activeUserIdRef.current === requestUserId) setDataLoading(false)
     }
   }, [addToast, jobsStorageKey, tasksStorageKey, user])
 
@@ -190,12 +196,20 @@ export function AppProvider({ children }) {
     return nextJobs
   }, [jobsStorageKey])
 
+  const reloadTasks = useCallback(async () => {
+    const nextTasks = await apiFetch('/api/tasks')
+    setTasksRaw(nextTasks)
+    if (tasksStorageKey) saveToStorage(tasksStorageKey, nextTasks)
+    return nextTasks
+  }, [tasksStorageKey])
+
   // ---- Async CRUD methods ----
 
   // Jobs
   const addJob = useCallback(async (formData) => {
     try {
       const result = await apiFetch('/api/jobs', { method: 'POST', body: JSON.stringify(formData) })
+      if (!result.job) throw new Error('岗位创建失败：服务器未返回新岗位')
       await reloadJobs()
       return result.job
     } catch (err) {
@@ -207,6 +221,7 @@ export function AppProvider({ children }) {
   const updateJob = useCallback(async (id, patch) => {
     try {
       const result = await apiFetch('/api/jobs', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
+      if (!result.job) throw new Error('岗位更新失败：服务器未返回岗位')
       await reloadJobs()
       return result.job
     } catch (err) {
@@ -220,8 +235,9 @@ export function AppProvider({ children }) {
     if (!idList.length) return
     try {
       const result = await apiFetch('/api/jobs', { method: 'DELETE', body: JSON.stringify({ ids: idList }) })
+      const deletedIds = result.deletedIds || idList
       await reloadJobs()
-      return result.deletedIds || idList
+      return deletedIds
     } catch (err) {
       addToast(err.message, 'error')
       return []
@@ -234,34 +250,36 @@ export function AppProvider({ children }) {
       const result = await apiFetch('/api/tasks', { method: 'POST', body: JSON.stringify(formData) })
       const newTask = result.task
       if (!newTask) throw new Error('事项创建失败：服务器未返回新事项')
-      setTasks((prev) => [...prev, newTask])
+      await reloadTasks()
       return newTask
     } catch (err) {
       addToast(err.message, 'error')
       return null
     }
-  }, [setTasks, addToast])
+  }, [reloadTasks, addToast])
 
   const updateTask = useCallback(async (id, patch) => {
     try {
       const result = await apiFetch('/api/tasks', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
       if (!result.task) throw new Error('事项更新失败：服务器未返回事项')
-      setTasks((prev) => prev.map((t) => t.id === id ? { ...t, ...patch } : t))
+      await reloadTasks()
       return result.task
     } catch (err) {
       addToast(err.message, 'error')
       return null
     }
-  }, [setTasks, addToast])
+  }, [reloadTasks, addToast])
 
   const deleteTask = useCallback(async (id) => {
     try {
       await apiFetch(`/api/tasks?id=${id}`, { method: 'DELETE' })
-      setTasks((prev) => prev.filter((t) => t.id !== id))
+      await reloadTasks()
+      return true
     } catch (err) {
       addToast(err.message, 'error')
+      return false
     }
-  }, [setTasks, addToast])
+  }, [reloadTasks, addToast])
 
   // Settings (localStorage only)
   const setSettings = useCallback((value) => {

@@ -104,7 +104,8 @@ export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly
 
   const confirmDeleteJob = async () => {
     if (isReadOnly) return
-    await deleteJob(deletingJob.id)
+    const deletedIds = await deleteJob(deletingJob.id)
+    if (!deletedIds?.length) return
     setDetailJobId(null)
     setDeletingJob(null)
     addToast('岗位已删除', 'success')

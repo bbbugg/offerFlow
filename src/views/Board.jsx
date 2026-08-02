@@ -101,7 +101,8 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
       patch.appliedDate = formatBeijingDate()
     }
     patch.endReason = targetStatus === '已结束' ? '手动标记' : ''
-    await updateJob(jobId, patch)
+    const savedJob = await updateJob(jobId, patch)
+    if (!savedJob) return
     addToast(`状态已更新`, 'success')
     dragJobId.current = null
   }
@@ -199,7 +200,8 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
 
   const confirmDelete = async () => {
     if (isReadOnly) return
-    await deleteJob(deleteJobId)
+    const deletedIds = await deleteJob(deleteJobId)
+    if (!deletedIds?.length) return
     setConfirmOpen(false)
     setDeleteJobId(null)
     setDetailJobId(null)
@@ -223,7 +225,8 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
     if (statusImpliesApplied(newStatus) && !job.appliedDate) {
       patch.appliedDate = formatBeijingDate()
     }
-    await updateJob(job.id, patch)
+    const savedJob = await updateJob(job.id, patch)
+    if (!savedJob) return
     addToast(`已标记为「${label}」`, 'success')
   }
 
@@ -238,7 +241,8 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
   const saveFollowUp = async () => {
     if (isReadOnly) return
     if (!followUpJob) return
-    await updateJob(followUpJob.id, { nextAction: followUpText })
+    const savedJob = await updateJob(followUpJob.id, { nextAction: followUpText })
+    if (!savedJob) return
     addToast('下一步行动已更新', 'success')
     setFollowUpJob(null)
     setFollowUpText('')

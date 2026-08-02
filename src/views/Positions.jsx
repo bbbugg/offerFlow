@@ -174,7 +174,8 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
 
   const confirmDelete = async () => {
     if (isReadOnly) return
-    await deleteJob(deletingId)
+    const deletedIds = await deleteJob(deletingId)
+    if (!deletedIds?.length) return
     setSelectedIds((prev) => { const n = new Set(prev); n.delete(deletingId); return n })
     setConfirmOpen(false)
     setDeletingId(null)
@@ -195,12 +196,17 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
 
   const confirmBatchDelete = async () => {
     if (isReadOnly) return
-    await deleteJob(Array.from(selectedIds))
-    setSelectedIds(new Set())
+    const deletedIds = await deleteJob(Array.from(selectedIds))
+    if (!deletedIds?.length) return
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      deletedIds.forEach((id) => next.delete(id))
+      return next
+    })
     setConfirmOpen(false)
     setDeletingId(null)
     setDeletingJob(null)
-    addToast(`已删除 ${selectedIds.size} 个岗位`, 'success')
+    addToast(`已删除 ${deletedIds.length} 个岗位`, 'success')
   }
 
   const handleConfirm = () => {

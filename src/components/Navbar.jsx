@@ -13,7 +13,7 @@ import SearchOptionsPopover, { DEFAULT_SEARCH_SCOPE } from './SearchOptionsPopov
 import { addDaysToDateString } from '../lib/dateUtils'
 import useBeijingToday from '../hooks/useBeijingToday'
 
-export default function Navbar() {
+export default function Navbar({ onViewChange }) {
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
   const { user, logout } = useAuth()
@@ -156,7 +156,8 @@ export default function Navbar() {
 
   const confirmDeleteJob = async () => {
     if (!deletingJob) return
-    await deleteJob(deletingJob.id)
+    const deletedIds = await deleteJob(deletingJob.id)
+    if (!deletedIds?.length) return
     setDetailJobId(null)
     setDeletingJob(null)
     addToast('岗位已删除', 'success')
@@ -330,7 +331,7 @@ export default function Navbar() {
 
                 {/* Settings */}
                 <button
-                  onClick={() => { setMenuOpen(false); router.push('/settings') }}
+                  onClick={() => { setMenuOpen(false); onViewChange('settings') }}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-white/[0.02] border-b border-slate-100 dark:border-white/[0.06] transition-colors duration-150 cursor-pointer"
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
