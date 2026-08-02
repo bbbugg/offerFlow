@@ -189,123 +189,170 @@ export function AppProvider({ children }) {
     })
   }, [tasksStorageKey])
 
-  const reloadJobs = useCallback(async () => {
+  const reloadJobs = useCallback(async (requestUserId) => {
     const nextJobs = await apiFetch('/api/jobs')
+    if (activeUserIdRef.current !== requestUserId) return false
     setJobsRaw(nextJobs)
-    if (jobsStorageKey) saveToStorage(jobsStorageKey, nextJobs)
-    return nextJobs
-  }, [jobsStorageKey])
+    saveToStorage(`offerFlow_jobs:${requestUserId}`, nextJobs)
+    return true
+  }, [])
 
-  const reloadTasks = useCallback(async () => {
+  const reloadTasks = useCallback(async (requestUserId) => {
     const nextTasks = await apiFetch('/api/tasks')
+    if (activeUserIdRef.current !== requestUserId) return false
     setTasksRaw(nextTasks)
-    if (tasksStorageKey) saveToStorage(tasksStorageKey, nextTasks)
-    return nextTasks
-  }, [tasksStorageKey])
+    saveToStorage(`offerFlow_tasks:${requestUserId}`, nextTasks)
+    return true
+  }, [])
 
-  const syncJobsAfterMutation = useCallback(async (fallbackUpdate) => {
+  const syncJobsAfterMutation = useCallback(async (requestUserId, fallbackUpdate) => {
+    if (activeUserIdRef.current !== requestUserId) return false
     try {
-      await reloadJobs()
+      return await reloadJobs(requestUserId)
     } catch (err) {
+      if (activeUserIdRef.current !== requestUserId) return false
       console.error('[AppContext] Job saved but latest list refresh failed', err)
-      setJobs(fallbackUpdate)
+      setJobsRaw((prev) => {
+        if (activeUserIdRef.current !== requestUserId) return prev
+        const nextJobs = fallbackUpdate(prev)
+        saveToStorage(`offerFlow_jobs:${requestUserId}`, nextJobs)
+        return nextJobs
+      })
       addToast('最新岗位列表同步失败，请刷新页面', 'warning')
+      return true
     }
-  }, [reloadJobs, setJobs, addToast])
+  }, [reloadJobs, addToast])
 
-  const syncTasksAfterMutation = useCallback(async (fallbackUpdate) => {
+  const syncTasksAfterMutation = useCallback(async (requestUserId, fallbackUpdate) => {
+    if (activeUserIdRef.current !== requestUserId) return false
     try {
-      await reloadTasks()
+      return await reloadTasks(requestUserId)
     } catch (err) {
+      if (activeUserIdRef.current !== requestUserId) return false
       console.error('[AppContext] Task saved but latest list refresh failed', err)
-      setTasks(fallbackUpdate)
+      setTasksRaw((prev) => {
+        if (activeUserIdRef.current !== requestUserId) return prev
+        const nextTasks = fallbackUpdate(prev)
+        saveToStorage(`offerFlow_tasks:${requestUserId}`, nextTasks)
+        return nextTasks
+      })
       addToast('最新事项列表同步失败，请刷新页面', 'warning')
+      return true
     }
-  }, [reloadTasks, setTasks, addToast])
+  }, [reloadTasks, addToast])
 
   // ---- Async CRUD methods ----
 
   // Jobs
   const addJob = useCallback(async (formData) => {
+    const requestUserId = user?.id
+    if (!requestUserId || activeUserIdRef.current !== requestUserId) return null
     try {
       const result = await apiFetch('/api/jobs', { method: 'POST', body: JSON.stringify(formData) })
       if (!result.job) throw new Error('岗位创建失败：服务器未返回新岗位')
-      await syncJobsAfterMutation((prev) => [result.job, ...prev.filter((job) => job.id !== result.job.id)])
+      if (activeUserIdRef.current !== requestUserId) return null
+      const isActiveUser = await syncJobsAfterMutation(requestUserId, (prev) => [result.job, ...prev.filter((job) => job.id !== result.job.id)])
+      if (!isActiveUser) return null
       return result.job
     } catch (err) {
-      addToast(err.message, 'error')
+      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
       return null
     }
-  }, [syncJobsAfterMutation, addToast])
+  }, [user?.id, syncJobsAfterMutation, addToast])
 
   const updateJob = useCallback(async (id, patch) => {
+    const requestUserId = user?.id
+    if (!requestUserId || activeUserIdRef.current !== requestUserId) return null
     try {
       const result = await apiFetch('/api/jobs', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
       if (!result.job) throw new Error('岗位更新失败：服务器未返回岗位')
-      await syncJobsAfterMutation((prev) => [result.job, ...prev.filter((job) => job.id !== id)])
+      if (activeUserIdRef.current !== requestUserId) return null
+      const isActiveUser = await syncJobsAfterMutation(requestUserId, (prev) => [result.job, ...prev.filter((job) => job.id !== id)])
+      if (!isActiveUser) return null
       return result.job
     } catch (err) {
-      addToast(err.message, 'error')
+      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
       return null
     }
-  }, [syncJobsAfterMutation, addToast])
+  }, [user?.id, syncJobsAfterMutation, addToast])
 
   const deleteJob = useCallback(async (ids) => {
     const idList = Array.isArray(ids) ? ids : [ids]
     if (!idList.length) return
+    const requestUserId = user?.id
+    if (!requestUserId || activeUserIdRef.current !== requestUserId) return []
     try {
       const result = await apiFetch('/api/jobs', { method: 'DELETE', body: JSON.stringify({ ids: idList }) })
       const deletedIds = result.deletedIds || idList
-      await syncJobsAfterMutation((prev) => prev.filter((job) => !deletedIds.includes(job.id)))
+      if (activeUserIdRef.current !== requestUserId) return []
+      const [jobsSynced, tasksSynced] = await Promise.all([
+        syncJobsAfterMutation(requestUserId, (prev) => prev.filter((job) => !deletedIds.includes(job.id))),
+        syncTasksAfterMutation(requestUserId, (prev) => prev.map((task) => (
+          deletedIds.includes(task.jobId) ? { ...task, jobId: null } : task
+        ))),
+      ])
+      if (!jobsSynced || !tasksSynced) return []
       return deletedIds
     } catch (err) {
-      addToast(err.message, 'error')
+      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
       return []
     }
-  }, [syncJobsAfterMutation, addToast])
+  }, [user?.id, syncJobsAfterMutation, syncTasksAfterMutation, addToast])
 
   // Tasks
   const addTask = useCallback(async (formData) => {
+    const requestUserId = user?.id
+    if (!requestUserId || activeUserIdRef.current !== requestUserId) return null
     try {
       const result = await apiFetch('/api/tasks', { method: 'POST', body: JSON.stringify(formData) })
       const newTask = result.task
       if (!newTask) throw new Error('事项创建失败：服务器未返回新事项')
-      await syncTasksAfterMutation((prev) => (
+      if (activeUserIdRef.current !== requestUserId) return null
+      const isActiveUser = await syncTasksAfterMutation(requestUserId, (prev) => (
         [newTask, ...prev.filter((task) => task.id !== newTask.id)]
           .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
       ))
+      if (!isActiveUser) return null
       return newTask
     } catch (err) {
-      addToast(err.message, 'error')
+      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
       return null
     }
-  }, [syncTasksAfterMutation, addToast])
+  }, [user?.id, syncTasksAfterMutation, addToast])
 
   const updateTask = useCallback(async (id, patch) => {
+    const requestUserId = user?.id
+    if (!requestUserId || activeUserIdRef.current !== requestUserId) return null
     try {
       const result = await apiFetch('/api/tasks', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
       if (!result.task) throw new Error('事项更新失败：服务器未返回事项')
-      await syncTasksAfterMutation((prev) => (
+      if (activeUserIdRef.current !== requestUserId) return null
+      const isActiveUser = await syncTasksAfterMutation(requestUserId, (prev) => (
         [result.task, ...prev.filter((task) => task.id !== id)]
           .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
       ))
+      if (!isActiveUser) return null
       return result.task
     } catch (err) {
-      addToast(err.message, 'error')
+      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
       return null
     }
-  }, [syncTasksAfterMutation, addToast])
+  }, [user?.id, syncTasksAfterMutation, addToast])
 
   const deleteTask = useCallback(async (id) => {
+    const requestUserId = user?.id
+    if (!requestUserId || activeUserIdRef.current !== requestUserId) return false
     try {
       await apiFetch(`/api/tasks?id=${id}`, { method: 'DELETE' })
-      await syncTasksAfterMutation((prev) => prev.filter((task) => task.id !== id))
+      if (activeUserIdRef.current !== requestUserId) return false
+      const isActiveUser = await syncTasksAfterMutation(requestUserId, (prev) => prev.filter((task) => task.id !== id))
+      if (!isActiveUser) return false
       return true
     } catch (err) {
-      addToast(err.message, 'error')
+      if (activeUserIdRef.current === requestUserId) addToast(err.message, 'error')
       return false
     }
-  }, [syncTasksAfterMutation, addToast])
+  }, [user?.id, syncTasksAfterMutation, addToast])
 
   // Settings (localStorage only)
   const setSettings = useCallback((value) => {
