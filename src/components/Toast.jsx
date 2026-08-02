@@ -16,6 +16,8 @@ export default function Toast() {
               ? 'bg-emerald-600/80 text-white border-emerald-500/20'
               : t.type === 'error'
               ? 'bg-red-600/80 text-white border-red-500/20'
+              : t.type === 'warning'
+              ? 'bg-amber-500/90 text-amber-950 border-amber-400/30'
               : 'bg-gray-900/80 text-gray-100 border-white/10'
           }`}
         >
@@ -28,6 +30,11 @@ export default function Toast() {
             {t.type === 'error' && (
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            )}
+            {t.type === 'warning' && (
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 4h.01M10.3 4.8 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.8a2 2 0 0 0-3.4 0Z" />
               </svg>
             )}
             {t.message}

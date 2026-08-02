@@ -203,6 +203,26 @@ export function AppProvider({ children }) {
     return nextTasks
   }, [tasksStorageKey])
 
+  const syncJobsAfterMutation = useCallback(async (fallbackUpdate) => {
+    try {
+      await reloadJobs()
+    } catch (err) {
+      console.error('[AppContext] Job saved but latest list refresh failed', err)
+      setJobs(fallbackUpdate)
+      addToast('最新岗位列表同步失败，请刷新页面', 'warning')
+    }
+  }, [reloadJobs, setJobs, addToast])
+
+  const syncTasksAfterMutation = useCallback(async (fallbackUpdate) => {
+    try {
+      await reloadTasks()
+    } catch (err) {
+      console.error('[AppContext] Task saved but latest list refresh failed', err)
+      setTasks(fallbackUpdate)
+      addToast('最新事项列表同步失败，请刷新页面', 'warning')
+    }
+  }, [reloadTasks, setTasks, addToast])
+
   // ---- Async CRUD methods ----
 
   // Jobs
@@ -210,25 +230,25 @@ export function AppProvider({ children }) {
     try {
       const result = await apiFetch('/api/jobs', { method: 'POST', body: JSON.stringify(formData) })
       if (!result.job) throw new Error('岗位创建失败：服务器未返回新岗位')
-      await reloadJobs()
+      await syncJobsAfterMutation((prev) => [result.job, ...prev.filter((job) => job.id !== result.job.id)])
       return result.job
     } catch (err) {
       addToast(err.message, 'error')
       return null
     }
-  }, [reloadJobs, addToast])
+  }, [syncJobsAfterMutation, addToast])
 
   const updateJob = useCallback(async (id, patch) => {
     try {
       const result = await apiFetch('/api/jobs', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
       if (!result.job) throw new Error('岗位更新失败：服务器未返回岗位')
-      await reloadJobs()
+      await syncJobsAfterMutation((prev) => [result.job, ...prev.filter((job) => job.id !== id)])
       return result.job
     } catch (err) {
       addToast(err.message, 'error')
       return null
     }
-  }, [reloadJobs, addToast])
+  }, [syncJobsAfterMutation, addToast])
 
   const deleteJob = useCallback(async (ids) => {
     const idList = Array.isArray(ids) ? ids : [ids]
@@ -236,13 +256,13 @@ export function AppProvider({ children }) {
     try {
       const result = await apiFetch('/api/jobs', { method: 'DELETE', body: JSON.stringify({ ids: idList }) })
       const deletedIds = result.deletedIds || idList
-      await reloadJobs()
+      await syncJobsAfterMutation((prev) => prev.filter((job) => !deletedIds.includes(job.id)))
       return deletedIds
     } catch (err) {
       addToast(err.message, 'error')
       return []
     }
-  }, [reloadJobs, addToast])
+  }, [syncJobsAfterMutation, addToast])
 
   // Tasks
   const addTask = useCallback(async (formData) => {
@@ -250,36 +270,42 @@ export function AppProvider({ children }) {
       const result = await apiFetch('/api/tasks', { method: 'POST', body: JSON.stringify(formData) })
       const newTask = result.task
       if (!newTask) throw new Error('事项创建失败：服务器未返回新事项')
-      await reloadTasks()
+      await syncTasksAfterMutation((prev) => (
+        [newTask, ...prev.filter((task) => task.id !== newTask.id)]
+          .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+      ))
       return newTask
     } catch (err) {
       addToast(err.message, 'error')
       return null
     }
-  }, [reloadTasks, addToast])
+  }, [syncTasksAfterMutation, addToast])
 
   const updateTask = useCallback(async (id, patch) => {
     try {
       const result = await apiFetch('/api/tasks', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
       if (!result.task) throw new Error('事项更新失败：服务器未返回事项')
-      await reloadTasks()
+      await syncTasksAfterMutation((prev) => (
+        [result.task, ...prev.filter((task) => task.id !== id)]
+          .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+      ))
       return result.task
     } catch (err) {
       addToast(err.message, 'error')
       return null
     }
-  }, [reloadTasks, addToast])
+  }, [syncTasksAfterMutation, addToast])
 
   const deleteTask = useCallback(async (id) => {
     try {
       await apiFetch(`/api/tasks?id=${id}`, { method: 'DELETE' })
-      await reloadTasks()
+      await syncTasksAfterMutation((prev) => prev.filter((task) => task.id !== id))
       return true
     } catch (err) {
       addToast(err.message, 'error')
       return false
     }
-  }, [reloadTasks, addToast])
+  }, [syncTasksAfterMutation, addToast])
 
   // Settings (localStorage only)
   const setSettings = useCallback((value) => {
