@@ -30,6 +30,7 @@ export default function Navbar({ onViewChange }) {
   const [editingJob, setEditingJob] = useState(null)
   const [jobModalOpen, setJobModalOpen] = useState(false)
   const [deletingJob, setDeletingJob] = useState(null)
+  const [logoutLoading, setLogoutLoading] = useState(false)
   const searchContainerRef = useRef(null)
   const menuRef = useRef(null)
   const avatarRef = useRef(null)
@@ -123,13 +124,17 @@ export default function Navbar({ onViewChange }) {
   }
 
   const handleLogout = async () => {
-    setMenuOpen(false)
-    addToast('已退出登录', 'success')
+    if (logoutLoading) return
+    setLogoutLoading(true)
     try {
       await logout()
     } catch {
-      // Fallback: navigate even if API fails
+      addToast('退出失败，请稍后重试', 'error')
+      setLogoutLoading(false)
+      return
     }
+    setMenuOpen(false)
+    addToast('已退出登录', 'success')
     // Brief delay so the toast renders before redirect
     setTimeout(() => router.push('/auth/login'), 400)
   }
@@ -343,12 +348,13 @@ export default function Navbar({ onViewChange }) {
                 {/* Logout */}
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-150 cursor-pointer"
+                  disabled={logoutLoading}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  <span>退出登录</span>
+                  <span>{logoutLoading ? '退出中...' : '退出登录'}</span>
                 </button>
               </div>
             </div>

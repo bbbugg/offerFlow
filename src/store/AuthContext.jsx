@@ -55,20 +55,30 @@ export function AuthProvider({ children }) {
   }, [])
 
   const logout = useCallback(async () => {
+    const currentUserId = user?.id
+    setUser(null)
+
+    if (currentUserId) {
+      try {
+        localStorage.removeItem(`offerFlow_jobs:${currentUserId}`)
+        localStorage.removeItem(`offerFlow_tasks:${currentUserId}`)
+      } catch (err) {
+        console.error('清除本地数据缓存失败', err)
+      }
+    }
+
     const res = await fetch('/api/auth/logout', { method: 'POST' })
     if (!res.ok) {
       const data = await res.json()
       throw new Error(data.error || '退出失败')
     }
-    // Clear client-side caches so the next user starts fresh
-    if (user?.id) {
-      localStorage.removeItem(`offerFlow_jobs:${user.id}`)
-      localStorage.removeItem(`offerFlow_tasks:${user.id}`)
-    }
     // Reset SplashScreen so it shows again on next auth visit
-    sessionStorage.removeItem('offerflow_splash_shown')
-    delete document.documentElement.dataset.offerflowSplashShown
-    setUser(null)
+    try {
+      sessionStorage.removeItem('offerflow_splash_shown')
+      delete document.documentElement.dataset.offerflowSplashShown
+    } catch (err) {
+      console.error('重置欢迎页状态失败', err)
+    }
   }, [user])
 
   const handleUnauthorized = useCallback(() => {
