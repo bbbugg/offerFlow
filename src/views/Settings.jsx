@@ -17,16 +17,16 @@ export default function Settings() {
     async function fetchShareToken() {
       try {
         const res = await fetch('/api/share/token')
-        if (res.ok) {
-          const data = await res.json()
-          setShareToken(data.shareToken)
-          if (data.shareSettings) {
-            if (typeof data.shareSettings.shareSchedule === 'boolean') setShareSchedule(data.shareSettings.shareSchedule)
-            if (typeof data.shareSettings.shareUsername === 'boolean') setShareUsername(data.shareSettings.shareUsername)
-          }
+        if (!res.ok) throw new Error('分享设置加载失败，请刷新页面')
+        const data = await res.json()
+        setShareToken(data.shareToken)
+        if (data.shareSettings) {
+          if (typeof data.shareSettings.shareSchedule === 'boolean') setShareSchedule(data.shareSettings.shareSchedule)
+          if (typeof data.shareSettings.shareUsername === 'boolean') setShareUsername(data.shareSettings.shareUsername)
         }
       } catch (err) {
         console.error('获取分享状态失败', err)
+        setError('分享设置加载失败，请刷新页面')
       } finally {
         setLoading(false)
       }
