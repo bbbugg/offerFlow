@@ -1,6 +1,7 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const navItems = [
   { key: 'dashboard', label: '仪表盘', icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm12 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
@@ -13,7 +14,6 @@ const navItems = [
 
 export default function BottomNav() {
   const pathname = usePathname()
-  const router = useRouter()
 
   const isActive = (key) => pathname === '/' + key || pathname.startsWith('/' + key + '/')
 
@@ -23,9 +23,11 @@ export default function BottomNav() {
         {navItems.map((item) => {
           const active = isActive(item.key)
           return (
-            <button
+            <Link
               key={item.key}
-              onClick={() => router.push('/' + item.key)}
+              href={'/' + item.key}
+              prefetch={true}
+              aria-current={active ? 'page' : undefined}
               className={`bottom-nav-btn flex h-full min-w-[52px] flex-1 flex-col items-center justify-center gap-1 px-1 ${
                 active ? 'text-offer-primary' : 'text-offer-muted'
               } cursor-pointer`}
@@ -34,7 +36,7 @@ export default function BottomNav() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
               </svg>
               <span className="text-[10px] font-medium truncate w-full text-center">{item.label}</span>
-            </button>
+            </Link>
           )
         })}
       </div>

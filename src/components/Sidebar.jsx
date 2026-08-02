@@ -1,6 +1,7 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const menuItems = [
   { key: 'dashboard', label: '仪表盘', icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm12 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
@@ -13,7 +14,6 @@ const menuItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const router = useRouter()
 
   const isActive = (key) => pathname === '/' + key || pathname.startsWith('/' + key + '/')
 
@@ -23,9 +23,11 @@ export default function Sidebar() {
         {menuItems.map((item) => {
           const active = isActive(item.key)
           return (
-            <button
+            <Link
               key={item.key}
-              onClick={() => router.push('/' + item.key)}
+              href={'/' + item.key}
+              prefetch={true}
+              aria-current={active ? 'page' : undefined}
               className={`
                 group relative flex w-full items-center gap-3 rounded-2xl py-3 pl-5 pr-4 text-[17px] font-medium transition-all duration-200 focus:outline-none focus:ring-0 select-none
                 ${active
@@ -51,7 +53,7 @@ export default function Sidebar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={item.icon} />
               </svg>
               <span className="relative z-10 truncate">{item.label}</span>
-            </button>
+            </Link>
           )
         })}
       </nav>
