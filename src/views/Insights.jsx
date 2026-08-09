@@ -717,8 +717,56 @@ function getReplyStageBadge(job) {
   )
 }
 
+function ReplyJobsTable({ jobs, onSelectJob, emptyText, rejected = false }) {
+  return (
+    <div className={`overflow-x-auto max-h-[240px] overflow-y-auto rounded-xl border ${rejected ? 'border-red-200 dark:border-red-400/15' : 'border-slate-200 dark:border-white/[0.06]'}`}>
+      <table className="w-full text-xs">
+        <thead className="sticky top-0 bg-slate-100 dark:bg-gray-950 z-10">
+          <tr className={`text-slate-500 dark:text-white/45 border-b ${rejected ? 'border-red-200 dark:border-red-400/15' : 'border-slate-200 dark:border-white/[0.06]'}`}>
+            <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">公司</th>
+            <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">岗位</th>
+            <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap">当前状态</th>
+            <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">最高阶段</th>
+            <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">结束原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          {jobs.map((job) => (
+            <tr
+              key={job.id}
+              onClick={() => onSelectJob?.(job.id)}
+              className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+              title="点击查看岗位详情"
+            >
+              <td className="py-2.5 px-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{job.companyName}</td>
+              <td className="py-2.5 px-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{job.jobTitle}</td>
+              <td className="py-2.5 px-3 whitespace-nowrap">
+                <span className={`inline-flex items-center shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[job.status] || NEUTRAL_BADGE}`}>{job.status}</span>
+              </td>
+              <td className="py-2.5 px-3">
+                {getReplyStageBadge(job)}
+              </td>
+              <td className={`py-2.5 px-3 max-w-[140px] truncate ${rejected ? 'text-red-600 dark:text-red-400' : 'text-slate-500 dark:text-white/55'}`} title={job.endReason || '-'}>{job.endReason || '-'}</td>
+            </tr>
+          ))}
+          {jobs.length === 0 && (
+            <tr>
+              <td colSpan={5} className="text-center py-8 text-slate-500 dark:text-white/45">
+                {emptyText}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 function ReplyDetailModal({ open, onClose, onSelectJob, stats, jobs }) {
   if (!open) return null
+
+  const rejectedJobs = jobs.filter((job) => job.endReason === '被拒绝')
+  const otherReplyJobs = jobs.filter((job) => job.endReason !== '被拒绝')
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onClose}>
@@ -731,8 +779,8 @@ function ReplyDetailModal({ open, onClose, onSelectJob, stats, jobs }) {
             {/* Body */}
             <div className="flex-1 overflow-y-auto p-5 space-y-6">
               {/* Summary row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bento-block">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div className="bento-block col-span-2 sm:col-span-1">
                   <p className="text-xs text-slate-500 dark:text-white/45 mb-1">收到回复岗位</p>
                   <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.totalReplied} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
                   <p className="text-xs text-slate-500 dark:text-white/45 mt-1">回复率: {stats.replyRate}%</p>
@@ -748,6 +796,10 @@ function ReplyDetailModal({ open, onClose, onSelectJob, stats, jobs }) {
                 <div className="bento-block">
                   <p className="text-xs text-slate-500 dark:text-white/45 mb-1">收到 Offer</p>
                   <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.toOfferCount} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
+                </div>
+                <div className="bento-block">
+                  <p className="text-xs text-slate-500 dark:text-white/45 mb-1">被拒绝</p>
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">{rejectedJobs.length} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
                 </div>
               </div>
 
@@ -797,49 +849,16 @@ function ReplyDetailModal({ open, onClose, onSelectJob, stats, jobs }) {
                 </div>
               </div>
 
-              {/* Detail table */}
-              <div>
-                <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">收到回复岗位明细（{jobs.length}）</h3>
+              {/* Detail tables */}
+              <div className="space-y-5">
+                <div>
+                  <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">其他回复岗位（{otherReplyJobs.length}）</h3>
+                  <ReplyJobsTable jobs={otherReplyJobs} onSelectJob={onSelectJob} emptyText="暂无其他回复岗位记录" />
+                </div>
 
-                <div className="overflow-x-auto max-h-[300px] overflow-y-auto rounded-xl border border-slate-200 dark:border-white/[0.06]">
-                  <table className="w-full text-xs">
-                    <thead className="sticky top-0 bg-slate-100 dark:bg-gray-950 z-10">
-                      <tr className="text-slate-500 dark:text-white/45 border-b border-slate-200 dark:border-white/[0.06]">
-                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">公司</th>
-                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">岗位</th>
-                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap">当前状态</th>
-                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">最高阶段</th>
-                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">结束原因</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {jobs.map((j) => (
-                        <tr
-                          key={j.id}
-                          onClick={() => onSelectJob?.(j.id)}
-                          className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                          title="点击查看岗位详情"
-                        >
-                          <td className="py-2.5 px-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{j.companyName}</td>
-                          <td className="py-2.5 px-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{j.jobTitle}</td>
-                          <td className="py-2.5 px-3 whitespace-nowrap">
-                            <span className={`inline-flex items-center shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
-                          </td>
-                          <td className="py-2.5 px-3">
-                            {getReplyStageBadge(j)}
-                          </td>
-                          <td className="py-2.5 px-3 text-slate-500 dark:text-white/55 max-w-[140px] truncate" title={j.endReason || '-'}>{j.endReason || '-'}</td>
-                        </tr>
-                      ))}
-                      {jobs.length === 0 && (
-                        <tr>
-                          <td colSpan={5} className="text-center py-8 text-slate-500 dark:text-white/45">
-                            暂无收到回复的岗位记录
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                <div>
+                  <h3 className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider mb-3">被拒绝岗位（{rejectedJobs.length}）</h3>
+                  <ReplyJobsTable jobs={rejectedJobs} onSelectJob={onSelectJob} emptyText="暂无被拒绝的岗位记录" rejected />
                 </div>
               </div>
             </div>
