@@ -63,8 +63,8 @@ if not exist .env (
 echo.
 echo(请打开 .env 文件，确认以下配置：
 echo(  1. 将 JWT_SECRET 修改为足够长的随机字符串
-echo(  2. REGISTER_ENABLED 默认为 true，如需关闭新用户注册请设为 false
-echo(  3. 如需限制注册用户名，设置 REGISTER_ALLOWED_USERNAMES
+echo(  2. REGISTER_ENABLED 是注册总开关，默认为 true；设为 false 时完全关闭注册
+echo(  3. REGISTER_ALLOWED_USERNAMES 仅在注册开启时生效
 echo(     多个用户名使用英文逗号分隔，例如 alice,bob，留空则不限制
 
 echo.

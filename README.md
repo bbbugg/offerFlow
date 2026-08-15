@@ -54,7 +54,7 @@
 1. 解压下载的 zip 文件
 2. 双击项目根目录的 setup.bat
    脚本自动完成：安装依赖 → 切换 SQLite → 生成数据库 → 初始化配置 → 构建生产版本
-3. 编辑 `.env` 并修改 `JWT_SECRET`；按需设置注册开关或用户名白名单
+3. 编辑 `.env` 并修改 `JWT_SECRET`；按需设置注册总开关，以及仅在注册开启时生效的用户名白名单
 4. 在项目目录打开终端，运行 `npm start`
 5. 浏览器打开 http://localhost:3000
 6. 注册账号并开始使用
@@ -77,7 +77,7 @@ npm run db:sqlite
 # 数据库文件位置：prisma/dev.db
 
 # 4. 编辑生成的 .env
-# 修改 JWT_SECRET；REGISTER_ENABLED 和 REGISTER_ALLOWED_USERNAMES 可按需设置
+# 修改 JWT_SECRET；REGISTER_ENABLED 是注册总开关，REGISTER_ALLOWED_USERNAMES 仅在注册开启时生效
 
 # 5. 构建生产版本
 npm run build
@@ -126,10 +126,10 @@ volumes:
 
 ```dotenv
 JWT_SECRET=请替换为足够长的随机字符串
-# 可选：设为 false 时完全关闭新用户注册
+# 注册总开关，设为 false 时关闭注册
 REGISTER_ENABLED=true
-# 可选：限制只允许 alice 和 bob 注册
-REGISTER_ALLOWED_USERNAMES=alice,bob
+# 注册开启时的用户名白名单，留空不限制，多个用户名用英文逗号分隔
+REGISTER_ALLOWED_USERNAMES=
 ```
 
 #### 3. 启动服务
@@ -168,7 +168,7 @@ docker run -d \
   ghcr.io/bbbugg/offerflow:latest
 ```
 
-如需关闭注册，在上述命令中追加 `-e REGISTER_ENABLED=false`；如需启用白名单，追加 `-e REGISTER_ALLOWED_USERNAMES=alice,bob`。
+如需关闭注册，在上述命令中追加 `-e REGISTER_ENABLED=false`；如需在注册开启时仅允许指定用户名，追加 `-e REGISTER_ALLOWED_USERNAMES=alice,bob`。`REGISTER_ENABLED=false` 时白名单会被忽略。
 
 ### 环境变量说明
 
@@ -178,7 +178,7 @@ docker run -d \
 | `DIRECT_URL` | 无 | 仅 PostgreSQL | PostgreSQL 直连地址。普通本地或 Docker 部署无需设置，切换 PostgreSQL 时才需填写。 |
 | `JWT_SECRET` | `change-me-to-a-random-string` | 是 | 用于签发和验证登录凭证。部署前必须替换为足够长的随机字符串。 |
 | `REGISTER_ENABLED` | `true` | 否 | 新用户注册总开关。未设置或设为 `true` 时开放注册；设为 `false` 时完全关闭注册。 |
-| `REGISTER_ALLOWED_USERNAMES` | 空 | 否 | 可选用户名白名单。未设置或留空时不限制用户名；设置后仅允许名单内用户注册，多个用户名用英文逗号分隔。 |
+| `REGISTER_ALLOWED_USERNAMES` | 空 | 否 | 仅在注册总开关开启时生效的用户名白名单。未设置或留空时不限制用户名；设置后仅允许名单内用户注册，多个用户名用英文逗号分隔。 |
 
 `REGISTER_ENABLED=false` 的优先级高于用户名白名单：关闭注册后，即使用户名在 `REGISTER_ALLOWED_USERNAMES` 中也无法注册。修改环境变量后需要重启应用；Vercel 部署需要重新部署才会生效。
 
@@ -236,10 +236,11 @@ npm run db:sqlite
 DATABASE_URL="你的 PostgreSQL 连接地址"
 DIRECT_URL="你的 PostgreSQL 直连地址"
 JWT_SECRET="请替换为足够长的随机字符串"
-# 可选，设为 false 时关闭新用户注册
+# 注册总开关优先于用户名白名单；设为 false 时完全关闭注册
 REGISTER_ENABLED="true"
-# 可选，留空时允许任意用户名注册
-REGISTER_ALLOWED_USERNAMES="alice,bob"
+# 注册开启时，留空允许任意用户名，填写后仅允许名单内的用户名
+REGISTER_ALLOWED_USERNAMES=""
+# 示例：REGISTER_ALLOWED_USERNAMES="alice,bob"
 ```
 
 保存后运行：
