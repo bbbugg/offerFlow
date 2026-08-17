@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { canSelectJobStatus, syncInterviewRoundsForStatus } from './jobStatus.js'
+import { canSelectJobStatus, FINAL_JOB_STATUSES, JOB_STATUSES, syncInterviewRoundsForStatus } from './jobStatus.js'
 
 test('interview stages can return to OA but cannot return to applied', () => {
   const job = {
@@ -13,6 +13,20 @@ test('interview stages can return to OA but cannot return to applied', () => {
   assert.equal(canSelectJobStatus(job, '一面中'), true)
   assert.equal(canSelectJobStatus(job, '二面中'), true)
   assert.equal(canSelectJobStatus(job, '三面中'), false)
+})
+
+test('Offer and ended jobs cannot transition to another status', () => {
+  for (const finalStatus of FINAL_JOB_STATUSES) {
+    const job = { status: finalStatus, interviewRounds: [] }
+
+    for (const targetStatus of JOB_STATUSES) {
+      assert.equal(
+        canSelectJobStatus(job, targetStatus),
+        targetStatus === finalStatus,
+        `${finalStatus} -> ${targetStatus}`,
+      )
+    }
+  }
 })
 
 test('changing an ending reason remaps failed interview rounds to canceled', () => {

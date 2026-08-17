@@ -5,7 +5,7 @@ import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 import CustomSelect from './CustomSelect'
 import { formatBeijingDate } from '../lib/dateUtils'
-import { JOB_STATUSES, statusImpliesApplied } from '../lib/jobStatus'
+import { JOB_STATUSES, JOB_STATUS_TRANSITION_ERROR, statusImpliesApplied } from '../lib/jobStatus'
 
 const WORK_MODE_OPTIONS = ['onsite', 'remote', 'hybrid']
 const CHANNEL_OPTIONS = ['', '内推', '官网投递', '猎头', '招聘平台', '校园招聘', '其他']
@@ -92,7 +92,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
   const handleStatusChange = useCallback((value) => {
     const statusBasis = job || emptyForm
     if (!canSelectJobStatus(statusBasis, value)) {
-      addToast('已投递及之后不能改回感兴趣，面试阶段不能退回已投递，面试轮次不能后退或跨级', 'error')
+      addToast(JOB_STATUS_TRANSITION_ERROR, 'error')
       return
     }
     setForm((prev) => ({
@@ -122,7 +122,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
       return
     }
     if (!canSelectJobStatus(job || emptyForm, form.status)) {
-      addToast('已投递及之后不能改回感兴趣，面试阶段不能退回已投递，面试轮次不能后退或跨级', 'error')
+      addToast(JOB_STATUS_TRANSITION_ERROR, 'error')
       return
     }
 

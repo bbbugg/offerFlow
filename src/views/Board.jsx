@@ -8,7 +8,7 @@ import ModalHeader from '../components/ModalHeader'
 import GlowCard from '../components/GlowCard'
 import ActionMenuPortal from '../components/ActionMenuPortal'
 import { formatBeijingDate, getElapsedBeijingDays } from '../lib/dateUtils'
-import { statusImpliesApplied } from '../lib/jobStatus'
+import { isFinalJobStatus, JOB_STATUS_TRANSITION_ERROR, statusImpliesApplied } from '../lib/jobStatus'
 import { compareJobsByLatestTimeline } from '../lib/jobSort'
 
 const COLUMNS = [
@@ -84,7 +84,7 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
     const job = jobs.find((j) => j.id === jobId)
     if (!job || job.status === targetStatus) return
     if (!canSelectJobStatus(job, targetStatus)) {
-      addToast('已投递及之后不能改回感兴趣，面试阶段不能退回已投递，面试轮次不能后退或跨级', 'error')
+      addToast(JOB_STATUS_TRANSITION_ERROR, 'error')
       dragJobId.current = null
       return
     }
@@ -430,6 +430,7 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
 function Card({ job, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, onDragEnd, onEditFromMenu, onDelete, onMarkOffer, onMarkEnded, onFollowUp, isReadOnly = false }) {
   const days = getElapsedBeijingDays(job.appliedDate)
   const actionBtnRef = useRef(null)
+  const isStatusLocked = isFinalJobStatus(job.status)
 
   const priorityColor = job.priority === '高' ? 'text-red-700 dark:text-red-300 bg-red-500/[0.15] border-red-500/30'
     : job.priority === '中' ? 'text-amber-700 dark:text-amber-300 bg-amber-500/[0.15] border-amber-500/30'
@@ -470,11 +471,15 @@ function Card({ job, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, 
 
       {/* Portal-based Dropdown Menu — escapes card stacking context */}
       {!isReadOnly && (
-        <ActionMenuPortal open={menuOpen} anchorRef={actionBtnRef} onClose={onCloseMenu} menuWidth={180} menuHeight={190}>
+        <ActionMenuPortal open={menuOpen} anchorRef={actionBtnRef} onClose={onCloseMenu} menuWidth={180} menuHeight={isStatusLocked ? 110 : 190}>
           <MenuItem icon="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" label="编辑" onClick={onEditFromMenu} />
           <MenuItem icon="M13 7l5 5m0 0l-5 5m5-5H6" label="设置 Follow-up" onClick={onFollowUp} />
-          <MenuItem icon="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" label="标记为 Offer" onClick={onMarkOffer} />
-          <MenuItem icon="M6 18L18 6M6 6l12 12" label="标记为已结束" onClick={onMarkEnded} />
+          {!isStatusLocked && (
+            <>
+              <MenuItem icon="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" label="标记为 Offer" onClick={onMarkOffer} />
+              <MenuItem icon="M6 18L18 6M6 6l12 12" label="标记为已结束" onClick={onMarkEnded} />
+            </>
+          )}
           <div className="border-t border-slate-200 dark:border-white/10 my-1" />
           <MenuItem icon="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" label="删除" onClick={onDelete} danger />
         </ActionMenuPortal>

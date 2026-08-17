@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
-import { canSelectJobStatus, JOB_STATUSES, statusImpliesApplied, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
+import { canSelectJobStatus, JOB_STATUSES, JOB_STATUS_TRANSITION_ERROR, statusImpliesApplied, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
 import { formatBeijingDate } from '@/lib/dateUtils'
 import {
   createUndoableTimelineEvent,
@@ -116,7 +116,7 @@ export async function PUT(request) {
         throw new TimelineUndoError('岗位状态不正确')
       }
       if (data.status && !canSelectJobStatus(existing, data.status)) {
-        throw new TimelineUndoError('已投递及之后不能改回感兴趣，面试阶段不能退回已投递，面试轮次不能后退或跨级')
+        throw new TimelineUndoError(JOB_STATUS_TRANSITION_ERROR)
       }
       if (appendedEvent && !statusChanged) {
         throw new TimelineUndoError('只有状态变更可以追加时间线记录')

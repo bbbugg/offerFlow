@@ -6,7 +6,7 @@ import GlowCard from './GlowCard'
 import CustomSelect from './CustomSelect'
 import ConfirmDialog from './ConfirmDialog'
 import { formatBeijingDate, getElapsedBeijingDays } from '../lib/dateUtils'
-import { statusImpliesApplied } from '../lib/jobStatus'
+import { isFinalJobStatus, JOB_STATUS_TRANSITION_ERROR, statusImpliesApplied } from '../lib/jobStatus'
 import { getJobTimelineSnapshot, getLatestTimelineUndoConflicts, hasLatestTimelineUndoSnapshot } from '../lib/timelineUndo'
 import { JOB_STATUS_ACTION_BADGE, JOB_STATUS_BADGE, NEUTRAL_BADGE, ROUND_STATUS_BADGE } from '../lib/badgeStyles'
 
@@ -219,7 +219,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
     const existing = jobs.find((j) => j.id === jobId)
     if (!existing) return
     if (!canSelectJobStatus(existing, newStatus)) {
-      addToast('已投递及之后不能改回感兴趣，面试阶段不能退回已投递，面试轮次不能后退或跨级', 'error')
+      addToast(JOB_STATUS_TRANSITION_ERROR, 'error')
       return
     }
     
@@ -388,7 +388,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
           )}
 
           {/* Quick Status Actions */}
-          {!isReadOnly && job.status !== '已结束' && job.status !== 'Offer' && (
+          {!isReadOnly && !isFinalJobStatus(job.status) && (
             <section>
               <h3 className="text-xs font-semibold text-white/45 uppercase tracking-wider mb-3">快捷操作</h3>
               <div className="flex flex-wrap gap-2">
