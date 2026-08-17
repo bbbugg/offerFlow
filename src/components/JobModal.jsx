@@ -144,7 +144,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
           },
         ]
       }
-      const savedJob = await updateJob(job.id, patch)
+      const savedJob = await updateJob(job.id, patch, job.updatedAt)
       if (!savedJob) {
         savingRef.current = false
         setSaving(false)

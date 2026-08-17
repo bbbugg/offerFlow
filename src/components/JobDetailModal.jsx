@@ -203,10 +203,6 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
       expectedUpdatedAt: job.updatedAt,
     })
     if (!result) return
-    if (result.undoConflict) {
-      if (result.confirmationStale) addToast('岗位刚刚又被更新，请核对弹窗中的最新内容后再次确认', 'warning')
-      return
-    }
     setShowUndoConfirm(false)
     setUndoConfirmEventId(null)
     setShowEndForm(false)
@@ -233,7 +229,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
       if (statusImpliesApplied(newStatus) && !existing.appliedDate) {
         patch.appliedDate = formatBeijingDate()
       }
-      const savedJob = await updateJob(jobId, patch)
+      const savedJob = await updateJob(jobId, patch, existing.updatedAt)
       if (!savedJob) return
       addToast(`已标记为「${label}」`, 'success')
       setShowEndForm(false)

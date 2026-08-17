@@ -4,6 +4,7 @@ import { getAuthUser } from '@/lib/auth'
 import { canSelectJobStatus, JOB_STATUSES, JOB_STATUS_TRANSITION_ERROR, statusImpliesApplied, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
 import { formatBeijingDate } from '@/lib/dateUtils'
 import {
+  assertJobUpdateCurrent,
   createUndoableTimelineEvent,
   getJobTimelineSnapshot,
   readAppendedTimelineEvent,
@@ -109,6 +110,7 @@ export async function PUT(request) {
         throw new TimelineUndoError('无权修改此记录', 403)
       }
 
+      assertJobUpdateCurrent(existing, body.expectedUpdatedAt)
       const appendedEvent = readAppendedTimelineEvent(existing.timeline, body.timeline)
       const statusChanged = Object.hasOwn(data, 'status') && data.status !== existing.status
 
@@ -167,7 +169,7 @@ export async function PUT(request) {
     return NextResponse.json({ job })
   } catch (error) {
     if (error instanceof TimelineUndoError) {
-      return NextResponse.json({ error: error.message }, { status: error.status })
+      return NextResponse.json({ error: error.message, code: error.code }, { status: error.status })
     }
     console.error('[jobs] Failed to update job', error)
     return NextResponse.json({ error: '岗位更新失败，请稍后重试' }, { status: 500 })

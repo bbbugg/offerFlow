@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { syncInterviewRoundsForStatus } from './jobStatus.js'
 import {
+  assertJobUpdateCurrent,
   assertUndoConfirmationCurrent,
   buildLatestTimelineUndoPatch,
   canUndoLatestTimelineEvent,
@@ -182,4 +183,18 @@ test('ordinary and force undo confirmations must match the latest updatedAt', ()
     () => assertUndoConfirmationCurrent(job, undefined),
     (error) => error instanceof TimelineUndoError && error.code === 'UNDO_CONFIRMATION_STALE',
   )
+})
+
+test('ordinary job updates reject missing or stale updatedAt values', () => {
+  const job = { updatedAt: new Date('2026-08-18T10:00:00.000Z') }
+
+  assert.doesNotThrow(() => assertJobUpdateCurrent(job, '2026-08-18T10:00:00.000Z'))
+  for (const expectedUpdatedAt of [undefined, '2026-08-18T10:00:01.000Z']) {
+    assert.throws(
+      () => assertJobUpdateCurrent(job, expectedUpdatedAt),
+      (error) => error instanceof TimelineUndoError
+        && error.status === 409
+        && error.code === 'JOB_UPDATE_STALE',
+    )
+  }
 })

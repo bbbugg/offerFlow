@@ -280,21 +280,28 @@ export function AppProvider({ children }) {
     }
   }, [user?.id, syncJobsAfterMutation, handleMutationError])
 
-  const updateJob = useCallback(async (id, patch) => {
+  const updateJob = useCallback(async (id, patch, expectedUpdatedAt) => {
     const requestUserId = user?.id
     if (!requestUserId || activeUserIdRef.current !== requestUserId) return null
     try {
-      const result = await apiFetch('/api/jobs', { method: 'PUT', body: JSON.stringify({ id, ...patch }) })
+      const result = await apiFetch('/api/jobs', {
+        method: 'PUT',
+        body: JSON.stringify({ id, ...patch, expectedUpdatedAt }),
+      })
       if (!result.job) throw new Error('岗位更新失败：服务器未返回岗位')
       if (activeUserIdRef.current !== requestUserId) return null
       const isActiveUser = await syncJobsAfterMutation(requestUserId, (prev) => [result.job, ...prev.filter((job) => job.id !== id)])
       if (!isActiveUser) return null
       return result.job
     } catch (err) {
+      if (err.code === 'JOB_UPDATE_STALE') {
+        addToast(err.message, 'warning')
+        return null
+      }
       handleMutationError(err, requestUserId)
       return null
     }
-  }, [user?.id, syncJobsAfterMutation, handleMutationError])
+  }, [user?.id, syncJobsAfterMutation, addToast, handleMutationError])
 
   const undoLatestJobAction = useCallback(async (id, eventId, { force = false, expectedUpdatedAt } = {}) => {
     const requestUserId = user?.id
@@ -313,21 +320,16 @@ export function AppProvider({ children }) {
       return result.job
     } catch (err) {
       if (err.code === 'UNDO_CONFLICT' || err.code === 'UNDO_CONFIRMATION_STALE') {
-        try {
-          await reloadJobs(requestUserId)
-          return {
-            undoConflict: true,
-            confirmationStale: err.code === 'UNDO_CONFIRMATION_STALE',
-          }
-        } catch (reloadError) {
-          handleMutationError(reloadError, requestUserId)
-          return null
-        }
+        const message = err.code === 'UNDO_CONFIRMATION_STALE'
+          ? '岗位已在其他页面更新，请刷新最新数据后重新确认撤销'
+          : '相关状态已被后续修改，请刷新最新数据后重新确认撤销'
+        addToast(message, 'warning')
+        return null
       }
       handleMutationError(err, requestUserId)
       return null
     }
-  }, [user?.id, syncJobsAfterMutation, reloadJobs, handleMutationError])
+  }, [user?.id, syncJobsAfterMutation, addToast, handleMutationError])
 
   const deleteJob = useCallback(async (ids) => {
     const idList = Array.isArray(ids) ? ids : [ids]

@@ -123,6 +123,18 @@ export function assertUndoConfirmationCurrent(job, expectedUpdatedAt) {
   }
 }
 
+export function assertJobUpdateCurrent(job, expectedUpdatedAt) {
+  const currentTimestamp = new Date(job?.updatedAt || 0).getTime()
+  const expectedTimestamp = new Date(expectedUpdatedAt || 0).getTime()
+  if (!expectedUpdatedAt || Number.isNaN(currentTimestamp) || Number.isNaN(expectedTimestamp) || currentTimestamp !== expectedTimestamp) {
+    throw new TimelineUndoError(
+      '岗位已在其他页面更新，请刷新最新数据后重新操作',
+      409,
+      'JOB_UPDATE_STALE',
+    )
+  }
+}
+
 export function buildLatestTimelineUndoPatch(job, expectedEventId, { force = false } = {}) {
   const timeline = Array.isArray(job?.timeline) ? job.timeline : []
   const latestEvent = timeline.at(-1)
