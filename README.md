@@ -1,6 +1,6 @@
 # OfferFlow — 求职全流程管理平台
 
-二改自 [xuuuu-cpu/offerFlow-llm-feature](https://github.com/xuuuu-cpu/offerFlow-llm-feature)，聚焦岗位投递、面试轮次、日程待办与数据洞察，新增公开只读分享、全局搜索和移动端适配，并移除简历管理、面试复盘及 AI 分析模块。完整修改见 [二次开发更新说明](./SECONDARY_DEVELOPMENT.md)。
+二改自 [xuuuu-cpu/offerFlow-llm-feature](https://github.com/xuuuu-cpu/offerFlow-llm-feature)，聚焦岗位投递、面试轮次、日程待办与数据洞察，新增时间线最新状态操作安全撤销、公开只读分享、全局搜索和移动端适配，并移除简历管理、面试复盘及 AI 分析模块。完整修改见 [二次开发更新说明](./SECONDARY_DEVELOPMENT.md)。
 
 一站式求职管理工具，帮助你系统化追踪岗位、投递进度、面试轮次与待办事项。
 
@@ -23,6 +23,7 @@
 - 表格视图管理所有投递记录，支持按状态/公司/城市筛选
 - 快速编辑岗位信息：JD 链接、薪资范围、工作模式、联系人
 - 内嵌时间线，记录每个岗位的关键节点
+- 可撤销时间线中最新的状态操作，并完整恢复关联的投递与面试状态
 - 支持导出 CSV
 
 ### 日程待办（Schedule）

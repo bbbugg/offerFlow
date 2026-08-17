@@ -9,6 +9,7 @@ import GlowCard from '../components/GlowCard'
 import ActionMenuPortal from '../components/ActionMenuPortal'
 import { formatBeijingDate, getElapsedBeijingDays } from '../lib/dateUtils'
 import { statusImpliesApplied } from '../lib/jobStatus'
+import { compareJobsByLatestTimeline } from '../lib/jobSort'
 
 const COLUMNS = [
   { key: '感兴趣', color: 'border-t-blue-500/40', headerColor: 'text-blue-400', bgColor: 'bg-blue-500/10' },
@@ -83,7 +84,7 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
     const job = jobs.find((j) => j.id === jobId)
     if (!job || job.status === targetStatus) return
     if (!canSelectJobStatus(job, targetStatus)) {
-      addToast('已投递及之后的岗位不能改回感兴趣，面试状态只能按轮次向后推进', 'error')
+      addToast('已投递及之后不能改回感兴趣，面试阶段不能退回已投递，面试轮次不能后退或跨级', 'error')
       dragJobId.current = null
       return
     }
@@ -286,7 +287,7 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
         className="flex min-h-0 flex-1 snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden pb-3 md:snap-none md:gap-5 md:pb-4"
       >
         {COLUMNS.map((col) => {
-          const colJobs = jobs.filter((j) => j.status === col.key)
+          const colJobs = jobs.filter((j) => j.status === col.key).sort(compareJobsByLatestTimeline)
           const isDragOver = dragOverColumn === col.key
 
           return (

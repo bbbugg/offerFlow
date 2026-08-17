@@ -4,8 +4,10 @@ import { useApp, canSelectJobStatus } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
 import CustomSelect from './CustomSelect'
+import ConfirmDialog from './ConfirmDialog'
 import { formatBeijingDate, getElapsedBeijingDays } from '../lib/dateUtils'
 import { statusImpliesApplied } from '../lib/jobStatus'
+import { getJobTimelineSnapshot, getLatestTimelineUndoConflicts, hasLatestTimelineUndoSnapshot } from '../lib/timelineUndo'
 import { JOB_STATUS_ACTION_BADGE, JOB_STATUS_BADGE, NEUTRAL_BADGE, ROUND_STATUS_BADGE } from '../lib/badgeStyles'
 
 const STATUS_ACTIONS = [
@@ -22,6 +24,31 @@ const STATUS_ACTIONS = [
 const END_REASON_OPTIONS = ['被拒绝', '岗位关闭', '自己放弃', '流程太慢', '薪资不匹配', '地点不合适', '手动标记', '其他']
 
 const URL_REGEX = /(?:https?:\/\/|www\.)[^\s<>"']+/gi
+const ignore = () => {}
+
+function formatUndoText(value, emptyText = '未填写', maxLength = 80) {
+  const text = String(value || '').trim()
+  if (!text) return emptyText
+  return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text
+}
+
+function formatInterviewRoundsForUndo(rounds) {
+  if (!Array.isArray(rounds) || rounds.length === 0) return '无面试轮次'
+  return rounds.map((round) => {
+    const details = [
+      round.status || '状态未设置',
+      round.date ? `日期 ${round.date}` : '',
+      round.result ? `结果 ${formatUndoText(round.result)}` : '',
+      round.notes ? `备注 ${formatUndoText(round.notes)}` : '',
+    ].filter(Boolean)
+    return `${round.round || '未命名轮次'}（${details.join('，')}）`
+  }).join('；')
+}
+
+function formatUndoFieldValue(field, value) {
+  if (field === 'interviewRounds') return formatInterviewRoundsForUndo(value)
+  return formatUndoText(value)
+}
 
 function countChar(value, char) {
   return [...value].filter((item) => item === char).length
@@ -86,8 +113,9 @@ function LinkifiedText({ text }) {
 export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete, jobs: propJobs, isReadOnly = false }) {
   const appContext = useApp()
   const jobs = isReadOnly ? (propJobs || []) : appContext.jobs
-  const addToast = isReadOnly ? () => {} : appContext.addToast
+  const addToast = isReadOnly ? ignore : appContext.addToast
   const updateJob = isReadOnly ? async () => {} : appContext.updateJob
+  const undoLatestJobAction = isReadOnly ? async () => {} : appContext.undoLatestJobAction
   const addTask = isReadOnly ? async () => {} : appContext.addTask
   const job = jobs?.find((j) => j.id === jobId)
 
@@ -99,30 +127,91 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
   const [endReason, setEndReason] = useState('手动标记')
   const [isSubmittingTask, setIsSubmittingTask] = useState(false)
   const [isSubmittingStatus, setIsSubmittingStatus] = useState(false)
+  const [showUndoConfirm, setShowUndoConfirm] = useState(false)
+  const [undoConfirmEventId, setUndoConfirmEventId] = useState(null)
 
   // ESC close
   useEffect(() => {
     if (!open) return
-    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    const handler = (e) => {
+      if (e.key !== 'Escape') return
+      if (showUndoConfirm) return
+      if (showTaskForm) {
+        setShowTaskForm(false)
+        return
+      }
+      if (showEndForm) {
+        setShowEndForm(false)
+        return
+      }
+      onClose()
+    }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [open, onClose])
+  }, [open, onClose, showEndForm, showTaskForm, showUndoConfirm])
 
   useEffect(() => {
     if (open) return
     setShowTaskForm(false)
     setShowEndForm(false)
+    setShowUndoConfirm(false)
+    setUndoConfirmEventId(null)
     setEndReason('手动标记')
   }, [open])
 
   useEffect(() => {
     setShowEndForm(false)
+    setShowUndoConfirm(false)
+    setUndoConfirmEventId(null)
     setEndReason('手动标记')
   }, [jobId])
+
+  useEffect(() => {
+    if (!showUndoConfirm || !undoConfirmEventId || !job) return
+    const currentEventId = Array.isArray(job.timeline) ? job.timeline.at(-1)?.id : null
+    if (currentEventId === undoConfirmEventId) return
+    setShowUndoConfirm(false)
+    setUndoConfirmEventId(null)
+    addToast('最新时间线操作已变化，请重新点击撤销', 'warning')
+  }, [addToast, job, showUndoConfirm, undoConfirmEventId])
 
   if (!open || !job) return null
 
   const waitingDays = getElapsedBeijingDays(job.appliedDate)
+  const latestTimelineEvent = Array.isArray(job.timeline) ? job.timeline.at(-1) : null
+  const canUndoLatest = !isReadOnly && hasLatestTimelineUndoSnapshot(job)
+  const undoConflicts = canUndoLatest ? getLatestTimelineUndoConflicts(job) : []
+  const undoConflictLabels = undoConflicts.map((field) => ({
+    status: '岗位状态',
+    appliedDate: '投递日期',
+    endReason: '结束原因',
+    interviewRounds: '面试轮次',
+  })[field])
+  const requiresForceUndo = undoConflicts.length > 0
+  const undoSnapshot = latestTimelineEvent?._undo
+  const currentUndoSnapshot = getJobTimelineSnapshot(job)
+  const undoConflictDetails = undoConflicts.map((field, index) => (
+    `${undoConflictLabels[index]}：${formatUndoFieldValue(field, undoSnapshot.after[field])}`
+    + ` → ${formatUndoFieldValue(field, currentUndoSnapshot[field])}`
+    + `；强制撤销后：${formatUndoFieldValue(field, undoSnapshot.before[field])}`
+  ))
+
+  const undoLatestAction = async () => {
+    if (!canUndoLatest || !latestTimelineEvent) return
+    const result = await undoLatestJobAction(jobId, latestTimelineEvent.id, {
+      force: requiresForceUndo,
+      expectedUpdatedAt: job.updatedAt,
+    })
+    if (!result) return
+    if (result.undoConflict) {
+      if (result.confirmationStale) addToast('岗位刚刚又被更新，请核对弹窗中的最新内容后再次确认', 'warning')
+      return
+    }
+    setShowUndoConfirm(false)
+    setUndoConfirmEventId(null)
+    setShowEndForm(false)
+    addToast('最新操作已撤销，相关状态已恢复', 'success')
+  }
 
   // ---- Status change ----
   const changeStatus = async (newStatus, label) => {
@@ -130,7 +219,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
     const existing = jobs.find((j) => j.id === jobId)
     if (!existing) return
     if (!canSelectJobStatus(existing, newStatus)) {
-      addToast('已投递及之后的岗位不能改回感兴趣，面试状态只能按轮次向后推进', 'error')
+      addToast('已投递及之后不能改回感兴趣，面试阶段不能退回已投递，面试轮次不能后退或跨级', 'error')
       return
     }
     
@@ -354,10 +443,26 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
             <h3 className="text-xs font-semibold text-white/45 uppercase tracking-wider mb-3">时间线</h3>
             <div className="relative pl-4 border-l border-slate-200 dark:border-white/[0.06] space-y-4">
               {(job.timeline || []).slice().reverse().map((t, i) => (
-                <div key={i} className="relative">
+                <div key={t.id || i} className="relative">
                   <div className="absolute -left-[14px] top-1 w-2.5 h-2.5 rounded-full bg-offer-primary border-2 border-white dark:border-[#13151A]" />
-                  <p className="text-xs text-white/45">{t.date}</p>
-                  <p className="text-sm text-white/90 font-medium">{t.action}</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs text-white/45">{t.date}</p>
+                      <p className="text-sm text-white/90 font-medium">{t.action}</p>
+                    </div>
+                    {i === 0 && canUndoLatest && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUndoConfirmEventId(t.id)
+                          setShowUndoConfirm(true)
+                        }}
+                        className="shrink-0 rounded-lg border border-amber-400/25 bg-amber-400/10 px-2.5 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-400/20 dark:text-amber-300 cursor-pointer"
+                      >
+                        撤销
+                      </button>
+                    )}
+                  </div>
                   {t.detail && <p className="text-xs text-white/45 mt-0.5">{t.detail}</p>}
                 </div>
               ))}
@@ -452,6 +557,20 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
         </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={showUndoConfirm}
+        title={requiresForceUndo ? '相关状态已被修改' : '确认撤销最新操作'}
+        message={requiresForceUndo
+          ? `检测到操作完成后有以下修改：\n${undoConflictDetails.join('\n')}\n\n强制撤销将覆盖这些后续修改，并恢复“${latestTimelineEvent?.action || '状态变更'}”之前的关联状态，是否继续？`
+          : `将撤销“${latestTimelineEvent?.action || '状态变更'}”，并恢复操作前的岗位状态、投递日期、结束原因和面试轮次。`}
+        confirmLabel={requiresForceUndo ? '强制撤销' : '确认撤销'}
+        onConfirm={undoLatestAction}
+        onCancel={() => {
+          setShowUndoConfirm(false)
+          setUndoConfirmEventId(null)
+        }}
+      />
 
     </div>
   )

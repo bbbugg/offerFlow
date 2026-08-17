@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { parseShareSettings } from '@/lib/shareSettings'
+import { stripTimelineUndoMetadata } from '@/lib/timelineUndo'
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
@@ -73,7 +74,10 @@ export async function GET(request) {
   return NextResponse.json({
     username: shareUsername ? user.username : null,
     shareSettings,
-    jobs,
+    jobs: jobs.map((job) => ({
+      ...job,
+      timeline: stripTimelineUndoMetadata(job.timeline),
+    })),
     tasks
   })
 }

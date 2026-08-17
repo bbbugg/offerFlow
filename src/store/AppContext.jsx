@@ -83,6 +83,8 @@ async function apiFetch(url, options = {}) {
   if (!res.ok) {
     const error = new Error(data.error || '请求失败')
     error.status = res.status
+    error.code = data.code
+    error.conflicts = data.conflicts
     throw error
   }
   return data
@@ -294,6 +296,39 @@ export function AppProvider({ children }) {
     }
   }, [user?.id, syncJobsAfterMutation, handleMutationError])
 
+  const undoLatestJobAction = useCallback(async (id, eventId, { force = false, expectedUpdatedAt } = {}) => {
+    const requestUserId = user?.id
+    if (!requestUserId || activeUserIdRef.current !== requestUserId) return null
+    try {
+      const result = await apiFetch(`/api/jobs/${id}/undo`, {
+        method: 'POST',
+        body: JSON.stringify({ eventId, force, expectedUpdatedAt }),
+      })
+      if (!result.job) throw new Error('撤销失败：服务器未返回岗位')
+      if (activeUserIdRef.current !== requestUserId) return null
+      const isActiveUser = await syncJobsAfterMutation(requestUserId, (prev) => (
+        [result.job, ...prev.filter((job) => job.id !== id)]
+      ))
+      if (!isActiveUser) return null
+      return result.job
+    } catch (err) {
+      if (err.code === 'UNDO_CONFLICT' || err.code === 'UNDO_CONFIRMATION_STALE') {
+        try {
+          await reloadJobs(requestUserId)
+          return {
+            undoConflict: true,
+            confirmationStale: err.code === 'UNDO_CONFIRMATION_STALE',
+          }
+        } catch (reloadError) {
+          handleMutationError(reloadError, requestUserId)
+          return null
+        }
+      }
+      handleMutationError(err, requestUserId)
+      return null
+    }
+  }, [user?.id, syncJobsAfterMutation, reloadJobs, handleMutationError])
+
   const deleteJob = useCallback(async (ids) => {
     const idList = Array.isArray(ids) ? ids : [ids]
     if (!idList.length) return
@@ -385,7 +420,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       jobs, setJobs,
       tasks, setTasks,
-      addJob, updateJob, deleteJob,
+      addJob, updateJob, undoLatestJobAction, deleteJob,
       addTask, updateTask, deleteTask,
       settings, setSettings,
       toasts, addToast,

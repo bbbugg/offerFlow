@@ -92,7 +92,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
   const handleStatusChange = useCallback((value) => {
     const statusBasis = job || emptyForm
     if (!canSelectJobStatus(statusBasis, value)) {
-      addToast('已投递及之后的岗位不能改回感兴趣，面试状态只能按轮次向后推进', 'error')
+      addToast('已投递及之后不能改回感兴趣，面试阶段不能退回已投递，面试轮次不能后退或跨级', 'error')
       return
     }
     setForm((prev) => ({
@@ -122,7 +122,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
       return
     }
     if (!canSelectJobStatus(job || emptyForm, form.status)) {
-      addToast('已投递及之后的岗位不能改回感兴趣，面试状态只能按轮次向后推进', 'error')
+      addToast('已投递及之后不能改回感兴趣，面试阶段不能退回已投递，面试轮次不能后退或跨级', 'error')
       return
     }
 

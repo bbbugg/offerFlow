@@ -1,4 +1,4 @@
-import { formatBeijingDate } from './dateUtils'
+import { formatBeijingDate } from './dateUtils.js'
 
 export const JOB_STATUSES = ['感兴趣', '已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
 export const APPLIED_STATUSES = ['已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer', '已结束']
@@ -81,19 +81,26 @@ export function canSelectInterviewStatus(job, targetStatus) {
 
 export function canSelectJobStatus(job, targetStatus) {
   if (statusImpliesApplied(job?.status) && targetStatus === '感兴趣') return false
+  if (INTERVIEW_STATUS_ORDER.includes(job?.status) && targetStatus === '已投递') return false
   return canSelectInterviewStatus(job, targetStatus)
 }
 
-export function syncInterviewRoundsForStatus(job, targetStatus = job?.status) {
+export function syncInterviewRoundsForStatus(job, targetStatus = job?.status, { previousEndReason } = {}) {
   const targetRound = STATUS_ROUND_MAP[targetStatus]
   const rounds = Array.isArray(job?.interviewRounds)
     ? job.interviewRounds.map((round) => ({ ...round }))
     : []
 
   if (!targetRound) {
+    const previousClosedStatus = targetStatus === '已结束' && previousEndReason !== undefined
+      ? getClosedRoundStatus({ endReason: previousEndReason })
+      : null
+    const nextClosedStatus = getNonInterviewRoundStatus(job, targetStatus)
     rounds.forEach((round) => {
       if (!round.status || round.status === '进行中') {
-        round.status = getNonInterviewRoundStatus(job, targetStatus)
+        round.status = nextClosedStatus
+      } else if (previousClosedStatus && round.status === previousClosedStatus) {
+        round.status = nextClosedStatus
       }
     })
     return sortInterviewRounds(rounds)

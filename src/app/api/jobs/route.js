@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
-import { canSelectJobStatus, statusImpliesApplied, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
+import { canSelectJobStatus, JOB_STATUSES, statusImpliesApplied, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
 import { formatBeijingDate } from '@/lib/dateUtils'
+import {
+  createUndoableTimelineEvent,
+  getJobTimelineSnapshot,
+  readAppendedTimelineEvent,
+  TimelineUndoError,
+} from '@/lib/timelineUndo'
 
 const UPDATABLE_JOB_FIELDS = [
   'companyName',
@@ -22,29 +28,10 @@ const UPDATABLE_JOB_FIELDS = [
   'notes',
   'endReason',
   'interviewRounds',
-  'timeline',
 ]
 
 function getBeijingDateString() {
   return formatBeijingDate()
-}
-
-function timestampAppendedTimelineEvents(existingTimeline, nextTimeline) {
-  if (!Array.isArray(nextTimeline)) return nextTimeline
-
-  const existingLength = Array.isArray(existingTimeline) ? existingTimeline.length : 0
-  if (nextTimeline.length <= existingLength) return nextTimeline
-
-  return nextTimeline.map((event, index) => {
-    if (index < existingLength) return event
-
-    const createdAt = new Date()
-    return {
-      ...event,
-      date: formatBeijingDate(createdAt),
-      createdAt: createdAt.toISOString(),
-    }
-  })
 }
 
 export async function GET() {
@@ -63,10 +50,16 @@ export async function POST(request) {
   if (!user) return NextResponse.json({ error: '未登录' }, { status: 401 })
 
   const body = await request.json()
-  const { companyName, jobTitle, status, city, salaryRange, workMode, channel, priority, appliedDate, jobLink, jdText, contactName, contactInfo, nextAction, notes, endReason, interviewRounds, timeline } = body
+  const { companyName, jobTitle, status, city, salaryRange, workMode, channel, priority, appliedDate, jobLink, jdText, contactName, contactInfo, nextAction, notes, endReason, interviewRounds } = body
   const normalizedStatus = status || '感兴趣'
+  if (!JOB_STATUSES.includes(normalizedStatus)) {
+    return NextResponse.json({ error: '岗位状态不正确' }, { status: 400 })
+  }
   const normalizedAppliedDate = appliedDate?.trim() || (statusImpliesApplied(normalizedStatus) ? getBeijingDateString() : '')
-  const normalizedInterviewRounds = syncInterviewRoundsForStatus({ interviewRounds: interviewRounds || [] }, normalizedStatus)
+  const normalizedInterviewRounds = syncInterviewRoundsForStatus({
+    endReason: endReason || '',
+    interviewRounds: interviewRounds || [],
+  }, normalizedStatus)
 
   const job = await prisma.job.create({
     data: {
@@ -88,7 +81,7 @@ export async function POST(request) {
       notes: notes || '',
       endReason: endReason || '',
       interviewRounds: normalizedInterviewRounds,
-      timeline: timeline || [],
+      timeline: [],
     },
   })
 
@@ -109,37 +102,76 @@ export async function PUT(request) {
     if (Object.hasOwn(body, field)) data[field] = body[field]
   }
 
-  const existing = await prisma.job.findUnique({ where: { id } })
-  if (!existing || existing.userId !== user.id) {
-    return NextResponse.json({ error: '无权修改此记录' }, { status: 403 })
-  }
+  try {
+    const job = await prisma.$transaction(async (tx) => {
+      const existing = await tx.job.findUnique({ where: { id } })
+      if (!existing || existing.userId !== user.id) {
+        throw new TimelineUndoError('无权修改此记录', 403)
+      }
 
-  if (data.status && !canSelectJobStatus(existing, data.status)) {
-    return NextResponse.json({ error: '已投递及之后的岗位不能改回感兴趣，面试状态只能按轮次向后推进' }, { status: 400 })
-  }
+      const appendedEvent = readAppendedTimelineEvent(existing.timeline, body.timeline)
+      const statusChanged = Object.hasOwn(data, 'status') && data.status !== existing.status
 
-  const updateData = { ...data }
-  if ('timeline' in updateData) {
-    updateData.timeline = timestampAppendedTimelineEvents(existing.timeline, updateData.timeline)
-  }
-  if (updateData.status && statusImpliesApplied(updateData.status) && !existing.appliedDate && !updateData.appliedDate) {
-    updateData.appliedDate = getBeijingDateString()
-  }
-  if (updateData.status || updateData.endReason || updateData.interviewRounds) {
-    const nextStatus = updateData.status ?? existing.status
-    updateData.interviewRounds = syncInterviewRoundsForStatus({
-      ...existing,
-      ...updateData,
-      interviewRounds: updateData.interviewRounds ?? existing.interviewRounds,
-    }, nextStatus)
-  }
+      if (Object.hasOwn(data, 'status') && !JOB_STATUSES.includes(data.status)) {
+        throw new TimelineUndoError('岗位状态不正确')
+      }
+      if (data.status && !canSelectJobStatus(existing, data.status)) {
+        throw new TimelineUndoError('已投递及之后不能改回感兴趣，面试阶段不能退回已投递，面试轮次不能后退或跨级')
+      }
+      if (appendedEvent && !statusChanged) {
+        throw new TimelineUndoError('只有状态变更可以追加时间线记录')
+      }
 
-  const job = await prisma.job.update({
-    where: { id, userId: user.id },
-    data: updateData,
-  })
+      const updateData = { ...data }
+      if (updateData.status && statusImpliesApplied(updateData.status) && !existing.appliedDate && !updateData.appliedDate) {
+        updateData.appliedDate = getBeijingDateString()
+      }
+      if (updateData.status || updateData.endReason || updateData.interviewRounds) {
+        const nextStatus = updateData.status ?? existing.status
+        const endReasonChanged = Object.hasOwn(updateData, 'endReason') && updateData.endReason !== existing.endReason
+        updateData.interviewRounds = syncInterviewRoundsForStatus({
+          ...existing,
+          ...updateData,
+          interviewRounds: updateData.interviewRounds ?? existing.interviewRounds,
+        }, nextStatus, {
+          previousEndReason: nextStatus === '已结束' && existing.status === '已结束' && endReasonChanged
+            ? existing.endReason
+            : undefined,
+        })
+      }
 
-  return NextResponse.json({ job })
+      if (statusChanged) {
+        const before = getJobTimelineSnapshot(existing)
+        const after = getJobTimelineSnapshot({ ...existing, ...updateData })
+        const event = appendedEvent || {
+          action: '状态变更',
+          detail: `从 ${existing.status} 更新为 ${updateData.status}`,
+        }
+        updateData.timeline = [
+          ...(Array.isArray(existing.timeline) ? existing.timeline : []),
+          createUndoableTimelineEvent({ event, before, after }),
+        ]
+      }
+
+      const updated = await tx.job.updateMany({
+        where: { id, userId: user.id, updatedAt: existing.updatedAt },
+        data: updateData,
+      })
+      if (updated.count !== 1) {
+        throw new TimelineUndoError('岗位已被其他操作更新，请刷新后重试', 409)
+      }
+
+      return tx.job.findUnique({ where: { id } })
+    })
+
+    return NextResponse.json({ job })
+  } catch (error) {
+    if (error instanceof TimelineUndoError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+    console.error('[jobs] Failed to update job', error)
+    return NextResponse.json({ error: '岗位更新失败，请稍后重试' }, { status: 500 })
+  }
 }
 
 export async function DELETE(request) {

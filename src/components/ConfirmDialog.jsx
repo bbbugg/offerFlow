@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import GlowCard from './GlowCard'
 
-export default function ConfirmDialog({ open, title, message, onConfirm, onCancel }) {
+export default function ConfirmDialog({ open, title, message, confirmLabel = '确认删除', onConfirm, onCancel }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -29,12 +29,12 @@ export default function ConfirmDialog({ open, title, message, onConfirm, onCance
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={() => { if (!isSubmitting) onCancel() }}>
       <div className="modal-panel danger border rounded-2xl w-full max-w-sm mx-4 shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
         <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,80,80,0.08)' }} className="rounded-[22px]">
           <div className="rounded-[22px] bg-white/90 p-5 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none md:p-6">
             <h3 className="text-slate-900 dark:text-white font-semibold text-lg mb-2">{title}</h3>
-            <p className="text-slate-600 dark:text-white/55 text-sm mb-6">{message}</p>
+            <p className="mb-6 whitespace-pre-line text-sm text-slate-600 dark:text-white/55">{message}</p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={onCancel}
@@ -48,7 +48,7 @@ export default function ConfirmDialog({ open, title, message, onConfirm, onCance
                 disabled={isSubmitting}
                 className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-600 hover:bg-red-500 transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
-                {isSubmitting ? '处理中...' : '确认删除'}
+                {isSubmitting ? '处理中...' : confirmLabel}
               </button>
             </div>
           </div>
