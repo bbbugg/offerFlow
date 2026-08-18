@@ -14,7 +14,7 @@ const END_REASON_OPTIONS = ['', '被拒绝', '岗位关闭', '自己放弃', '�
 
 const emptyForm = {
   companyName: '', jobTitle: '', status: '感兴趣', city: '', salaryRange: '',
-  workMode: 'onsite', channel: '', priority: '中', appliedDate: '',
+  workMode: 'onsite', channel: '校园招聘', priority: '中', appliedDate: '',
   jobLink: '', jdText: '', contactName: '', contactInfo: '',
   nextAction: '', notes: '', endReason: '',
 }
