@@ -6,8 +6,9 @@ export const ROUND_ORDER = ['一面', '二面', '三面', '终面']
 export const STATUS_ROUND_MAP = { '一面中': '一面', '二面中': '二面', '三面中': '三面', '终面中': '终面' }
 export const INTERVIEW_STATUS_ORDER = ['一面中', '二面中', '三面中', '终面中']
 export const FINAL_JOB_STATUSES = Object.freeze(['Offer', '已结束'])
-export const JOB_STATUS_TRANSITION_ERROR = '已收到 Offer 或已结束的岗位不能再修改状态；已投递及之后不能改回感兴趣，面试阶段不能退回已投递，面试轮次不能后退或跨级'
+export const JOB_STATUS_TRANSITION_ERROR = '已收到 Offer 或已结束的岗位不能再修改状态；已投递及之后不能改回感兴趣，收到 OA / 笔试或面试后不能退回已投递，面试轮次不能后退或跨级'
 const FINAL_JOB_STATUS_SET = new Set(FINAL_JOB_STATUSES)
+const CANNOT_RETURN_TO_APPLIED_STATUSES = new Set(['OA / 笔试', ...INTERVIEW_STATUS_ORDER])
 const CANCELED_END_REASONS = new Set(['岗位关闭', '自己放弃', '流程太慢', '薪资不匹配', '地点不合适'])
 
 function todayStr() {
@@ -89,7 +90,7 @@ export function canSelectInterviewStatus(job, targetStatus) {
 export function canSelectJobStatus(job, targetStatus) {
   if (isFinalJobStatus(job?.status) && targetStatus !== job.status) return false
   if (statusImpliesApplied(job?.status) && targetStatus === '感兴趣') return false
-  if (INTERVIEW_STATUS_ORDER.includes(job?.status) && targetStatus === '已投递') return false
+  if (CANNOT_RETURN_TO_APPLIED_STATUSES.has(job?.status) && targetStatus === '已投递') return false
   return canSelectInterviewStatus(job, targetStatus)
 }
 

@@ -2,7 +2,12 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { canSelectJobStatus, FINAL_JOB_STATUSES, JOB_STATUSES, syncInterviewRoundsForStatus } from './jobStatus.js'
 
-test('interview stages can return to OA but cannot return to applied', () => {
+test('OA and interview stages cannot return to applied', () => {
+  const oaJob = { status: 'OA / 笔试', interviewRounds: [] }
+  assert.equal(canSelectJobStatus(oaJob, '已投递'), false)
+  assert.equal(canSelectJobStatus(oaJob, 'OA / 笔试'), true)
+  assert.equal(canSelectJobStatus(oaJob, '一面中'), true)
+
   const job = {
     status: '一面中',
     interviewRounds: [{ id: 'r1', round: '一面', status: '进行中', date: '2026-08-18', result: '', notes: '' }],
