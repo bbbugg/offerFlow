@@ -65,3 +65,8 @@ export function sanitizeSharedJob(job, settings) {
 
   return sanitizedJob
 }
+
+export function filterTasksForSharedJobs(tasks, sharedJobs) {
+  const sharedJobIds = new Set(sharedJobs.map((job) => job.id))
+  return tasks.filter((task) => !task.jobId || sharedJobIds.has(task.jobId))
+}

@@ -16,7 +16,7 @@ const emptyForm = {
   companyName: '', jobTitle: '', status: '感兴趣', city: '', salaryRange: '',
   workMode: 'onsite', channel: '校园招聘', priority: '中', appliedDate: '',
   jobLink: '', jdText: '', contactName: '', contactInfo: '',
-  nextAction: '', notes: '', endReason: '',
+  nextAction: '', notes: '', endReason: '', shareVisible: true,
 }
 
 // Stable helper components defined OUTSIDE JobModal to prevent remount on every render
@@ -222,6 +222,19 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
 
             <Input label="JD 原文" value={form.jdText} onChange={(e) => handleChange('jdText', e.target.value)} placeholder="粘贴 JD 内容..." large type="textarea" />
             <Input label="备注" value={form.notes} onChange={(e) => handleChange('notes', e.target.value)} placeholder="其他备注信息" large type="textarea" />
+
+            <label className="flex cursor-pointer select-none items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.06] md:col-span-2">
+              <input
+                type="checkbox"
+                checked={form.shareVisible}
+                onChange={(e) => handleChange('shareVisible', e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-white/20 bg-white/10 text-purple-600 focus:ring-purple-500/20 focus:ring-offset-0"
+              />
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-white">显示在公开分享中</span>
+                <span className="mt-1 block text-xs leading-relaxed text-offer-muted">关闭后，该岗位及其关联待办不会出现在公开分享页面。</span>
+              </span>
+            </label>
           </div>
         </div>
 

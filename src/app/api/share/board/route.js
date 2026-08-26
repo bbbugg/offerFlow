@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { parseShareSettings, sanitizeSharedJob } from '@/lib/shareSettings'
+import { filterTasksForSharedJobs, parseShareSettings, sanitizeSharedJob } from '@/lib/shareSettings'
 import { stripTimelineUndoMetadata } from '@/lib/timelineUndo'
 
 export async function GET(request) {
@@ -27,7 +27,7 @@ export async function GET(request) {
   // 2. 检索该用户关联的求职岗位，如果开启了日程分享则检索待办事项数据
   const [jobs, tasks] = await Promise.all([
     prisma.job.findMany({
-      where: { userId: user.id },
+      where: { userId: user.id, shareVisible: true },
       select: {
         id: true,
         companyName: true,
@@ -81,6 +81,6 @@ export async function GET(request) {
         timeline: stripTimelineUndoMetadata(sharedJob.timeline)
       }
     }),
-    tasks
+    tasks: filterTasksForSharedJobs(tasks, jobs)
   })
 }

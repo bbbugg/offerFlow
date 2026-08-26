@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   DEFAULT_SHARE_SETTINGS,
+  filterTasksForSharedJobs,
   JOB_SHARE_FIELDS,
   parseShareSettings,
   sanitizeSharedJob,
@@ -50,6 +51,7 @@ test('shared jobs keep names while replacing each disabled field safely', () => 
     timeline: [{ action: '状态变更' }],
     createdAt: '2026-08-01T00:00:00.000Z',
     updatedAt: '2026-08-20T00:00:00.000Z',
+    shareVisible: true,
     userId: 'must-not-leak'
   }
   const settings = Object.fromEntries(
@@ -127,4 +129,17 @@ test('progress and contact switches hide their grouped fields together', () => {
   assert.equal(sharedJob.contactName, '')
   assert.equal(sharedJob.contactInfo, '')
   assert.equal(sharedJob.city, '北京')
+})
+
+test('shared tasks exclude tasks linked to hidden jobs', () => {
+  const tasks = [
+    { id: 'task-visible', jobId: 'job-visible' },
+    { id: 'task-hidden', jobId: 'job-hidden' },
+    { id: 'task-unlinked', jobId: null }
+  ]
+
+  assert.deepEqual(
+    filterTasksForSharedJobs(tasks, [{ id: 'job-visible' }]),
+    [tasks[0], tasks[2]]
+  )
 })

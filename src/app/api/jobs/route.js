@@ -28,6 +28,7 @@ const UPDATABLE_JOB_FIELDS = [
   'nextAction',
   'notes',
   'endReason',
+  'shareVisible',
   'interviewRounds',
 ]
 
@@ -51,7 +52,10 @@ export async function POST(request) {
   if (!user) return NextResponse.json({ error: '未登录' }, { status: 401 })
 
   const body = await request.json()
-  const { companyName, jobTitle, status, city, salaryRange, workMode, channel, priority, appliedDate, jobLink, jdText, contactName, contactInfo, nextAction, notes, endReason, interviewRounds } = body
+  const { companyName, jobTitle, status, city, salaryRange, workMode, channel, priority, appliedDate, jobLink, jdText, contactName, contactInfo, nextAction, notes, endReason, shareVisible, interviewRounds } = body
+  if (shareVisible !== undefined && typeof shareVisible !== 'boolean') {
+    return NextResponse.json({ error: '岗位分享设置格式不正确' }, { status: 400 })
+  }
   const normalizedStatus = status || '感兴趣'
   if (!JOB_STATUSES.includes(normalizedStatus)) {
     return NextResponse.json({ error: '岗位状态不正确' }, { status: 400 })
@@ -81,6 +85,7 @@ export async function POST(request) {
       nextAction: nextAction || '',
       notes: notes || '',
       endReason: endReason || '',
+      shareVisible: shareVisible ?? true,
       interviewRounds: normalizedInterviewRounds,
       timeline: [],
     },
@@ -101,6 +106,9 @@ export async function PUT(request) {
   const data = {}
   for (const field of UPDATABLE_JOB_FIELDS) {
     if (Object.hasOwn(body, field)) data[field] = body[field]
+  }
+  if (Object.hasOwn(data, 'shareVisible') && typeof data.shareVisible !== 'boolean') {
+    return NextResponse.json({ error: '岗位分享设置格式不正确' }, { status: 400 })
   }
 
   try {
