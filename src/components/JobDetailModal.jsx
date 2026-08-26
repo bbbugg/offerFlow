@@ -314,7 +314,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
           {job.nextAction && (
             <section className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 dark:bg-white/[0.02] dark:border-white/[0.06]">
               <p className="text-xs text-white/45 mb-1">下一步行动</p>
-              <p className="text-sm text-offer-accent font-medium">{job.nextAction}</p>
+              <p className="text-sm text-offer-accent font-medium whitespace-pre-wrap break-words"><LinkifiedText text={job.nextAction} /></p>
             </section>
           )}
 
