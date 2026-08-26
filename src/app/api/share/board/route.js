@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { parseShareSettings } from '@/lib/shareSettings'
+import { parseShareSettings, sanitizeSharedJob } from '@/lib/shareSettings'
 import { stripTimelineUndoMetadata } from '@/lib/timelineUndo'
 
 export async function GET(request) {
@@ -74,10 +74,13 @@ export async function GET(request) {
   return NextResponse.json({
     username: shareUsername ? user.username : null,
     shareSettings,
-    jobs: jobs.map((job) => ({
-      ...job,
-      timeline: stripTimelineUndoMetadata(job.timeline),
-    })),
+    jobs: jobs.map((job) => {
+      const sharedJob = sanitizeSharedJob(job, shareSettings)
+      return {
+        ...sharedJob,
+        timeline: stripTimelineUndoMetadata(sharedJob.timeline)
+      }
+    }),
     tasks
   })
 }

@@ -1,17 +1,36 @@
+export const JOB_SHARE_FIELDS = Object.freeze([
+  { setting: 'shareJobProgress', field: 'status', hiddenValue: '感兴趣' },
+  { setting: 'shareJobSalaryRange', field: 'salaryRange', hiddenValue: '' },
+  { setting: 'shareJobWorkMode', field: 'workMode', hiddenValue: '' },
+  { setting: 'shareJobChannel', field: 'channel', hiddenValue: '' },
+  { setting: 'shareJobPriority', field: 'priority', hiddenValue: '' },
+  { setting: 'shareJobProgress', field: 'appliedDate', hiddenValue: '' },
+  { setting: 'shareJobLink', field: 'jobLink', hiddenValue: '' },
+  { setting: 'shareJobJdText', field: 'jdText', hiddenValue: '' },
+  { setting: 'shareJobContact', field: 'contactName', hiddenValue: '' },
+  { setting: 'shareJobContact', field: 'contactInfo', hiddenValue: '' },
+  { setting: 'shareJobNextAction', field: 'nextAction', hiddenValue: '' },
+  { setting: 'shareJobNotes', field: 'notes', hiddenValue: '' },
+  { setting: 'shareJobProgress', field: 'endReason', hiddenValue: '' },
+  { setting: 'shareJobProgress', field: 'interviewRounds', hiddenValue: [] },
+  { setting: 'shareJobProgress', field: 'timeline', hiddenValue: [] },
+  { setting: 'shareJobProgress', field: 'createdAt', hiddenValue: null },
+  { setting: 'shareJobProgress', field: 'updatedAt', hiddenValue: null }
+])
+
 export const DEFAULT_SHARE_SETTINGS = Object.freeze({
   shareSchedule: true,
-  shareUsername: true
+  shareUsername: true,
+  ...Object.fromEntries(JOB_SHARE_FIELDS.map(({ setting }) => [setting, true]))
 })
 
 export function parseShareSettings(raw) {
-  return {
-    shareSchedule: typeof raw?.shareSchedule === 'boolean'
-      ? raw.shareSchedule
-      : DEFAULT_SHARE_SETTINGS.shareSchedule,
-    shareUsername: typeof raw?.shareUsername === 'boolean'
-      ? raw.shareUsername
-      : DEFAULT_SHARE_SETTINGS.shareUsername
-  }
+  return Object.fromEntries(
+    Object.entries(DEFAULT_SHARE_SETTINGS).map(([key, defaultValue]) => [
+      key,
+      typeof raw?.[key] === 'boolean' ? raw[key] : defaultValue
+    ])
+  )
 }
 
 export function validateShareSettings(raw) {
@@ -27,8 +46,22 @@ export function validateShareSettings(raw) {
     return null
   }
 
-  return {
-    shareSchedule: raw.shareSchedule,
-    shareUsername: raw.shareUsername
+  return Object.fromEntries(allowedKeys.map((key) => [key, raw[key]]))
+}
+
+export function sanitizeSharedJob(job, settings) {
+  const sanitizedJob = {
+    id: job.id,
+    companyName: job.companyName,
+    jobTitle: job.jobTitle,
+    city: job.city
   }
+
+  for (const { setting, field, hiddenValue } of JOB_SHARE_FIELDS) {
+    sanitizedJob[field] = settings[setting]
+      ? job[field]
+      : Array.isArray(hiddenValue) ? [] : hiddenValue
+  }
+
+  return sanitizedJob
 }

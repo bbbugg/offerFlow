@@ -1,19 +1,31 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/store/AuthContext'
+import { DEFAULT_SHARE_SETTINGS, parseShareSettings } from '@/lib/shareSettings'
+
+const JOB_SHARE_OPTIONS = [
+  { key: 'shareJobProgress', label: '岗位进度' },
+  { key: 'shareJobSalaryRange', label: '薪资范围' },
+  { key: 'shareJobWorkMode', label: '工作模式' },
+  { key: 'shareJobChannel', label: '投递渠道' },
+  { key: 'shareJobPriority', label: '优先级' },
+  { key: 'shareJobLink', label: '岗位链接' },
+  { key: 'shareJobJdText', label: 'JD 原文' },
+  { key: 'shareJobContact', label: '联系人信息' },
+  { key: 'shareJobNextAction', label: '下一步行动' },
+  { key: 'shareJobNotes', label: '岗位备注' }
+]
 
 export default function Settings() {
-  const router = useRouter()
   const { handleUnauthorized } = useAuth()
   const [shareToken, setShareToken] = useState(null)
-  const [shareSchedule, setShareSchedule] = useState(true)
-  const [shareUsername, setShareUsername] = useState(true)
+  const [shareSettings, setShareSettings] = useState(() => ({ ...DEFAULT_SHARE_SETTINGS }))
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [scopeLoading, setScopeLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
+  const { shareSchedule, shareUsername } = shareSettings
 
   useEffect(() => {
     async function fetchShareToken() {
@@ -26,10 +38,7 @@ export default function Settings() {
         if (!res.ok) throw new Error('分享设置加载失败，请刷新页面')
         const data = await res.json()
         setShareToken(data.shareToken)
-        if (data.shareSettings) {
-          if (typeof data.shareSettings.shareSchedule === 'boolean') setShareSchedule(data.shareSettings.shareSchedule)
-          if (typeof data.shareSettings.shareUsername === 'boolean') setShareUsername(data.shareSettings.shareUsername)
-        }
+        setShareSettings(parseShareSettings(data.shareSettings))
       } catch (err) {
         console.error('获取分享状态失败', err)
         setError('分享设置加载失败，请刷新页面')
@@ -52,10 +61,7 @@ export default function Settings() {
       if (!res.ok) throw new Error('生成分享链接失败')
       const data = await res.json()
       setShareToken(data.shareToken)
-      if (data.shareSettings) {
-        if (typeof data.shareSettings.shareSchedule === 'boolean') setShareSchedule(data.shareSettings.shareSchedule)
-        if (typeof data.shareSettings.shareUsername === 'boolean') setShareUsername(data.shareSettings.shareUsername)
-      }
+      setShareSettings(parseShareSettings(data.shareSettings))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -67,10 +73,9 @@ export default function Settings() {
     if (scopeLoading) return
 
     setError('')
-    const previousSettings = { shareSchedule, shareUsername }
+    const previousSettings = shareSettings
     const nextSettings = { ...previousSettings, [key]: newValue }
-    if (key === 'shareSchedule') setShareSchedule(newValue)
-    if (key === 'shareUsername') setShareUsername(newValue)
+    setShareSettings(nextSettings)
     setScopeLoading(true)
 
     try {
@@ -85,14 +90,10 @@ export default function Settings() {
       }
       if (!res.ok) throw new Error('更新分享范围失败')
       const data = await res.json()
-      if (data.shareSettings) {
-        if (typeof data.shareSettings.shareSchedule === 'boolean') setShareSchedule(data.shareSettings.shareSchedule)
-        if (typeof data.shareSettings.shareUsername === 'boolean') setShareUsername(data.shareSettings.shareUsername)
-      }
+      setShareSettings(parseShareSettings(data.shareSettings))
     } catch (err) {
       setError(err.message)
-      setShareSchedule(previousSettings.shareSchedule)
-      setShareUsername(previousSettings.shareUsername)
+      setShareSettings(previousSettings)
     } finally {
       setScopeLoading(false)
     }
@@ -224,6 +225,32 @@ export default function Settings() {
                           <span className="text-xs text-offer-muted mt-0.5">控制公开分享页面右上角的用户名提示语显示</span>
                         </div>
                       </label>
+                    </div>
+
+                    <div className="mt-5">
+                      <div className="mb-3">
+                        <div className="text-sm font-semibold text-white">岗位数据分享</div>
+                        <p className="mt-1 text-xs leading-relaxed text-offer-muted">
+                          公司名称、岗位名称和城市始终分享；以下开关分别控制对应字段，并统一作用于所有岗位。
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {JOB_SHARE_OPTIONS.map((option) => (
+                          <label
+                            key={option.key}
+                            className="flex cursor-pointer select-none items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3 transition-colors hover:bg-white/[0.05]"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={shareSettings[option.key]}
+                              disabled={scopeLoading}
+                              onChange={(e) => handleToggleScope(option.key, e.target.checked)}
+                              className="h-4 w-4 rounded border-white/20 bg-white/10 text-purple-600 focus:ring-purple-500/20 focus:ring-offset-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                            <span className="min-w-0 text-sm font-medium text-white">{option.label}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   </div>
 

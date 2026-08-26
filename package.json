@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --test src/lib/timelineUndo.test.js src/lib/jobStatus.test.js src/lib/jobSort.test.js",
+    "test": "node --test src/lib/timelineUndo.test.js src/lib/jobStatus.test.js src/lib/jobSort.test.js src/lib/shareSettings.test.js",
     "check": "npm run lint && npm test && npm run build",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",

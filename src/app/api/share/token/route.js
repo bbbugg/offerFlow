@@ -47,7 +47,7 @@ export async function PATCH(request) {
     const shareSettings = validateShareSettings(body?.shareSettings)
     if (!shareSettings) {
       return NextResponse.json({
-        error: '分享设置必须包含 shareSchedule 和 shareUsername 两个布尔值'
+        error: '分享设置格式不正确'
       }, { status: 400 })
     }
 
