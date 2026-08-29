@@ -18,6 +18,80 @@ test('OA and interview stages cannot return to applied', () => {
   assert.equal(canSelectJobStatus(job, '一面中'), true)
   assert.equal(canSelectJobStatus(job, '二面中'), true)
   assert.equal(canSelectJobStatus(job, '三面中'), false)
+  assert.equal(canSelectJobStatus(job, '终面中'), true)
+})
+
+test('any progress can jump to final interview but final cannot go back', () => {
+  const progressJobs = [
+    { status: '已投递', interviewRounds: [] },
+    { status: 'OA / 笔试', interviewRounds: [] },
+    {
+      status: '二面中',
+      interviewRounds: [
+        { id: 'r1', round: '一面', status: '已通过', date: '2026-08-18', result: '', notes: '' },
+        { id: 'r2', round: '二面', status: '进行中', date: '2026-08-18', result: '', notes: '' },
+      ],
+    },
+    {
+      status: '三面中',
+      interviewRounds: [
+        { id: 'r1', round: '一面', status: '已通过', date: '2026-08-18', result: '', notes: '' },
+        { id: 'r2', round: '二面', status: '已通过', date: '2026-08-18', result: '', notes: '' },
+        { id: 'r3', round: '三面', status: '进行中', date: '2026-08-18', result: '', notes: '' },
+      ],
+    },
+  ]
+
+  for (const job of progressJobs) {
+    assert.equal(canSelectJobStatus(job, '终面中'), true, `${job.status} -> 终面中`)
+  }
+
+  const finalJob = {
+    status: '终面中',
+    interviewRounds: [
+      { id: 'r1', round: '一面', status: '已通过', date: '2026-08-18', result: '', notes: '' },
+      { id: 'r2', round: '二面', status: '已通过', date: '2026-08-18', result: '', notes: '' },
+      { id: 'r3', round: '三面', status: '已通过', date: '2026-08-18', result: '', notes: '' },
+      { id: 'r4', round: '终面', status: '进行中', date: '2026-08-18', result: '', notes: '' },
+    ],
+  }
+
+  assert.equal(canSelectJobStatus(finalJob, '一面中'), false)
+  assert.equal(canSelectJobStatus(finalJob, '二面中'), false)
+  assert.equal(canSelectJobStatus(finalJob, '三面中'), false)
+  assert.equal(canSelectJobStatus(finalJob, '终面中'), true)
+  assert.equal(canSelectJobStatus(finalJob, 'Offer'), true)
+})
+
+test('jumping to final interview does not infer missing earlier rounds', () => {
+  const directResult = syncInterviewRoundsForStatus({
+    status: '已投递',
+    interviewRounds: [],
+  }, '终面中')
+
+  assert.deepEqual(
+    directResult.map(({ round, status }) => ({ round, status })),
+    [{ round: '终面', status: '进行中' }],
+  )
+
+  const existingRounds = [
+    { id: 'r1', round: '一面', status: '已通过', date: '2026-08-18', result: '通过', notes: '' },
+    { id: 'r2', round: '二面', status: '进行中', date: '2026-08-25', result: '', notes: '等待结果' },
+  ]
+  const resultWithHistory = syncInterviewRoundsForStatus({
+    status: '二面中',
+    interviewRounds: existingRounds,
+  }, '终面中')
+
+  assert.deepEqual(
+    resultWithHistory.map(({ round, status }) => ({ round, status })),
+    [
+      { round: '一面', status: '已通过' },
+      { round: '二面', status: '已通过' },
+      { round: '终面', status: '进行中' },
+    ],
+  )
+  assert.equal(resultWithHistory[1].notes, '等待结果')
 })
 
 test('Offer and ended jobs cannot transition to another status', () => {
