@@ -50,6 +50,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
   const [channelFilter, setChannelFilter] = useState('全部')
   const [cityFilter, setCityFilter] = useState('全部')
   const [priorityFilter, setPriorityFilter] = useState('全部')
+  const [hasNextActionFilter, setHasNextActionFilter] = useState(false)
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false)
@@ -80,6 +81,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
       if (channelFilter !== '全部' && j.channel !== channelFilter) return false
       if (cityFilter !== '全部' && j.city !== cityFilter) return false
       if (priorityFilter !== '全部' && j.priority !== priorityFilter) return false
+      if (hasNextActionFilter && !j.nextAction?.trim()) return false
       if (search) {
         const q = search.toLowerCase()
         const match = (s) => (s || '').toLowerCase().includes(q)
@@ -91,7 +93,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
       }
       return true
     })
-  }, [jobs, search, statusFilter, channelFilter, cityFilter, priorityFilter, searchScope])
+  }, [jobs, search, statusFilter, channelFilter, cityFilter, priorityFilter, hasNextActionFilter, searchScope])
 
   // Group filtered jobs by company for grouped table display
   const groupedJobs = useMemo(() => {
@@ -284,7 +286,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
 
   // Active filter count
   const activeFilters = (statusFilter !== '全部' ? 1 : 0) + (channelFilter !== '全部' ? 1 : 0) +
-    (cityFilter !== '全部' ? 1 : 0) + (priorityFilter !== '全部' ? 1 : 0)
+    (cityFilter !== '全部' ? 1 : 0) + (priorityFilter !== '全部' ? 1 : 0) + (hasNextActionFilter ? 1 : 0)
 
   return (
     <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
@@ -405,9 +407,22 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
             ))}
           </div>
 
+          <button
+            type="button"
+            aria-pressed={hasNextActionFilter}
+            onClick={() => setHasNextActionFilter((current) => !current)}
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${
+              hasNextActionFilter
+                ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20'
+                : 'border-theme-border bg-white dark:bg-white/[0.03] text-slate-700 dark:text-white/65 hover:bg-slate-100 dark:hover:bg-white/[0.07] hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            有下一步行动
+          </button>
+
           {activeFilters > 0 && (
             <button
-              onClick={() => { setStatusFilter('全部'); setChannelFilter('全部'); setCityFilter('全部'); setPriorityFilter('全部'); setSearch('') }}
+              onClick={() => { setStatusFilter('全部'); setChannelFilter('全部'); setCityFilter('全部'); setPriorityFilter('全部'); setHasNextActionFilter(false); setSearch('') }}
               className="text-sm text-offer-accent hover:text-white transition-colors ml-1 cursor-pointer"
             >
               清除筛选
