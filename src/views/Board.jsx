@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useApp, canSelectJobStatus } from '../store/AppContext'
 import JobModal from '../components/JobModal'
 import JobDetailModal from '../components/JobDetailModal'
@@ -55,6 +55,17 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
   // Follow-up
   const [followUpJob, setFollowUpJob] = useState(null)
   const [followUpText, setFollowUpText] = useState('')
+
+  useEffect(() => {
+    if (!followUpJob) return
+    const handler = (e) => {
+      if (e.key !== 'Escape') return
+      setFollowUpJob(null)
+      setFollowUpText('')
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [followUpJob])
 
   // ---- Drag handlers ----
   const handleDragStart = (e, jobId) => {
@@ -413,7 +424,7 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
                 autoFocus
               />
               <div className="flex gap-3 justify-end">
-                <button onClick={() => setFollowUpJob(null)} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium cursor-pointer">取消</button>
+                <button onClick={() => { setFollowUpJob(null); setFollowUpText('') }} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium cursor-pointer">取消</button>
                 <button onClick={saveFollowUp} className="btn-gradient px-4 py-2 rounded-xl text-sm font-medium text-white cursor-pointer">保存</button>
               </div>
             </div>
