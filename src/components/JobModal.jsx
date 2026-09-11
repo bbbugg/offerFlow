@@ -11,6 +11,12 @@ const WORK_MODE_OPTIONS = ['onsite', 'remote', 'hybrid']
 const CHANNEL_OPTIONS = ['', '内推', '官网投递', '猎头', '招聘平台', '校园招聘', '其他']
 const PRIORITY_OPTIONS = ['高', '中', '低']
 const END_REASON_OPTIONS = ['', '被拒绝', '岗位关闭', '自己放弃', '流程太慢', '薪资不匹配', '地点不合适', '手动标记', '其他']
+const CITY_OPTIONS = [
+  '北京', '上海', '广州', '深圳',
+  '成都', '杭州', '重庆', '武汉', '苏州', '西安', '南京', '长沙', '天津', '郑州', '东莞', '青岛', '昆明', '宁波', '合肥',
+  '佛山', '沈阳', '济南', '无锡', '厦门', '福州', '温州', '金华', '哈尔滨', '大连', '贵阳', '南宁', '泉州', '石家庄', '长春', '南昌', '惠州', '常州', '嘉兴', '徐州', '南通', '太原', '保定', '珠海', '中山', '兰州', '临沂', '潍坊', '烟台', '绍兴',
+  '呼和浩特', '海口', '拉萨', '西宁', '银川', '乌鲁木齐',
+]
 
 const emptyForm = {
   companyName: '', jobTitle: '', status: '感兴趣', city: '', salaryRange: '',
@@ -62,6 +68,21 @@ function Select({ label, value, onChange, options, placeholder = '请选择' }) 
         onChange={(nextValue) => onChange({ target: { value: nextValue } })}
         options={options}
         placeholder={placeholder}
+      />
+    </div>
+  )
+}
+
+function CityInput({ value, onChange }) {
+  return (
+    <div className="min-w-0">
+      <label className="text-sm text-offer-muted block mb-1">城市</label>
+      <CustomSelect
+        value={value}
+        onChange={onChange}
+        options={CITY_OPTIONS}
+        placeholder="输入或选择城市"
+        editable
       />
     </div>
   )
@@ -200,7 +221,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
             <Input label="岗位名称 *" value={form.jobTitle} onChange={(e) => handleChange('jobTitle', e.target.value)} placeholder="例如：高级后端工程师" />
 
             <Select label="当前状态" value={form.status} onChange={(e) => handleStatusChange(e.target.value)} options={statusOptions} />
-            <Input label="城市" value={form.city} onChange={(e) => handleChange('city', e.target.value)} placeholder="例如：北京" />
+            <CityInput value={form.city} onChange={(value) => handleChange('city', value)} />
 
             {form.status === '已结束' && (
               <Select label="结束原因" value={form.endReason} onChange={(e) => handleChange('endReason', e.target.value)} options={END_REASON_OPTIONS} placeholder="请选择原因" />

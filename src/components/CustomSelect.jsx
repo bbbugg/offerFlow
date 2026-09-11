@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 function scrollAfterViewportSettles(scroll) {
   const viewport = window.visualViewport
@@ -65,6 +65,7 @@ export default function CustomSelect({
   searchable = false,
   autoFocusSearch = false,
   searchPlaceholder = '搜索...',
+  editable = false,
 }) {
   const [open, setOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -72,10 +73,12 @@ export default function CustomSelect({
   const searchInputRef = useRef(null)
   const dropdownRef = useRef(null)
   const viewportScrollCleanupRef = useRef(null)
+  const listboxId = useId()
 
   const normalized = options.map(normalizeOption)
   const selected = normalized.find((option) => option.value === value)
   const display = selected ? (selected.value === '' ? placeholder : selected.label) : placeholder
+  const triggerClassName = 'flex min-h-[40px] w-full min-w-0 items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-left text-sm font-medium text-slate-900 outline-none transition-all duration-200 hover:bg-slate-50 focus-within:border-purple-400/70 focus-within:ring-2 focus-within:ring-purple-500/20 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06]'
 
   useEffect(() => {
     if (!open) {
@@ -143,28 +146,61 @@ export default function CustomSelect({
   }
 
   const filteredOptions = normalized.filter((option) => {
-    if (!searchable || !searchQuery.trim()) return true
+    if ((!searchable && !editable) || !searchQuery.trim()) return true
     const query = searchQuery.trim().toLowerCase()
     return option.label.toLowerCase().includes(query)
   })
 
+  const openEditableOptions = () => {
+    if (disabled || open) return
+    setSearchQuery('')
+    setOpen(true)
+  }
+
   return (
     <div ref={rootRef} className={`relative min-w-0 ${className}`}>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => setOpen((next) => !next)}
-        className="cursor-pointer flex min-h-[40px] w-full min-w-0 items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-left text-sm font-medium text-slate-900 outline-none transition-all duration-200 hover:bg-slate-50 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06]"
-      >
-        <span className="min-w-0 truncate">{display}</span>
-        <svg className={`h-4 w-4 shrink-0 text-slate-500 transition-transform dark:text-white/45 ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
+      {editable ? (
+        <input
+          type="text"
+          value={value}
+          disabled={disabled}
+          onClick={openEditableOptions}
+          onBlur={() => {
+            requestAnimationFrame(() => {
+              if (rootRef.current && !rootRef.current.contains(document.activeElement)) {
+                setOpen(false)
+              }
+            })
+          }}
+          onChange={(event) => {
+            onChange(event.target.value)
+            setSearchQuery(event.target.value)
+            setOpen(true)
+          }}
+          placeholder={placeholder}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-controls={listboxId}
+          aria-expanded={open}
+          className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+        />
+      ) : (
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => setOpen((next) => !next)}
+          className={`cursor-pointer ${triggerClassName}`}
+        >
+          <span className="min-w-0 truncate">{display}</span>
+          <svg className={`h-4 w-4 shrink-0 text-slate-500 transition-transform dark:text-white/45 ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      )}
 
       {open && (
         <div ref={dropdownRef} className="absolute left-0 right-0 top-full z-[80] mt-1 max-h-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-white/[0.18] dark:bg-[#1C1F26] dark:shadow-[0_8px_32px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)] flex flex-col">
-          {searchable && (
+          {searchable && !editable && (
             <div className="p-2 border-b border-slate-200 dark:border-white/10 shrink-0">
               <div className="relative flex items-center">
                 <svg className="w-4 h-4 absolute left-2.5 text-slate-400 dark:text-white/40 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,10 +236,10 @@ export default function CustomSelect({
               </div>
             </div>
           )}
-          <div className="max-h-52 overflow-auto p-1">
+          <div id={listboxId} role="listbox" className="max-h-52 overflow-auto p-1">
             {filteredOptions.length === 0 ? (
               <div className="px-3 py-2 text-xs text-slate-400 dark:text-white/40 text-center whitespace-nowrap">
-                无匹配选项
+                {editable ? '无匹配城市，可直接使用当前输入' : '无匹配选项'}
               </div>
             ) : (
               <div className="min-w-full w-max flex flex-col">
@@ -213,6 +249,9 @@ export default function CustomSelect({
                     <button
                       key={option.value || 'empty'}
                       type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      tabIndex={editable ? -1 : undefined}
                       disabled={option.disabled}
                       onClick={() => selectOption(option)}
                       className={`block w-full whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm transition-colors ${
