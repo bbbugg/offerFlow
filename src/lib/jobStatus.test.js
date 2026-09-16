@@ -2,11 +2,18 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { canSelectJobStatus, FINAL_JOB_STATUSES, JOB_STATUSES, syncInterviewRoundsForStatus } from './jobStatus.js'
 
-test('OA and interview stages cannot return to applied', () => {
+test('OA, AI interview, and formal interview stages cannot return to applied', () => {
   const oaJob = { status: 'OA / 笔试', interviewRounds: [] }
   assert.equal(canSelectJobStatus(oaJob, '已投递'), false)
   assert.equal(canSelectJobStatus(oaJob, 'OA / 笔试'), true)
+  assert.equal(canSelectJobStatus(oaJob, 'AI 面试'), true)
   assert.equal(canSelectJobStatus(oaJob, '一面中'), true)
+
+  const aiInterviewJob = { status: 'AI 面试', interviewRounds: [] }
+  assert.equal(canSelectJobStatus(aiInterviewJob, '已投递'), false)
+  assert.equal(canSelectJobStatus(aiInterviewJob, 'OA / 笔试'), true)
+  assert.equal(canSelectJobStatus(aiInterviewJob, 'AI 面试'), true)
+  assert.equal(canSelectJobStatus(aiInterviewJob, '一面中'), true)
 
   const job = {
     status: '一面中',
@@ -14,6 +21,7 @@ test('OA and interview stages cannot return to applied', () => {
   }
 
   assert.equal(canSelectJobStatus(job, 'OA / 笔试'), true)
+  assert.equal(canSelectJobStatus(job, 'AI 面试'), true)
   assert.equal(canSelectJobStatus(job, '已投递'), false)
   assert.equal(canSelectJobStatus(job, '一面中'), true)
   assert.equal(canSelectJobStatus(job, '二面中'), true)
@@ -25,6 +33,7 @@ test('any progress can jump to final interview but final cannot go back', () => 
   const progressJobs = [
     { status: '已投递', interviewRounds: [] },
     { status: 'OA / 笔试', interviewRounds: [] },
+    { status: 'AI 面试', interviewRounds: [] },
     {
       status: '二面中',
       interviewRounds: [
@@ -61,6 +70,20 @@ test('any progress can jump to final interview but final cannot go back', () => 
   assert.equal(canSelectJobStatus(finalJob, '三面中'), false)
   assert.equal(canSelectJobStatus(finalJob, '终面中'), true)
   assert.equal(canSelectJobStatus(finalJob, 'Offer'), true)
+})
+
+test('AI interview behaves like OA without creating a formal interview round', () => {
+  const aiInterviewRounds = syncInterviewRoundsForStatus({
+    status: '已投递',
+    interviewRounds: [],
+  }, 'AI 面试')
+  const oaRounds = syncInterviewRoundsForStatus({
+    status: '已投递',
+    interviewRounds: [],
+  }, 'OA / 笔试')
+
+  assert.deepEqual(aiInterviewRounds, oaRounds)
+  assert.deepEqual(aiInterviewRounds, [])
 })
 
 test('jumping to final interview does not infer missing earlier rounds', () => {

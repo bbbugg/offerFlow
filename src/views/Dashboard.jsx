@@ -169,7 +169,7 @@ export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly
                 return (
                   <div key={t.id} className="flex items-start gap-3 border-b border-white/10 pb-3 last:border-0">
                     <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
-                      t.type === '面试' ? 'bg-green-500' : t.type === 'OA / 笔试' || t.type === 'Deadline' ? 'bg-amber-500' : t.type === 'Follow-up' ? 'bg-teal-500' : 'bg-blue-500'
+                      t.type === '面试' ? 'bg-green-500' : t.type === 'OA / 笔试' || t.type === 'AI 面试' || t.type === 'Deadline' ? 'bg-amber-500' : t.type === 'Follow-up' ? 'bg-teal-500' : 'bg-blue-500'
                     }`} />
                     <div className="flex-1 min-w-0">
                       {isReadOnly ? (

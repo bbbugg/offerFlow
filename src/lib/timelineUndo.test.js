@@ -54,7 +54,7 @@ function applyStatusChange(job, targetStatus, options = {}) {
 }
 
 test('all forward status stages can be undone to the exact previous related state', () => {
-  const targets = ['已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中']
+  const targets = ['已投递', 'OA / 笔试', 'AI 面试', '一面中', '二面中', '三面中', '终面中']
 
   for (const target of targets) {
     const before = baseJob()

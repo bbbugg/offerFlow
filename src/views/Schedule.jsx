@@ -13,6 +13,7 @@ const EMPTY_TASKS = []
 const TYPE_DOT = {
   '面试': 'bg-blue-500',
   'OA / 笔试': 'bg-cyan-500',
+  'AI 面试': 'bg-amber-500',
   'Deadline': 'bg-red-500',
   'Follow-up': 'bg-green-500',
   '准备任务': 'bg-purple-500',

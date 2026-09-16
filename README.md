@@ -1,6 +1,6 @@
 # OfferFlow — 求职全流程管理平台
 
-二改自 [xuuuu-cpu/offerFlow-llm-feature](https://github.com/xuuuu-cpu/offerFlow-llm-feature)，聚焦岗位投递、面试轮次、日程待办与数据洞察，新增时间线最新状态操作安全撤销、公开只读分享、全局搜索和移动端适配，并移除简历管理、面试复盘及 AI 分析模块。完整修改见 [二次开发更新说明](./SECONDARY_DEVELOPMENT.md)。
+二改自 [xuuuu-cpu/offerFlow-llm-feature](https://github.com/xuuuu-cpu/offerFlow-llm-feature)，聚焦岗位投递、OA / 笔试、AI 面试、正式面试轮次、日程待办与数据洞察，新增时间线最新状态操作安全撤销、公开只读分享、全局搜索和移动端适配，并移除简历管理、面试复盘及 AI 分析模块。完整修改见 [二次开发更新说明](./SECONDARY_DEVELOPMENT.md)。
 
 一站式求职管理工具，帮助你系统化追踪岗位、投递进度、面试轮次与待办事项。
 
@@ -15,7 +15,7 @@
 - 快速查看关键指标与下一步行动
 
 ### 看板管理（Board）
-- 9 阶段求职看板：感兴趣 → 已投递 → OA / 笔试 → 一面中 → 二面中 → 三面中 → 终面中 → Offer → 已结束
+- 10 阶段求职看板：感兴趣 → 已投递 → OA / 笔试 → AI 面试 → 一面中 → 二面中 → 三面中 → 终面中 → Offer → 已结束
 - HTML5 原生拖拽，拖拽即可变更岗位状态
 - 每个岗位卡片展示公司、职位、优先级、近期动态
 
@@ -27,7 +27,7 @@
 - 支持导出 CSV
 
 ### 日程待办（Schedule）
-- 任务类型包括：面试、OA / 笔试、Deadline、Follow-up、准备任务、其他
+- 任务类型包括：面试、OA / 笔试、AI 面试、Deadline、Follow-up、准备任务、其他
 - 标记完成、设置优先级、关联岗位
 
 ### 数据洞察（Insights）

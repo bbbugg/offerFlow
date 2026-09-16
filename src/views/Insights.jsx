@@ -3,7 +3,7 @@ import { useMemo, useState, useEffect } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
-import { useApp, isAppliedJob, isRepliedJob, hasOaExperience, hasInterviewExperience, getInterviewRoundCount, isOfferJob } from '../store/AppContext'
+import { useApp, isAppliedJob, isRepliedJob, hasOaExperience, hasAiInterviewExperience, hasInterviewExperience, getInterviewRoundCount, isOfferJob } from '../store/AppContext'
 import ModalHeader from '../components/ModalHeader'
 import GlowCard from '../components/GlowCard'
 import JobDetailModal from '../components/JobDetailModal'
@@ -184,9 +184,10 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
     const total = filteredJobs.length
     const applied = filteredJobs.filter(isAppliedJob)
     const appliedCount = applied.length
-    const active = filteredJobs.filter((j) => ['已投递', 'OA / 笔试', '一面中', '二面中', '三面中', '终面中'].includes(j.status))
+    const active = filteredJobs.filter((j) => ['已投递', 'OA / 笔试', 'AI 面试', '一面中', '二面中', '三面中', '终面中'].includes(j.status))
     const replied = filteredJobs.filter(isRepliedJob)
     const oaJobs = filteredJobs.filter(hasOaExperience)
+    const aiInterviewJobs = filteredJobs.filter(hasAiInterviewExperience)
     const interviewed = filteredJobs.filter(hasInterviewExperience)
     const totalRoundCount = filteredJobs.reduce((sum, j) => sum + getInterviewRoundCount(j), 0)
     const offers = filteredJobs.filter(isOfferJob)
@@ -202,6 +203,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
     const repliedToOfferCount = replied.filter(isOfferJob).length
     const repliedToInterviewCount = replied.filter(isInterviewingOrInterviewed).length
     const repliedToOaCount = replied.filter(hasOaExperience).length
+    const repliedToAiInterviewCount = replied.filter(hasAiInterviewExperience).length
     const repliedEndedCount = replied.filter((j) => j.status === '已结束').length
     const repliedActiveCount = replied.length - repliedToOfferCount - repliedToInterviewCount - repliedToOaCount - repliedEndedCount
 
@@ -210,7 +212,8 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
       { name: '总投递', value: appliedCount, fill: '#7E57C2' },
       { name: '收到回复', value: replied.length, fill: '#9575DE' },
       { name: 'OA / 笔试', value: oaJobs.length, fill: '#4FC3F7' },
-      { name: '面试', value: interviewed.length, fill: '#2196F3' },
+      { name: 'AI 面试', value: aiInterviewJobs.length, fill: '#F59E0B' },
+      { name: '正式面试', value: interviewed.length, fill: '#2196F3' },
       { name: 'Offer', value: offers.length, fill: '#4CAF50' },
     ]
 
@@ -280,6 +283,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
       repliedToOfferCount,
       repliedToInterviewCount,
       repliedToOaCount,
+      repliedToAiInterviewCount,
       repliedEndedCount,
       repliedActiveCount,
       repliedChannels,
@@ -465,6 +469,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
           appliedCount: data.appliedCount,
           replyRate: data.replyRate,
           toOaCount: data.repliedToOaCount,
+          toAiInterviewCount: data.repliedToAiInterviewCount,
           toInterviewCount: data.repliedToInterviewCount,
           toOfferCount: data.repliedToOfferCount,
           endedCount: data.repliedEndedCount,
@@ -697,6 +702,9 @@ function getReplyStageBadge(job) {
     const cleanRound = highest && highest !== '-' ? highest : '一面'
     badgeClassKey = `${cleanRound}中`
     badgeText = cleanRound
+  } else if (hasAiInterviewExperience(job)) {
+    badgeClassKey = 'AI 面试'
+    badgeText = 'AI 面试'
   } else if (hasOaExperience(job)) {
     badgeClassKey = 'OA / 笔试'
     badgeText = 'OA / 笔试'
@@ -779,7 +787,7 @@ function ReplyDetailModal({ open, onClose, onSelectJob, stats, jobs }) {
             {/* Body */}
             <div className="flex-1 overflow-y-auto p-5 space-y-6">
               {/* Summary row */}
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div className="bento-block col-span-2 sm:col-span-1">
                   <p className="text-xs text-slate-500 dark:text-white/45 mb-1">收到回复岗位</p>
                   <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.totalReplied} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
@@ -790,7 +798,11 @@ function ReplyDetailModal({ open, onClose, onSelectJob, stats, jobs }) {
                   <p className="text-2xl font-bold text-sky-600 dark:text-sky-400">{stats.toOaCount} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
                 </div>
                 <div className="bento-block">
-                  <p className="text-xs text-slate-500 dark:text-white/45 mb-1">收到面试</p>
+                  <p className="text-xs text-slate-500 dark:text-white/45 mb-1">收到 AI 面试</p>
+                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.toAiInterviewCount} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
+                </div>
+                <div className="bento-block">
+                  <p className="text-xs text-slate-500 dark:text-white/45 mb-1">收到正式面试</p>
                   <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{stats.toInterviewCount} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
                 </div>
                 <div className="bento-block">
@@ -819,7 +831,17 @@ function ReplyDetailModal({ open, onClose, onSelectJob, stats, jobs }) {
 
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-slate-700 dark:text-white/80 font-medium">收到面试</span>
+                      <span className="text-slate-700 dark:text-white/80 font-medium">收到 AI 面试</span>
+                      <span className="text-amber-600 dark:text-amber-400 font-semibold">{stats.toAiInterviewCount} 个 ({stats.totalReplied > 0 ? Math.round((stats.toAiInterviewCount / stats.totalReplied) * 100) : 0}%)</span>
+                    </div>
+                    <div className="h-2 bg-slate-200 dark:bg-white/[0.06] rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all" style={{ width: `${stats.totalReplied > 0 ? (stats.toAiInterviewCount / stats.totalReplied) * 100 : 0}%` }} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-slate-700 dark:text-white/80 font-medium">收到正式面试</span>
                       <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{stats.toInterviewCount} 个 ({stats.totalReplied > 0 ? Math.round((stats.toInterviewCount / stats.totalReplied) * 100) : 0}%)</span>
                     </div>
                     <div className="h-2 bg-slate-200 dark:bg-white/[0.06] rounded-full overflow-hidden">

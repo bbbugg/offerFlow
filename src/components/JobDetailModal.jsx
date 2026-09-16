@@ -13,6 +13,7 @@ import { JOB_STATUS_ACTION_BADGE, JOB_STATUS_BADGE, NEUTRAL_BADGE, ROUND_STATUS_
 const STATUS_ACTIONS = [
   { status: '已投递', label: '已投递', color: JOB_STATUS_ACTION_BADGE['已投递'] },
   { status: 'OA / 笔试', label: '收到 OA', color: JOB_STATUS_ACTION_BADGE['OA / 笔试'] },
+  { status: 'AI 面试', label: 'AI 面试', color: JOB_STATUS_ACTION_BADGE['AI 面试'] },
   { status: '一面中', label: '一面中', color: JOB_STATUS_ACTION_BADGE['一面中'] },
   { status: '二面中', label: '二面中', color: JOB_STATUS_ACTION_BADGE['二面中'] },
   { status: '三面中', label: '三面中', color: JOB_STATUS_ACTION_BADGE['三面中'] },
@@ -526,7 +527,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
                   <CustomSelect
                     value={taskForm.type}
                     onChange={(nextValue) => setTaskForm((p) => ({ ...p, type: nextValue }))}
-                    options={['面试', 'OA / 笔试', 'Deadline', 'Follow-up', '准备任务', '其他']}
+                    options={['面试', 'OA / 笔试', 'AI 面试', 'Deadline', 'Follow-up', '准备任务', '其他']}
                   />
                 </div>
                 <div>

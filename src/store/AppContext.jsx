@@ -10,7 +10,7 @@ const defaultSettings = {}
 
 // ---- Centralized statistics helpers ----
 
-export const REPLIED_STATUSES = ['OA / 笔试', '一面中', '二面中', '三面中', '终面中', 'Offer']
+export const REPLIED_STATUSES = ['OA / 笔试', 'AI 面试', '一面中', '二面中', '三面中', '终面中', 'Offer']
 const REPLIED_END_REASONS = ['被拒绝', '岗位关闭', '其他']
 
 export function isAppliedJob(job) {
@@ -40,6 +40,14 @@ export function hasOaExperience(job) {
   return (job.timeline || []).some((item) => {
     const text = `${item.action || ''} ${item.detail || ''}`
     return text.includes('OA') || text.includes('笔试')
+  })
+}
+
+export function hasAiInterviewExperience(job) {
+  if (job.status === 'AI 面试') return true
+  return (job.timeline || []).some((item) => {
+    const text = `${item.action || ''} ${item.detail || ''}`
+    return text.includes('AI 面试')
   })
 }
 

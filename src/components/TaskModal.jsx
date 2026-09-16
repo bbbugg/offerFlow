@@ -148,7 +148,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <Field label="类型">
-              <CustomSelect value={type} onChange={setType} options={['面试', 'OA / 笔试', 'Deadline', 'Follow-up', '准备任务', '其他']} />
+              <CustomSelect value={type} onChange={setType} options={['面试', 'OA / 笔试', 'AI 面试', 'Deadline', 'Follow-up', '准备任务', '其他']} />
             </Field>
             <Field label="优先级">
               <CustomSelect value={priority} onChange={setPriority} options={['高', '中', '低']} />
