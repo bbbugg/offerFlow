@@ -101,14 +101,8 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
       return
     }
 
-    const timeline = job.timeline || []
     const patch = {
       status: targetStatus,
-      timeline: [...timeline, {
-        date: formatBeijingDate(),
-        action: '状态变更',
-        detail: `从 ${job.status} 更新为 ${targetStatus}`,
-      }],
     }
     if (statusImpliesApplied(targetStatus) && !job.appliedDate) {
       patch.appliedDate = formatBeijingDate()
@@ -225,15 +219,9 @@ export default function Board({ jobs: propJobs, isReadOnly = false }) {
     if (isReadOnly) return
     if (e) e.stopPropagation()
     setMenuJobId(null)
-    const timeline = job.timeline || []
     const patch = {
       status: newStatus,
       endReason: newStatus === '已结束' ? '手动标记' : '',
-      timeline: [...timeline, {
-        date: formatBeijingDate(),
-        action: `标记为 ${label}`,
-        detail: newStatus === '已结束' ? '' : '',
-      }],
     }
     if (statusImpliesApplied(newStatus) && !job.appliedDate) {
       patch.appliedDate = formatBeijingDate()
@@ -490,7 +478,7 @@ function Card({ job, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, 
           {!isStatusLocked && (
             <>
               <MenuItem icon="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" label="标记为 Offer" onClick={onMarkOffer} />
-              <MenuItem icon="M6 18L18 6M6 6l12 12" label="标记为已结束" onClick={onMarkEnded} />
+              <MenuItem icon="M6 18L18 6M6 6l12 12" label="标记为 已结束" onClick={onMarkEnded} />
             </>
           )}
           <div className="border-t border-slate-200 dark:border-white/10 my-1" />

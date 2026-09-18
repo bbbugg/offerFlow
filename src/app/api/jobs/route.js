@@ -5,7 +5,7 @@ import { canSelectJobStatus, JOB_STATUSES, JOB_STATUS_TRANSITION_ERROR, statusIm
 import { formatBeijingDate } from '@/lib/dateUtils'
 import {
   assertJobUpdateCurrent,
-  createUndoableTimelineEvent,
+  createStatusChangeTimelineEvent,
   getJobTimelineSnapshot,
   readAppendedTimelineEvent,
   TimelineUndoError,
@@ -153,13 +153,9 @@ export async function PUT(request) {
       if (statusChanged) {
         const before = getJobTimelineSnapshot(existing)
         const after = getJobTimelineSnapshot({ ...existing, ...updateData })
-        const event = appendedEvent || {
-          action: '状态变更',
-          detail: `从 ${existing.status} 更新为 ${updateData.status}`,
-        }
         updateData.timeline = [
           ...(Array.isArray(existing.timeline) ? existing.timeline : []),
-          createUndoableTimelineEvent({ event, before, after }),
+          createStatusChangeTimelineEvent({ before, after }),
         ]
       }
 

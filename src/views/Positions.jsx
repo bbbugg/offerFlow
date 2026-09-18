@@ -9,6 +9,7 @@ import SearchOptionsPopover, { DEFAULT_SEARCH_SCOPE } from '../components/Search
 import { formatBeijingDate, getElapsedBeijingDays, parseBeijingDate } from '../lib/dateUtils'
 import { JOB_STATUSES } from '../lib/jobStatus'
 import { JOB_STATUS_BADGE, NEUTRAL_BADGE } from '../lib/badgeStyles'
+import { getTimelineActionLabel } from '../lib/timelineUndo'
 
 const EMPTY_JOBS = []
 const STATUS_OPTIONS = ['全部', ...JOB_STATUSES]
@@ -231,7 +232,8 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
       .map((t) => {
         const parts = []
         if (t.date) parts.push(`[${t.date}]`)
-        if (t.action) parts.push(t.action)
+        const action = getTimelineActionLabel(t)
+        if (action) parts.push(action)
         if (t.detail) parts.push(`(${t.detail})`)
         return parts.join(' ')
       })

@@ -6,6 +6,7 @@ import JobDetailModal from '../components/JobDetailModal'
 import JobModal from '../components/JobModal'
 import TaskModal from '../components/TaskModal'
 import { addDaysToDateString, getBeijingWeekStart } from '../lib/dateUtils'
+import { getTimelineActionLabel } from '../lib/timelineUndo'
 import useBeijingToday from '../hooks/useBeijingToday'
 
 function getTimestamp(value) {
@@ -148,7 +149,7 @@ export default function Dashboard({ jobs: propJobs, tasks: propTasks, isReadOnly
                     >
                       {e.company}
                     </button>
-                    {' '}{e.action}
+                    {' '}{getTimelineActionLabel(e)}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-white/45 mt-0.5">{e.date}</p>
                 </div>

@@ -78,6 +78,32 @@ export function createUndoableTimelineEvent({ event, before, after, now = new Da
   }
 }
 
+export function createStatusChangeTimelineEvent({ before, after, now, id }) {
+  return createUndoableTimelineEvent({
+    event: {
+      action: `标记为 ${after.status}`,
+      detail: `从 ${before.status} 更新为 ${after.status}`,
+    },
+    before,
+    after,
+    now,
+    id,
+  })
+}
+
+export function getTimelineActionLabel(event) {
+  const snapshotStatus = event?._undo?.after?.status
+  if (typeof snapshotStatus === 'string' && snapshotStatus.trim()) {
+    return `标记为 ${snapshotStatus.trim()}`
+  }
+
+  const detail = typeof event?.detail === 'string' ? event.detail.trim() : ''
+  const statusChange = detail.match(/^从 .+ 更新为 (.+)$/)
+  if (statusChange?.[1]?.trim()) return `标记为 ${statusChange[1].trim()}`
+
+  return typeof event?.action === 'string' ? event.action : ''
+}
+
 export function canUndoLatestTimelineEvent(job) {
   const timeline = Array.isArray(job?.timeline) ? job.timeline : []
   const latestEvent = timeline.at(-1)

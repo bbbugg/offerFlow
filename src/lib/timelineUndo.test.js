@@ -6,9 +6,10 @@ import {
   assertUndoConfirmationCurrent,
   buildLatestTimelineUndoPatch,
   canUndoLatestTimelineEvent,
-  createUndoableTimelineEvent,
+  createStatusChangeTimelineEvent,
   getLatestTimelineUndoConflicts,
   getJobTimelineSnapshot,
+  getTimelineActionLabel,
   readAppendedTimelineEvent,
   stripTimelineUndoMetadata,
   TimelineUndoError,
@@ -38,8 +39,7 @@ function applyStatusChange(job, targetStatus, options = {}) {
   const before = getJobTimelineSnapshot(job)
   const after = getJobTimelineSnapshot({ ...job, ...update })
   const id = options.id || `event-${job.timeline.length + 1}`
-  const event = createUndoableTimelineEvent({
-    event: { action: '状态变更', detail: `从 ${job.status} 更新为 ${targetStatus}` },
+  const event = createStatusChangeTimelineEvent({
     before,
     after,
     now: FIXED_NOW,
@@ -61,6 +61,8 @@ test('all forward status stages can be undone to the exact previous related stat
     const after = applyStatusChange(before, target)
     const patch = buildLatestTimelineUndoPatch(after, after.timeline.at(-1).id)
 
+    assert.equal(after.timeline.at(-1).action, `标记为 ${target}`, target)
+    assert.equal(after.timeline.at(-1).detail, `从 感兴趣 更新为 ${target}`, target)
     assert.deepEqual(patch, { ...getJobTimelineSnapshot(before), timeline: [] }, target)
   }
 })
@@ -165,8 +167,21 @@ test('public timeline data omits private rollback snapshots', () => {
   const stripped = stripTimelineUndoMetadata(job.timeline)
 
   assert.equal(Object.hasOwn(stripped[0], '_undo'), false)
-  assert.equal(stripped[0].action, '状态变更')
+  assert.equal(stripped[0].action, '标记为 一面中')
   assert.equal(Object.hasOwn(job.timeline[0], '_undo'), true)
+})
+
+test('status timeline labels are consistent for new and legacy records', () => {
+  const event = applyStatusChange(baseJob({ status: '已投递' }), 'AI 面试').timeline.at(-1)
+  assert.equal(event.action, '标记为 AI 面试')
+  assert.equal(event.detail, '从 已投递 更新为 AI 面试')
+  assert.equal(getTimelineActionLabel(event), '标记为 AI 面试')
+
+  assert.equal(getTimelineActionLabel({
+    action: '状态变更',
+    detail: '从 已投递 更新为 AI 面试',
+  }), '标记为 AI 面试')
+  assert.equal(getTimelineActionLabel({ action: '备注更新', detail: '补充了岗位信息' }), '备注更新')
 })
 
 test('ordinary and force undo confirmations must match the latest updatedAt', () => {

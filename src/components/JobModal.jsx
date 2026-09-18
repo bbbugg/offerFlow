@@ -155,16 +155,6 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
     }
     if (job) {
       const patch = { ...payload }
-      if (job.status !== payload.status) {
-        patch.timeline = [
-          ...(job.timeline || []),
-          {
-            date: formatBeijingDate(),
-            action: '状态变更',
-            detail: `从 ${job.status} 更新为 ${payload.status}`,
-          },
-        ]
-      }
       const savedJob = await updateJob(job.id, patch, job.updatedAt)
       if (!savedJob) {
         savingRef.current = false

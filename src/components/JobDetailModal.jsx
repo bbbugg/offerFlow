@@ -7,7 +7,7 @@ import CustomSelect from './CustomSelect'
 import ConfirmDialog from './ConfirmDialog'
 import { formatBeijingDate, getElapsedBeijingDays } from '../lib/dateUtils'
 import { isFinalJobStatus, JOB_STATUS_TRANSITION_ERROR, statusImpliesApplied } from '../lib/jobStatus'
-import { getJobTimelineSnapshot, getLatestTimelineUndoConflicts, hasLatestTimelineUndoSnapshot } from '../lib/timelineUndo'
+import { getJobTimelineSnapshot, getLatestTimelineUndoConflicts, getTimelineActionLabel, hasLatestTimelineUndoSnapshot } from '../lib/timelineUndo'
 import { JOB_STATUS_ACTION_BADGE, JOB_STATUS_BADGE, NEUTRAL_BADGE, ROUND_STATUS_BADGE } from '../lib/badgeStyles'
 
 const STATUS_ACTIONS = [
@@ -224,7 +224,6 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
     try {
       const patch = {
         status: newStatus,
-        timeline: [...(existing.timeline || []), { date: formatBeijingDate(), action: `标记为 ${label}`, detail: `从 ${existing.status} 更新为 ${newStatus}` }],
         endReason: newStatus === '已结束' ? endReason : '',
       }
       if (statusImpliesApplied(newStatus) && !existing.appliedDate) {
@@ -445,7 +444,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-xs text-white/45">{t.date}</p>
-                      <p className="text-sm text-white/90 font-medium">{t.action}</p>
+                      <p className="text-sm text-white/90 font-medium">{getTimelineActionLabel(t)}</p>
                     </div>
                     {i === 0 && canUndoLatest && (
                       <button
@@ -559,8 +558,8 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
         open={showUndoConfirm}
         title={requiresForceUndo ? '相关状态已被修改' : '确认撤销最新操作'}
         message={requiresForceUndo
-          ? `检测到操作完成后有以下修改：\n${undoConflictDetails.join('\n')}\n\n强制撤销将覆盖这些后续修改，并恢复“${latestTimelineEvent?.action || '状态变更'}”之前的关联状态，是否继续？`
-          : `将撤销“${latestTimelineEvent?.action || '状态变更'}”，并恢复操作前的岗位状态、投递日期、结束原因和面试轮次。`}
+          ? `检测到操作完成后有以下修改：\n${undoConflictDetails.join('\n')}\n\n强制撤销将覆盖这些后续修改，并恢复“${getTimelineActionLabel(latestTimelineEvent) || '状态变更'}”之前的关联状态，是否继续？`
+          : `将撤销“${getTimelineActionLabel(latestTimelineEvent) || '状态变更'}”，并恢复操作前的岗位状态、投递日期、结束原因和面试轮次。`}
         confirmLabel={requiresForceUndo ? '强制撤销' : '确认撤销'}
         onConfirm={undoLatestAction}
         onCancel={() => {
