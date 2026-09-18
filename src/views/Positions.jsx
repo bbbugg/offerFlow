@@ -12,6 +12,7 @@ import { JOB_STATUS_BADGE, NEUTRAL_BADGE } from '../lib/badgeStyles'
 import { getTimelineActionLabel } from '../lib/timelineUndo'
 
 const EMPTY_JOBS = []
+const UNKNOWN_CITY_FILTER = '__unknown_city__'
 const STATUS_OPTIONS = ['全部', ...JOB_STATUSES]
 const PRIORITY_OPTIONS = ['全部', '高', '中', '低']
 const SHARE_VISIBILITY_OPTIONS = [
@@ -19,6 +20,11 @@ const SHARE_VISIBILITY_OPTIONS = [
   { label: '公开分享', value: '公开' },
   { label: '不公开分享', value: '不公开' },
 ]
+
+function isUnknownCity(city) {
+  const normalizedCity = city?.trim()
+  return !normalizedCity || normalizedCity === '未知城市'
+}
 
 function getAppliedDateTimestamp(job) {
   if (!job.appliedDate) return 0
@@ -77,8 +83,9 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
   }, [jobs])
 
   const cities = useMemo(() => {
-    const set = new Set(jobs.map((j) => j.city).filter(Boolean))
-    return ['全部', ...Array.from(set)]
+    const set = new Set(jobs.map((j) => j.city).filter((city) => !isUnknownCity(city)))
+    const hasUnknownCity = jobs.some((j) => isUnknownCity(j.city))
+    return ['全部', ...Array.from(set), ...(hasUnknownCity ? [UNKNOWN_CITY_FILTER] : [])]
   }, [jobs])
 
   // Filtered & searched jobs
@@ -86,7 +93,8 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
     return jobs.filter((j) => {
       if (statusFilter !== '全部' && j.status !== statusFilter) return false
       if (channelFilter !== '全部' && j.channel !== channelFilter) return false
-      if (cityFilter !== '全部' && j.city !== cityFilter) return false
+      if (cityFilter === UNKNOWN_CITY_FILTER && !isUnknownCity(j.city)) return false
+      if (cityFilter !== '全部' && cityFilter !== UNKNOWN_CITY_FILTER && j.city !== cityFilter) return false
       if (priorityFilter !== '全部' && j.priority !== priorityFilter) return false
       if (shareVisibilityFilter === '公开' && !j.shareVisible) return false
       if (shareVisibilityFilter === '不公开' && j.shareVisible) return false
@@ -397,7 +405,10 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
             <CustomSelect
               value={cityFilter}
               onChange={setCityFilter}
-              options={cities.map((c) => ({ label: c === '全部' ? '全部城市' : c, value: c }))}
+              options={cities.map((c) => ({
+                label: c === '全部' ? '全部城市' : c === UNKNOWN_CITY_FILTER ? '未知城市' : c,
+                value: c,
+              }))}
             />
           </div>
 
