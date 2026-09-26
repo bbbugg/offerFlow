@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useApp } from '../store/AppContext'
 import JobModal from '../components/JobModal'
 import JobDetailModal from '../components/JobDetailModal'
@@ -52,9 +52,14 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
   const jobs = isReadOnly ? (propJobs || EMPTY_JOBS) : appContext.jobs
   const addToast = isReadOnly ? () => {} : appContext.addToast
   const deleteJob = isReadOnly ? async () => {} : appContext.deleteJob
+  const selectedRecruitmentBatch = isReadOnly ? null : appContext.selectedRecruitmentBatch
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState(new Set())
+
+  useEffect(() => {
+    setSelectedIds(new Set())
+  }, [selectedRecruitmentBatch])
 
   // Filter state
   const [search, setSearch] = useState('')

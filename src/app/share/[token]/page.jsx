@@ -301,7 +301,7 @@ export default function SharePage({ params: paramsPromise }) {
       {/* Main body: Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Share Sidebar */}
-        <aside className="hidden lg:flex self-start my-4 ml-4 h-[calc(100vh-5.5rem)] w-[300px] rounded-[28px] py-6 px-5 bg-white/80 backdrop-blur-xl border border-slate-200/70 shadow-sm dark:bg-offer-card dark:border-white/[0.06] overflow-visible flex-col shrink-0">
+        <aside className="my-4 ml-4 hidden w-[300px] shrink-0 self-stretch flex-col overflow-visible rounded-[28px] border border-slate-200/70 bg-white/80 px-5 py-6 shadow-sm backdrop-blur-xl dark:border-white/[0.06] dark:bg-offer-card lg:flex">
           <nav className="relative z-10 ml-4 flex flex-col gap-2.5 flex-1 pt-3">
             {visibleMenuItems.map((item) => {
               const active = activeTab === item.key

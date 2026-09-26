@@ -90,7 +90,7 @@ npm start
 ```
 
 浏览器打开 http://localhost:3000 即可使用。
-以后每次更新项目代码或依赖后，需要重新执行 `npm install` 和 `npm run build`，再运行 `npm start`。
+以后每次更新项目代码或依赖后，需要先备份数据库，再执行 `npm install`，并按当前数据库运行 `npm run db:sqlite` 或 `npm run db:pg` 同步数据库结构，最后执行 `npm run build` 和 `npm start`。Docker 部署会在容器启动时自动同步 SQLite 结构；Vercel 不会自动修改 Neon PostgreSQL，发布包含数据库字段变更的版本前必须先对生产库执行 `npm run db:pg`。
 
 ### Docker 部署
 
