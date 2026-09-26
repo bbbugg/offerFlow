@@ -180,7 +180,7 @@ export default function SharePage({ params: paramsPromise }) {
       <div className="app-glow-br" />
 
       {/* Share Topbar Navbar */}
-      <header className="h-16 shrink-0 border-b border-theme-border bg-offer-card px-3 sm:px-4 md:px-6 flex items-center justify-between relative z-20">
+      <header className="h-13 shrink-0 border-b border-theme-border bg-offer-card px-3 sm:px-4 md:px-6 flex items-center justify-between relative z-20">
         <Link href="/" className="flex shrink-0 items-center gap-2 hover:opacity-90 transition-opacity">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-offer-primary to-offer-accent flex items-center justify-center text-white font-bold text-sm shrink-0">
             O
