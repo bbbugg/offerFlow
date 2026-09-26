@@ -136,13 +136,13 @@ export default function Settings() {
 
   return (
     <div className="min-w-0 max-w-3xl py-2 md:py-0">
-      <h1 className="text-2xl font-bold text-white mb-1">设置</h1>
+      <h1 className="text-2xl font-bold text-theme-text mb-1">设置</h1>
       <p className="text-offer-muted text-sm mb-6">管理你的账户和应用设置</p>
 
       <div className="space-y-6">
         {/* 看板公开分享设置 */}
         <div className="card-modern p-6 md:p-8">
-          <h2 className="text-white font-semibold text-lg mb-2 flex items-center gap-2">
+          <h2 className="text-theme-text font-semibold text-lg mb-2 flex items-center gap-2">
             <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 10.742l4.636-2.318M8.684 13.258l4.636 2.318M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -174,7 +174,7 @@ export default function Settings() {
                         type="text"
                         readOnly
                         value={shareUrl}
-                        className="flex-1 min-h-[40px] rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white select-all outline-none"
+                        className="flex-1 min-h-[40px] rounded-xl border border-theme-border bg-theme-glass px-4 py-2.5 text-sm text-theme-text select-all outline-none"
                       />
                       <div className="flex gap-2">
                         <button
@@ -196,7 +196,7 @@ export default function Settings() {
 
                   {/* 分享范围配置 */}
                   <div className="pt-3 border-t border-white/10">
-                    <label className="text-xs text-white/70 block mb-3 font-semibold tracking-wide">分享范围设置</label>
+                    <label className="text-xs text-theme-secondary block mb-3 font-semibold tracking-wide">分享范围设置</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <label className="flex items-start gap-3 p-3 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] transition-colors cursor-pointer select-none">
                         <input
@@ -207,7 +207,7 @@ export default function Settings() {
                           className="mt-0.5 h-4 w-4 rounded border-white/20 text-purple-600 focus:ring-purple-500/20 focus:ring-offset-0 bg-white/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                         />
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-white">日程待办显示</span>
+                          <span className="text-sm font-medium text-theme-text">日程待办显示</span>
                           <span className="text-xs text-offer-muted mt-0.5">包含日程待办独立页面及首页仪表盘的待办区域</span>
                         </div>
                       </label>
@@ -221,7 +221,7 @@ export default function Settings() {
                           className="mt-0.5 h-4 w-4 rounded border-white/20 text-purple-600 focus:ring-purple-500/20 focus:ring-offset-0 bg-white/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                         />
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-white">用户名分享</span>
+                          <span className="text-sm font-medium text-theme-text">用户名分享</span>
                           <span className="text-xs text-offer-muted mt-0.5">控制公开分享页面右上角的用户名提示语显示</span>
                         </div>
                       </label>
@@ -229,7 +229,7 @@ export default function Settings() {
 
                     <div className="mt-5">
                       <div className="mb-3">
-                        <div className="text-sm font-semibold text-white">岗位数据分享</div>
+                        <div className="text-sm font-semibold text-theme-text">岗位数据分享</div>
                         <p className="mt-1 text-xs leading-relaxed text-offer-muted">
                           公司名称、岗位名称和城市始终分享；以下开关分别控制对应字段，并统一作用于所有岗位。
                         </p>
@@ -247,7 +247,7 @@ export default function Settings() {
                               onChange={(e) => handleToggleScope(option.key, e.target.checked)}
                               className="h-4 w-4 rounded border-white/20 bg-white/10 text-purple-600 focus:ring-purple-500/20 focus:ring-offset-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                             />
-                            <span className="min-w-0 text-sm font-medium text-white">{option.label}</span>
+                            <span className="min-w-0 text-sm font-medium text-theme-text">{option.label}</span>
                           </label>
                         ))}
                       </div>
