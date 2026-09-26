@@ -580,22 +580,39 @@ function getHighestRoundBadge(job) {
 }
 
 function InterviewDetailModal({ open, onClose, onSelectJob, stats, jobs, offerCount }) {
+  const [interviewScope, setInterviewScope] = useState('all')
+
   if (!open) return null
 
-  const roundInfo = [
-    { round: '一面', count: stats.roundCounts['一面'], passedCount: stats.roundPassRates[0].passedCount, passRate: stats.roundPassRates[0].passRate },
-    { round: '二面', count: stats.roundCounts['二面'], passedCount: stats.roundPassRates[1].passedCount, passRate: stats.roundPassRates[1].passRate },
-    { round: '三面', count: stats.roundCounts['三面'], passedCount: stats.roundPassRates[2].passedCount, passRate: stats.roundPassRates[2].passRate },
-    { round: '终面', count: stats.roundCounts['终面'], passedCount: stats.roundPassRates[3].passedCount, passRate: stats.roundPassRates[3].passRate },
-  ]
-  const interviewJobSections = [
-    { title: '面试岗位明细', jobs, emptyText: '暂无面试岗位记录' },
-    {
-      title: '含非"取消面试"岗位明细',
-      jobs: jobs.filter((job) => Array.isArray(job.interviewRounds) && job.interviewRounds.some((round) => round.status !== '已取消')),
-      emptyText: '暂无非取消面试岗位记录',
-    },
-  ]
+  const excludeCanceled = interviewScope === 'nonCanceled'
+  const nonCanceledJobs = jobs.filter((job) => (
+    Array.isArray(job.interviewRounds) && job.interviewRounds.some((round) => round.status !== '已取消')
+  ))
+  const visibleJobs = excludeCanceled
+    ? nonCanceledJobs.map((job) => ({
+        ...job,
+        interviewRounds: job.interviewRounds.filter((round) => round.status !== '已取消'),
+      }))
+    : jobs
+  const nonCanceledRounds = jobs.flatMap((job) => (
+    Array.isArray(job.interviewRounds) ? job.interviewRounds.filter((round) => round.status !== '已取消') : []
+  ))
+  const roundInfo = excludeCanceled
+    ? ROUND_ORDER_LABEL.map((round) => {
+        const rounds = nonCanceledRounds.filter((item) => item.round === round)
+        const passedCount = rounds.filter((item) => item.status === '已通过').length
+        return { round, count: rounds.length, passedCount, passRate: rounds.length > 0 ? passedCount / rounds.length : 0 }
+      })
+    : ROUND_ORDER_LABEL.map((round, index) => ({
+        round,
+        count: stats.roundCounts[round],
+        passedCount: stats.roundPassRates[index].passedCount,
+        passRate: stats.roundPassRates[index].passRate,
+      }))
+  const totalRounds = excludeCanceled ? nonCanceledRounds.length : stats.totalRounds
+  const interviewedPeople = excludeCanceled ? nonCanceledJobs.length : stats.interviewedPeople
+  const visibleOfferCount = excludeCanceled ? nonCanceledJobs.filter(isOfferJob).length : offerCount
+  const offerConversionRate = interviewedPeople > 0 ? visibleOfferCount / interviewedPeople : 0
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onClose}>
@@ -607,15 +624,39 @@ function InterviewDetailModal({ open, onClose, onSelectJob, stats, jobs, offerCo
 
             {/* Body */}
             <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              <div>
+                <div className="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-white/[0.04]" role="group" aria-label="面试统计范围">
+                  <button
+                    type="button"
+                    aria-pressed={!excludeCanceled}
+                    onClick={() => setInterviewScope('all')}
+                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${!excludeCanceled ? 'bg-white text-slate-900 shadow-sm dark:bg-white/10 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-white/45 dark:hover:text-white/70'}`}
+                  >
+                    <span>全部面试</span>
+                    <span className={`rounded-full px-1.5 py-0.5 text-[11px] leading-none ${!excludeCanceled ? 'bg-offer-primary/10 text-offer-primary dark:bg-offer-primary/20 dark:text-offer-accent' : 'bg-slate-200 text-slate-500 dark:bg-white/[0.06] dark:text-white/40'}`}>{stats.totalRounds}</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={excludeCanceled}
+                    onClick={() => setInterviewScope('nonCanceled')}
+                    className={`flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${excludeCanceled ? 'bg-white text-slate-900 shadow-sm dark:bg-white/10 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-white/45 dark:hover:text-white/70'}`}
+                  >
+                    <span>不含已取消</span>
+                    <span className={`rounded-full px-1.5 py-0.5 text-[11px] leading-none ${excludeCanceled ? 'bg-offer-primary/10 text-offer-primary dark:bg-offer-primary/20 dark:text-offer-accent' : 'bg-slate-200 text-slate-500 dark:bg-white/[0.06] dark:text-white/40'}`}>{nonCanceledRounds.length}</span>
+                  </button>
+                </div>
+                <p className="mt-2 text-xs text-slate-400 dark:text-white/35">切换后会同步更新面试次数、通过率、Offer 转化率和岗位明细</p>
+              </div>
+
               {/* Summary row */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="bento-block">
                   <p className="text-xs text-slate-500 dark:text-white/45 mb-1">总面试次数</p>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalRounds}</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalRounds}</p>
                 </div>
                 <div className="bento-block">
                   <p className="text-xs text-slate-500 dark:text-white/45 mb-1">参与面试岗位数</p>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.interviewedPeople}</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{interviewedPeople}</p>
                 </div>
               </div>
 
@@ -641,54 +682,52 @@ function InterviewDetailModal({ open, onClose, onSelectJob, stats, jobs, offerCo
               <div className="card-glow bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 dark:bg-white/[0.02] dark:border-white/[0.06]">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-white/65">面试转 Offer 率</span>
-                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formatPct(stats.offerConversionRate)}</span>
+                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formatPct(offerConversionRate)}</span>
                 </div>
               </div>
 
-              {/* Detail tables */}
-              {interviewJobSections.map((section) => (
-                <div key={section.title}>
-                  <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">{section.title}（{section.jobs.length}）</h3>
-                  <div className="overflow-x-auto max-h-[300px] overflow-y-auto rounded-xl border border-slate-200 dark:border-white/[0.06]">
-                    <table className="w-full text-xs">
-                      <thead className="sticky top-0 bg-slate-100 dark:bg-gray-950 z-10">
-                        <tr className="text-slate-500 dark:text-white/45 border-b border-slate-200 dark:border-white/[0.06]">
-                          <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">公司</th>
-                          <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">岗位</th>
-                          <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap">当前状态</th>
-                          <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">最高轮次</th>
-                          <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">结束原因</th>
+              {/* Detail table */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">面试岗位明细（{visibleJobs.length}）</h3>
+                <div className="overflow-x-auto max-h-[300px] overflow-y-auto rounded-xl border border-slate-200 dark:border-white/[0.06]">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-slate-100 dark:bg-gray-950 z-10">
+                      <tr className="text-slate-500 dark:text-white/45 border-b border-slate-200 dark:border-white/[0.06]">
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">公司</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">岗位</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap">当前状态</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">最高轮次</th>
+                        <th className="text-left py-3 px-3 text-xs font-semibold uppercase tracking-wider">结束原因</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleJobs.map((j) => (
+                        <tr
+                          key={j.id}
+                          onClick={() => onSelectJob?.(j.id)}
+                          className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                          title="点击查看岗位详情"
+                        >
+                          <td className="py-2.5 px-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{j.companyName}</td>
+                          <td className="py-2.5 px-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{j.jobTitle}</td>
+                          <td className="py-2.5 px-3 whitespace-nowrap">
+                            <span className={`inline-flex items-center shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
+                          </td>
+                          <td className="py-2.5 px-3">{getHighestRoundBadge(j)}</td>
+                          <td className="py-2.5 px-3 text-slate-500 dark:text-white/55 max-w-[140px] truncate" title={j.endReason || '-'}>{j.endReason || '-'}</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {section.jobs.map((j) => (
-                          <tr
-                            key={j.id}
-                            onClick={() => onSelectJob?.(j.id)}
-                            className="border-b border-slate-200 dark:border-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
-                            title="点击查看岗位详情"
-                          >
-                            <td className="py-2.5 px-3 text-slate-900 dark:text-white font-medium whitespace-nowrap">{j.companyName}</td>
-                            <td className="py-2.5 px-3 text-slate-600 dark:text-white/65 whitespace-nowrap">{j.jobTitle}</td>
-                            <td className="py-2.5 px-3 whitespace-nowrap">
-                              <span className={`inline-flex items-center shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
-                            </td>
-                            <td className="py-2.5 px-3">{getHighestRoundBadge(j)}</td>
-                            <td className="py-2.5 px-3 text-slate-500 dark:text-white/55 max-w-[140px] truncate" title={j.endReason || '-'}>{j.endReason || '-'}</td>
-                          </tr>
-                        ))}
-                        {section.jobs.length === 0 && (
-                          <tr>
-                            <td colSpan={5} className="text-center py-8 text-slate-500 dark:text-white/45">
-                              {section.emptyText}
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                      {visibleJobs.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="text-center py-8 text-slate-500 dark:text-white/45">
+                            {excludeCanceled ? '暂无未取消的面试岗位' : '暂无面试岗位记录'}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </GlowCard>
