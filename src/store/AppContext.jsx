@@ -124,6 +124,7 @@ export function AppProvider({ children }) {
   const { user, loading: authLoading, handleUnauthorized } = useAuth()
   const jobsStorageKey = user ? `offerFlow_jobs:${user.id}` : null
   const tasksStorageKey = user ? `offerFlow_tasks:${user.id}` : null
+  const recruitmentBatchStorageKey = user ? `offerFlow_recruitmentBatch:${user.id}` : null
   const activeUserIdRef = useRef(user?.id ?? null)
   activeUserIdRef.current = user?.id ?? null
 
@@ -138,12 +139,20 @@ export function AppProvider({ children }) {
   const [toasts, setToasts] = useState([])
 
   useEffect(() => {
-    setSelectedRecruitmentBatchRaw(ALL_RECRUITMENT_BATCHES)
-  }, [user?.id])
+    if (!recruitmentBatchStorageKey) {
+      setSelectedRecruitmentBatchRaw(ALL_RECRUITMENT_BATCHES)
+      return
+    }
+    setSelectedRecruitmentBatchRaw(normalizeRecruitmentBatchFilter(
+      loadFromStorage(recruitmentBatchStorageKey, ALL_RECRUITMENT_BATCHES)
+    ))
+  }, [recruitmentBatchStorageKey])
 
   const setSelectedRecruitmentBatch = useCallback((value) => {
-    setSelectedRecruitmentBatchRaw(normalizeRecruitmentBatchFilter(value))
-  }, [])
+    const normalized = normalizeRecruitmentBatchFilter(value)
+    setSelectedRecruitmentBatchRaw(normalized)
+    if (recruitmentBatchStorageKey) saveToStorage(recruitmentBatchStorageKey, normalized)
+  }, [recruitmentBatchStorageKey])
 
   const filteredJobs = useMemo(() => (
     jobs.filter((job) => matchesRecruitmentBatch(job, selectedRecruitmentBatch))

@@ -8,10 +8,10 @@ import {
 } from '../lib/recruitmentBatch'
 
 const EMPTY_JOBS = Object.freeze([])
-const BATCH_OPTIONS = Object.freeze([ALL_RECRUITMENT_BATCHES, ...RECRUITMENT_BATCHES])
 
 export default function RecruitmentBatchSwitcher({
   jobs = EMPTY_JOBS,
+  batches = RECRUITMENT_BATCHES,
   value,
   onChange,
 }) {
@@ -20,6 +20,7 @@ export default function RecruitmentBatchSwitcher({
     result[batch] = (result[batch] || 0) + 1
     return result
   }, {}), [jobs])
+  const batchOptions = useMemo(() => [ALL_RECRUITMENT_BATCHES, ...batches], [batches])
 
   return (
     <div className="relative z-10 shrink-0 border-b border-theme-border bg-offer-card/95 shadow-[0_5px_18px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:shadow-[0_5px_18px_rgba(0,0,0,0.12)]">
@@ -32,7 +33,7 @@ export default function RecruitmentBatchSwitcher({
             投递批次
           </div>
           <div className="flex items-center gap-1.5">
-          {BATCH_OPTIONS.map((batch) => {
+          {batchOptions.map((batch) => {
             const active = value === batch
             const count = batch === ALL_RECRUITMENT_BATCHES ? jobs.length : (counts[batch] || 0)
             return (

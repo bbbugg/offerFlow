@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { filterTasksForSharedJobs, parseShareSettings, sanitizeSharedJob } from '@/lib/shareSettings'
+import { filterJobsForSharedBatches, filterTasksForSharedJobs, parseShareSettings, sanitizeSharedJob } from '@/lib/shareSettings'
 import { stripTimelineUndoMetadata } from '@/lib/timelineUndo'
 
 export async function GET(request) {
@@ -71,17 +71,18 @@ export async function GET(request) {
         })
       : Promise.resolve([])
   ])
+  const sharedJobs = filterJobsForSharedBatches(jobs, shareSettings.sharedRecruitmentBatches)
 
   return NextResponse.json({
     username: shareUsername ? user.username : null,
     shareSettings,
-    jobs: jobs.map((job) => {
+    jobs: sharedJobs.map((job) => {
       const sharedJob = sanitizeSharedJob(job, shareSettings)
       return {
         ...sharedJob,
         timeline: stripTimelineUndoMetadata(sharedJob.timeline)
       }
     }),
-    tasks: filterTasksForSharedJobs(tasks, jobs)
+    tasks: filterTasksForSharedJobs(tasks, sharedJobs)
   })
 }

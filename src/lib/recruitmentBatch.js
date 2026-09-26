@@ -19,9 +19,9 @@ export function normalizeRecruitmentBatch(value) {
 }
 
 export function normalizeRecruitmentBatchFilter(value) {
-  return value === ALL_RECRUITMENT_BATCHES
-    ? ALL_RECRUITMENT_BATCHES
-    : normalizeRecruitmentBatch(value)
+  return value === ALL_RECRUITMENT_BATCHES || RECRUITMENT_BATCHES.includes(value)
+    ? value
+    : ALL_RECRUITMENT_BATCHES
 }
 
 export function matchesRecruitmentBatch(job, selectedBatch) {

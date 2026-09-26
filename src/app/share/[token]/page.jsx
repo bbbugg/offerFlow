@@ -11,7 +11,7 @@ import Insights from '@/views/Insights'
 import JobDetailModal from '@/components/JobDetailModal'
 import SearchOptionsPopover, { DEFAULT_SEARCH_SCOPE } from '@/components/SearchOptionsPopover'
 import RecruitmentBatchSwitcher from '@/components/RecruitmentBatchSwitcher'
-import { ALL_RECRUITMENT_BATCHES, matchesRecruitmentBatch } from '@/lib/recruitmentBatch'
+import { ALL_RECRUITMENT_BATCHES, RECRUITMENT_BATCHES, matchesRecruitmentBatch } from '@/lib/recruitmentBatch'
 
 const menuItems = [
   { key: 'dashboard', label: '仪表盘', icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm12 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
@@ -35,6 +35,7 @@ export default function SharePage({ params: paramsPromise }) {
   const [username, setUsername] = useState('')
   const [shareSchedule, setShareSchedule] = useState(true)
   const [shareUsername, setShareUsername] = useState(true)
+  const [sharedRecruitmentBatches, setSharedRecruitmentBatches] = useState(RECRUITMENT_BATCHES)
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchScope, setSearchScope] = useState(DEFAULT_SEARCH_SCOPE)
@@ -115,6 +116,7 @@ export default function SharePage({ params: paramsPromise }) {
         const settings = data.shareSettings || {}
         setShareSchedule(settings.shareSchedule ?? true)
         setShareUsername(settings.shareUsername ?? true)
+        setSharedRecruitmentBatches(settings.sharedRecruitmentBatches || RECRUITMENT_BATCHES)
       } catch (err) {
         setError(err.message)
       } finally {
@@ -291,6 +293,7 @@ export default function SharePage({ params: paramsPromise }) {
 
       <RecruitmentBatchSwitcher
         jobs={jobs}
+        batches={sharedRecruitmentBatches}
         value={selectedRecruitmentBatch}
         onChange={setSelectedRecruitmentBatch}
       />

@@ -1,4 +1,4 @@
-import { normalizeRecruitmentBatch } from './recruitmentBatch.js'
+import { RECRUITMENT_BATCHES, normalizeRecruitmentBatch } from './recruitmentBatch.js'
 
 export const JOB_SHARE_FIELDS = Object.freeze([
   { setting: 'shareJobProgress', field: 'status', hiddenValue: '感兴趣' },
@@ -23,32 +23,42 @@ export const JOB_SHARE_FIELDS = Object.freeze([
 export const DEFAULT_SHARE_SETTINGS = Object.freeze({
   shareSchedule: true,
   shareUsername: true,
+  sharedRecruitmentBatches: Object.freeze([...RECRUITMENT_BATCHES]),
   ...Object.fromEntries(JOB_SHARE_FIELDS.map(({ setting }) => [setting, true]))
 })
 
 export function parseShareSettings(raw) {
-  return Object.fromEntries(
-    Object.entries(DEFAULT_SHARE_SETTINGS).map(([key, defaultValue]) => [
-      key,
-      typeof raw?.[key] === 'boolean' ? raw[key] : defaultValue
-    ])
+  const settings = Object.fromEntries(
+    Object.entries(DEFAULT_SHARE_SETTINGS)
+      .filter(([key]) => key !== 'sharedRecruitmentBatches')
+      .map(([key, defaultValue]) => [
+        key,
+        typeof raw?.[key] === 'boolean' ? raw[key] : defaultValue
+      ])
   )
+  settings.sharedRecruitmentBatches = Array.isArray(raw?.sharedRecruitmentBatches)
+    ? RECRUITMENT_BATCHES.filter((batch) => raw.sharedRecruitmentBatches.includes(batch))
+    : [...RECRUITMENT_BATCHES]
+  return settings
 }
 
 export function validateShareSettings(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
 
   const allowedKeys = Object.keys(DEFAULT_SHARE_SETTINGS)
+  const booleanKeys = allowedKeys.filter((key) => key !== 'sharedRecruitmentBatches')
   const keys = Object.keys(raw)
   if (
     keys.length !== allowedKeys.length ||
-    !allowedKeys.every((key) => typeof raw[key] === 'boolean') ||
+    !booleanKeys.every((key) => typeof raw[key] === 'boolean') ||
+    !Array.isArray(raw.sharedRecruitmentBatches) ||
+    !raw.sharedRecruitmentBatches.every((batch) => RECRUITMENT_BATCHES.includes(batch)) ||
     !keys.every((key) => allowedKeys.includes(key))
   ) {
     return null
   }
 
-  return Object.fromEntries(allowedKeys.map((key) => [key, raw[key]]))
+  return parseShareSettings(raw)
 }
 
 export function sanitizeSharedJob(job, settings) {
@@ -72,4 +82,9 @@ export function sanitizeSharedJob(job, settings) {
 export function filterTasksForSharedJobs(tasks, sharedJobs) {
   const sharedJobIds = new Set(sharedJobs.map((job) => job.id))
   return tasks.filter((task) => !task.jobId || sharedJobIds.has(task.jobId))
+}
+
+export function filterJobsForSharedBatches(jobs, sharedRecruitmentBatches) {
+  const allowedBatches = new Set(sharedRecruitmentBatches)
+  return jobs.filter((job) => allowedBatches.has(normalizeRecruitmentBatch(job.recruitmentBatch)))
 }

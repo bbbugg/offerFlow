@@ -20,6 +20,7 @@ test('known recruitment batches are preserved', () => {
   assert.equal(normalizeRecruitmentBatch('社招'), '社招')
   assert.equal(normalizeRecruitmentBatch('日常'), '日常')
   assert.equal(normalizeRecruitmentBatchFilter(ALL_RECRUITMENT_BATCHES), ALL_RECRUITMENT_BATCHES)
+  assert.equal(normalizeRecruitmentBatchFilter('未知批次'), ALL_RECRUITMENT_BATCHES)
 })
 
 test('all matches every job while a concrete batch uses normalized values', () => {

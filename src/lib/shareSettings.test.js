@@ -2,18 +2,21 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   DEFAULT_SHARE_SETTINGS,
+  filterJobsForSharedBatches,
   filterTasksForSharedJobs,
   JOB_SHARE_FIELDS,
   parseShareSettings,
   sanitizeSharedJob,
   validateShareSettings
 } from './shareSettings.js'
+import { RECRUITMENT_BATCHES } from './recruitmentBatch.js'
 
 test('missing job share settings default every job field to shared', () => {
   const settings = parseShareSettings({ shareSchedule: false, shareUsername: true })
 
   assert.equal(settings.shareSchedule, false)
   assert.equal(settings.shareUsername, true)
+  assert.deepEqual(settings.sharedRecruitmentBatches, RECRUITMENT_BATCHES)
   for (const { setting } of JOB_SHARE_FIELDS) {
     assert.equal(settings[setting], true, setting)
   }
@@ -26,6 +29,7 @@ test('share settings validation requires every known boolean setting', () => {
   assert.equal(validateShareSettings({ shareSchedule: true, shareUsername: true }), null)
   assert.equal(validateShareSettings({ ...validSettings, unexpected: true }), null)
   assert.equal(validateShareSettings({ ...validSettings, shareJobSalaryRange: 'false' }), null)
+  assert.equal(validateShareSettings({ ...validSettings, sharedRecruitmentBatches: ['秋招', '未知批次'] }), null)
 })
 
 test('shared jobs keep names while replacing each disabled field safely', () => {
@@ -143,5 +147,18 @@ test('shared tasks exclude tasks linked to hidden jobs', () => {
   assert.deepEqual(
     filterTasksForSharedJobs(tasks, [{ id: 'job-visible' }]),
     [tasks[0], tasks[2]]
+  )
+})
+
+test('shared jobs only include allowed recruitment batches and normalize legacy values', () => {
+  const jobs = [
+    { id: 'autumn', recruitmentBatch: '秋招' },
+    { id: 'spring', recruitmentBatch: '春招' },
+    { id: 'legacy', recruitmentBatch: null }
+  ]
+
+  assert.deepEqual(
+    filterJobsForSharedBatches(jobs, ['秋招', '其他']),
+    [jobs[0], jobs[2]]
   )
 })

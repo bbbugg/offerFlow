@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/store/AuthContext'
 import { DEFAULT_SHARE_SETTINGS, parseShareSettings } from '@/lib/shareSettings'
+import { RECRUITMENT_BATCHES } from '@/lib/recruitmentBatch'
 
 const JOB_SHARE_OPTIONS = [
   { key: 'shareJobProgress', label: '岗位进度' },
@@ -25,7 +26,7 @@ export default function Settings() {
   const [scopeLoading, setScopeLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
-  const { shareSchedule, shareUsername } = shareSettings
+  const { shareSchedule, shareUsername, sharedRecruitmentBatches } = shareSettings
 
   useEffect(() => {
     async function fetchShareToken() {
@@ -116,6 +117,13 @@ export default function Settings() {
     } finally {
       setActionLoading(false)
     }
+  }
+
+  const handleToggleRecruitmentBatch = (batch, checked) => {
+    const nextBatches = RECRUITMENT_BATCHES.filter((item) => (
+      item === batch ? checked : sharedRecruitmentBatches.includes(item)
+    ))
+    handleToggleScope('sharedRecruitmentBatches', nextBatches)
   }
 
   const handleCopy = async () => {
@@ -225,6 +233,45 @@ export default function Settings() {
                           <span className="text-xs text-offer-muted mt-0.5">控制公开分享页面右上角的用户名提示语显示</span>
                         </div>
                       </label>
+                    </div>
+
+                    <div className="mt-5">
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-semibold text-theme-text">投递批次范围</div>
+                          <p className="mt-1 text-xs leading-relaxed text-offer-muted">
+                            只有勾选批次的岗位及其关联日程会出现在公开分享中。
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={scopeLoading}
+                          onClick={() => handleToggleScope(
+                            'sharedRecruitmentBatches',
+                            sharedRecruitmentBatches.length === RECRUITMENT_BATCHES.length ? [] : [...RECRUITMENT_BATCHES]
+                          )}
+                          className="shrink-0 cursor-pointer text-xs font-medium text-purple-500 transition-colors hover:text-purple-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-purple-300 dark:hover:text-purple-200"
+                        >
+                          {sharedRecruitmentBatches.length === RECRUITMENT_BATCHES.length ? '清空' : '全选'}
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        {RECRUITMENT_BATCHES.map((batch) => (
+                          <label
+                            key={batch}
+                            className="flex cursor-pointer select-none items-center gap-2.5 rounded-xl border border-theme-border bg-theme-glass p-3 transition-colors hover:bg-theme-hover"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={sharedRecruitmentBatches.includes(batch)}
+                              disabled={scopeLoading}
+                              onChange={(e) => handleToggleRecruitmentBatch(batch, e.target.checked)}
+                              className="h-4 w-4 rounded border-white/20 bg-white/10 text-purple-600 focus:ring-purple-500/20 focus:ring-offset-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                            <span className="min-w-0 text-sm font-medium text-theme-text">{batch}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="mt-5">
