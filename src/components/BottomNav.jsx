@@ -12,7 +12,7 @@ const navItems = [
 export default function BottomNav({ activeView, onViewChange }) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 flex border-t border-theme-border bg-offer-card/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_18px_rgba(0,0,0,0.06)] backdrop-blur-md lg:hidden">
-      <div className="flex h-16 w-full items-center justify-start overflow-x-auto overscroll-x-contain">
+      <div className="flex h-12 w-full items-center justify-start overflow-x-auto overscroll-x-contain">
         {navItems.map((item) => {
           const active = activeView === item.key
           return (

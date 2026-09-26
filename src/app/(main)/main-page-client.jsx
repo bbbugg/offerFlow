@@ -91,7 +91,7 @@ export default function MainPageClient({ initialView, canonicalViewParam }) {
       />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar activeView={activeView} onViewChange={changeView} />
-        <main className={`min-w-0 flex-1 overflow-y-auto p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] transition-colors duration-500 page-content md:p-6 lg:pb-6 ${!isDark ? 'bg-theme-bg' : ''}`}>
+        <main className={`min-w-0 flex-1 overflow-y-auto p-4 pb-[calc(4rem+env(safe-area-inset-bottom))] transition-colors duration-500 page-content md:p-6 lg:pb-6 ${!isDark ? 'bg-theme-bg' : ''}`}>
           <ActiveView />
         </main>
       </div>
