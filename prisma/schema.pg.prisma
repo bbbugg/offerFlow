@@ -24,29 +24,30 @@ model User {
 }
 
 model Job {
-  id             String   @id @default(cuid())
-  userId         String
-  companyName    String
-  jobTitle       String
-  status         String
-  city           String?
-  salaryRange    String?
-  workMode       String?
-  channel        String?
-  priority       String?
-  appliedDate    String?
-  jobLink        String?
-  jdText         String?
-  contactName    String?
-  contactInfo    String?
-  nextAction     String?
-  notes          String?
-  endReason      String?
-  shareVisible   Boolean  @default(true) @map("share_visible")
-  interviewRounds Json?
-  timeline        Json?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id               String   @id @default(cuid())
+  userId           String
+  companyName      String
+  jobTitle         String
+  status           String
+  city             String?
+  salaryRange      String?
+  workMode         String?
+  channel          String?
+  recruitmentBatch String   @default("其他")
+  priority         String?
+  appliedDate      String?
+  jobLink          String?
+  jdText           String?
+  contactName      String?
+  contactInfo      String?
+  nextAction       String?
+  notes            String?
+  endReason        String?
+  shareVisible     Boolean  @default(true) @map("share_visible")
+  interviewRounds  Json?
+  timeline         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   user  User   @relation(fields: [userId], references: [id])
   tasks Task[]
@@ -55,7 +56,7 @@ model Job {
 }
 
 model Task {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   userId    String
   title     String
   type      String
@@ -63,12 +64,12 @@ model Task {
   startTime String?
   endTime   String?
   priority  String?
-  done      Boolean  @default(false)
+  done      Boolean @default(false)
   jobId     String?
   notes     String?
 
   user User @relation(fields: [userId], references: [id])
-  job  Job?  @relation(fields: [jobId], references: [id])
+  job  Job? @relation(fields: [jobId], references: [id])
 
   @@index([userId])
 }

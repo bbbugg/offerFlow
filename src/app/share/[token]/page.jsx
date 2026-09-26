@@ -10,6 +10,8 @@ import Schedule from '@/views/Schedule'
 import Insights from '@/views/Insights'
 import JobDetailModal from '@/components/JobDetailModal'
 import SearchOptionsPopover, { DEFAULT_SEARCH_SCOPE } from '@/components/SearchOptionsPopover'
+import RecruitmentBatchSwitcher from '@/components/RecruitmentBatchSwitcher'
+import { ALL_RECRUITMENT_BATCHES, matchesRecruitmentBatch } from '@/lib/recruitmentBatch'
 
 const menuItems = [
   { key: 'dashboard', label: '仪表盘', icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm12 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
@@ -38,6 +40,7 @@ export default function SharePage({ params: paramsPromise }) {
   const [searchScope, setSearchScope] = useState(DEFAULT_SEARCH_SCOPE)
   const [showSearchResults, setShowSearchResults] = useState(false)
   const [detailJobId, setDetailJobId] = useState(null)
+  const [selectedRecruitmentBatch, setSelectedRecruitmentBatch] = useState(ALL_RECRUITMENT_BATCHES)
 
   const searchContainerRef = useRef(null)
 
@@ -48,18 +51,28 @@ export default function SharePage({ params: paramsPromise }) {
     return menuItems
   }, [shareSchedule])
 
+  const visibleJobs = useMemo(() => (
+    jobs.filter((job) => matchesRecruitmentBatch(job, selectedRecruitmentBatch))
+  ), [jobs, selectedRecruitmentBatch])
+
+  const visibleTasks = useMemo(() => {
+    if (selectedRecruitmentBatch === ALL_RECRUITMENT_BATCHES) return tasks
+    const visibleJobIds = new Set(visibleJobs.map((job) => job.id))
+    return tasks.filter((task) => !task.jobId || visibleJobIds.has(task.jobId))
+  }, [selectedRecruitmentBatch, tasks, visibleJobs])
+
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return []
     const lowerQuery = searchQuery.toLowerCase()
     const match = (s) => (s || '').toLowerCase().includes(lowerQuery)
-    return jobs.filter((job) => {
+    return visibleJobs.filter((job) => {
       const matchCompany = searchScope.includes('companyName') && match(job.companyName)
       const matchJobTitle = searchScope.includes('jobTitle') && match(job.jobTitle)
       const matchCity = searchScope.includes('city') && match(job.city)
       const matchChannel = searchScope.includes('channel') && match(job.channel)
       return matchCompany || matchJobTitle || matchCity || matchChannel
     })
-  }, [searchQuery, jobs, searchScope])
+  }, [searchQuery, visibleJobs, searchScope])
 
   // Close search results on click outside / Escape
   useEffect(() => {
@@ -142,19 +155,19 @@ export default function SharePage({ params: paramsPromise }) {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard jobs={jobs} tasks={tasks} isReadOnly={true} shareSchedule={shareSchedule} />
+        return <Dashboard jobs={visibleJobs} tasks={visibleTasks} isReadOnly={true} shareSchedule={shareSchedule} />
       case 'board':
-        return <Board jobs={jobs} isReadOnly={true} />
+        return <Board jobs={visibleJobs} isReadOnly={true} />
       case 'positions':
-        return <Positions jobs={jobs} isReadOnly={true} />
+        return <Positions jobs={visibleJobs} isReadOnly={true} />
       case 'schedule':
         return shareSchedule
-          ? <Schedule jobs={jobs} tasks={tasks} isReadOnly={true} />
-          : <Dashboard jobs={jobs} tasks={tasks} isReadOnly={true} shareSchedule={shareSchedule} />
+          ? <Schedule jobs={visibleJobs} tasks={visibleTasks} isReadOnly={true} />
+          : <Dashboard jobs={visibleJobs} tasks={visibleTasks} isReadOnly={true} shareSchedule={shareSchedule} />
       case 'insights':
-        return <Insights jobs={jobs} isReadOnly={true} />
+        return <Insights jobs={visibleJobs} isReadOnly={true} />
       default:
-        return <Dashboard jobs={jobs} tasks={tasks} isReadOnly={true} shareSchedule={shareSchedule} />
+        return <Dashboard jobs={visibleJobs} tasks={visibleTasks} isReadOnly={true} shareSchedule={shareSchedule} />
     }
   }
 
@@ -276,6 +289,12 @@ export default function SharePage({ params: paramsPromise }) {
         </div>
       </header>
 
+      <RecruitmentBatchSwitcher
+        jobs={jobs}
+        value={selectedRecruitmentBatch}
+        onChange={setSelectedRecruitmentBatch}
+      />
+
       {/* Main body: Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Share Sidebar */}
@@ -351,7 +370,7 @@ export default function SharePage({ params: paramsPromise }) {
         open={!!detailJobId}
         jobId={detailJobId}
         onClose={() => setDetailJobId(null)}
-        jobs={jobs}
+        jobs={visibleJobs}
         isReadOnly={true}
       />
     </div>

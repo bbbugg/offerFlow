@@ -1,9 +1,14 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import Toast from '../components/Toast'
 import { useAuth } from './AuthContext'
 import { APPLIED_STATUSES, canSelectInterviewStatus, canSelectJobStatus } from '../lib/jobStatus'
+import {
+  ALL_RECRUITMENT_BATCHES,
+  matchesRecruitmentBatch,
+  normalizeRecruitmentBatchFilter,
+} from '../lib/recruitmentBatch'
 
 const AppContext = createContext(null)
 const defaultSettings = {}
@@ -124,12 +129,31 @@ export function AppProvider({ children }) {
 
   const [jobs, setJobsRaw] = useState([])
   const [tasks, setTasksRaw] = useState([])
+  const [selectedRecruitmentBatch, setSelectedRecruitmentBatchRaw] = useState(ALL_RECRUITMENT_BATCHES)
   const [settings, setSettingsRaw] = useState(() => {
     if (typeof window === 'undefined') return defaultSettings
     return loadFromStorage('offerFlow_settings', defaultSettings)
   })
   const [dataLoading, setDataLoading] = useState(true)
   const [toasts, setToasts] = useState([])
+
+  useEffect(() => {
+    setSelectedRecruitmentBatchRaw(ALL_RECRUITMENT_BATCHES)
+  }, [user?.id])
+
+  const setSelectedRecruitmentBatch = useCallback((value) => {
+    setSelectedRecruitmentBatchRaw(normalizeRecruitmentBatchFilter(value))
+  }, [])
+
+  const filteredJobs = useMemo(() => (
+    jobs.filter((job) => matchesRecruitmentBatch(job, selectedRecruitmentBatch))
+  ), [jobs, selectedRecruitmentBatch])
+
+  const filteredTasks = useMemo(() => {
+    if (selectedRecruitmentBatch === ALL_RECRUITMENT_BATCHES) return tasks
+    const visibleJobIds = new Set(filteredJobs.map((job) => job.id))
+    return tasks.filter((task) => !task.jobId || visibleJobIds.has(task.jobId))
+  }, [filteredJobs, selectedRecruitmentBatch, tasks])
 
   const addToast = useCallback((message, type = 'success') => {
     const id = crypto.randomUUID()
@@ -428,8 +452,9 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      jobs, setJobs,
-      tasks, setTasks,
+      jobs: filteredJobs, allJobs: jobs, setJobs,
+      tasks: filteredTasks, allTasks: tasks, setTasks,
+      selectedRecruitmentBatch, setSelectedRecruitmentBatch,
       addJob, updateJob, undoLatestJobAction, deleteJob,
       addTask, updateTask, deleteTask,
       settings, setSettings,

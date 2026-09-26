@@ -10,6 +10,7 @@ import ActionMenuPortal from '../components/ActionMenuPortal'
 import { formatBeijingDate, getElapsedBeijingDays } from '../lib/dateUtils'
 import { isFinalJobStatus, JOB_STATUS_TRANSITION_ERROR, statusImpliesApplied } from '../lib/jobStatus'
 import { compareJobsByLatestTimeline } from '../lib/jobSort'
+import { normalizeRecruitmentBatch } from '../lib/recruitmentBatch'
 
 const COLUMNS = [
   { key: '感兴趣', color: 'border-t-blue-500/40', headerColor: 'text-blue-400', bgColor: 'bg-blue-500/10' },
@@ -491,6 +492,7 @@ function Card({ job, menuOpen, onToggleMenu, onCloseMenu, onClick, onDragStart, 
       <p className="text-xs text-offer-muted/80 truncate mt-0.5">{job.jobTitle}</p>
 
       <div className="flex items-center gap-2 mt-2 flex-wrap">
+        <Tag>{normalizeRecruitmentBatch(job.recruitmentBatch)}</Tag>
         {job.city && <Tag>{job.city}</Tag>}
         {job.channel && <Tag>{job.channel}</Tag>}
         {job.priority && <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${priorityColor}`}>{job.priority}</span>}

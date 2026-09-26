@@ -6,6 +6,12 @@ import GlowCard from './GlowCard'
 import CustomSelect from './CustomSelect'
 import { formatBeijingDate } from '../lib/dateUtils'
 import { JOB_STATUSES, JOB_STATUS_TRANSITION_ERROR, statusImpliesApplied } from '../lib/jobStatus'
+import {
+  ALL_RECRUITMENT_BATCHES,
+  DEFAULT_RECRUITMENT_BATCH,
+  RECRUITMENT_BATCHES,
+  normalizeRecruitmentBatch,
+} from '../lib/recruitmentBatch'
 
 const WORK_MODE_OPTIONS = ['onsite', 'remote', 'hybrid']
 const CHANNEL_OPTIONS = ['', '内推', '官网投递', '猎头', '招聘平台', '校园招聘', '其他']
@@ -20,7 +26,7 @@ const CITY_OPTIONS = [
 
 const emptyForm = {
   companyName: '', jobTitle: '', status: '感兴趣', city: '', salaryRange: '',
-  workMode: 'onsite', channel: '校园招聘', priority: '中', appliedDate: '',
+  workMode: 'onsite', channel: '校园招聘', recruitmentBatch: DEFAULT_RECRUITMENT_BATCH, priority: '中', appliedDate: '',
   jobLink: '', jdText: '', contactName: '', contactInfo: '',
   nextAction: '', notes: '', endReason: '', shareVisible: true,
 }
@@ -89,14 +95,21 @@ function CityInput({ value, onChange }) {
 }
 
 export default function JobModal({ open, job, onClose, initialStatus }) {
-  const { addToast, addJob, updateJob } = useApp()
+  const { addToast, addJob, updateJob, selectedRecruitmentBatch } = useApp()
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const savingRef = useRef(false)
 
   useEffect(() => {
     if (open) {
-      const base = job ? { ...emptyForm, ...job } : { ...emptyForm }
+      const base = job
+        ? { ...emptyForm, ...job, recruitmentBatch: normalizeRecruitmentBatch(job.recruitmentBatch) }
+        : {
+            ...emptyForm,
+            recruitmentBatch: selectedRecruitmentBatch === ALL_RECRUITMENT_BATCHES
+              ? DEFAULT_RECRUITMENT_BATCH
+              : selectedRecruitmentBatch,
+          }
       if (!job && initialStatus) {
         base.status = canSelectJobStatus(base, initialStatus) ? initialStatus : '一面中'
       }
@@ -104,7 +117,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
       setSaving(false)
       savingRef.current = false
     }
-  }, [open, job, initialStatus])
+  }, [open, job, initialStatus, selectedRecruitmentBatch])
 
   const handleChange = useCallback((field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -221,6 +234,7 @@ export default function JobModal({ open, job, onClose, initialStatus }) {
             <Select label="工作模式" value={form.workMode} onChange={(e) => handleChange('workMode', e.target.value)} options={WORK_MODE_OPTIONS} />
 
             <Select label="投递渠道" value={form.channel} onChange={(e) => handleChange('channel', e.target.value)} options={CHANNEL_OPTIONS} />
+            <Select label="投递批次" value={form.recruitmentBatch} onChange={(e) => handleChange('recruitmentBatch', e.target.value)} options={RECRUITMENT_BATCHES} />
             <Select label="优先级" value={form.priority} onChange={(e) => handleChange('priority', e.target.value)} options={PRIORITY_OPTIONS} />
 
             <Input label="投递日期" type="date" value={form.appliedDate} onChange={(e) => handleChange('appliedDate', e.target.value)} />

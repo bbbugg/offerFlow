@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import Sidebar from '@/components/Sidebar'
 import BottomNav from '@/components/BottomNav'
+import RecruitmentBatchSwitcher from '@/components/RecruitmentBatchSwitcher'
 import Dashboard from '@/views/Dashboard'
 import Board from '@/views/Board'
 import Positions from '@/views/Positions'
@@ -29,7 +30,12 @@ function getViewFromUrl() {
 
 export default function MainPageClient({ initialView, canonicalViewParam }) {
   const { theme } = useTheme()
-  const { dataLoading } = useApp()
+  const {
+    allJobs,
+    dataLoading,
+    selectedRecruitmentBatch,
+    setSelectedRecruitmentBatch,
+  } = useApp()
   const [activeView, setActiveView] = useState(initialView)
   const isDark = theme === 'dark'
   const ActiveView = VIEW_COMPONENTS[activeView]
@@ -78,6 +84,11 @@ export default function MainPageClient({ initialView, canonicalViewParam }) {
       <div className="app-glow-tl" />
       <div className="app-glow-br" />
       <Navbar onViewChange={changeView} />
+      <RecruitmentBatchSwitcher
+        jobs={allJobs}
+        value={selectedRecruitmentBatch}
+        onChange={setSelectedRecruitmentBatch}
+      />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar activeView={activeView} onViewChange={changeView} />
         <main className={`min-w-0 flex-1 overflow-y-auto p-4 pb-[calc(5rem+env(safe-area-inset-bottom))] transition-colors duration-500 page-content md:p-6 lg:pb-6 ${!isDark ? 'bg-theme-bg' : ''}`}>

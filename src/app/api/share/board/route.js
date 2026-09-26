@@ -37,6 +37,7 @@ export async function GET(request) {
         salaryRange: true,
         workMode: true,
         channel: true,
+        recruitmentBatch: true,
         priority: true,
         appliedDate: true,
         jobLink: true,

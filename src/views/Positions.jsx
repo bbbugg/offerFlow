@@ -10,6 +10,7 @@ import { formatBeijingDate, getElapsedBeijingDays, parseBeijingDate } from '../l
 import { JOB_STATUSES } from '../lib/jobStatus'
 import { JOB_STATUS_BADGE, NEUTRAL_BADGE } from '../lib/badgeStyles'
 import { getTimelineActionLabel } from '../lib/timelineUndo'
+import { normalizeRecruitmentBatch } from '../lib/recruitmentBatch'
 
 const EMPTY_JOBS = []
 const UNKNOWN_CITY_FILTER = '__unknown_city__'
@@ -268,13 +269,14 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
       addToast('没有可导出的数据', 'error')
       return
     }
-    const header = '公司,岗位,状态,结束原因,优先级,城市,工作模式,薪资范围,渠道,投递日期,联系人,联系方式,下一步行动,岗位链接,备注,JD原文,面试记录,时间线'
+    const header = '公司,岗位,状态,结束原因,投递批次,优先级,城市,工作模式,薪资范围,渠道,投递日期,联系人,联系方式,下一步行动,岗位链接,备注,JD原文,面试记录,时间线'
     const rows = filteredJobs.map((j) =>
       [
         j.companyName,
         j.jobTitle,
         j.status,
         j.endReason,
+        normalizeRecruitmentBatch(j.recruitmentBatch),
         j.priority,
         j.city,
         j.workMode,
@@ -482,6 +484,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                 <th className="min-w-[240px] px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">公司</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">岗位</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">状态</th>
+                <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">投递批次</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">城市</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">渠道</th>
                 <th className="px-4 py-3.5 text-left text-gray-400 dark:text-white/35 font-medium text-xs uppercase tracking-wider whitespace-nowrap">投递日期</th>
@@ -564,6 +567,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                       <td className="px-4 py-3 whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>
                         <span className={`inline-flex items-center shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-medium ${JOB_STATUS_BADGE[j.status] || NEUTRAL_BADGE}`}>{j.status}</span>
                       </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-gray-300 dark:text-white/65" onMouseEnter={handleTdMouseEnter}>{normalizeRecruitmentBatch(j.recruitmentBatch)}</td>
                       <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>{j.city || '-'}</td>
                       <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>{j.channel || '-'}</td>
                       <td className="px-4 py-3 text-gray-300 dark:text-white/65 whitespace-nowrap" onMouseEnter={handleTdMouseEnter}>{j.appliedDate || '-'}</td>

@@ -9,6 +9,7 @@ import { formatBeijingDate, getElapsedBeijingDays } from '../lib/dateUtils'
 import { isFinalJobStatus, JOB_STATUS_TRANSITION_ERROR, statusImpliesApplied } from '../lib/jobStatus'
 import { getJobTimelineSnapshot, getLatestTimelineUndoConflicts, getTimelineActionLabel, hasLatestTimelineUndoSnapshot } from '../lib/timelineUndo'
 import { JOB_STATUS_ACTION_BADGE, JOB_STATUS_BADGE, NEUTRAL_BADGE, ROUND_STATUS_BADGE } from '../lib/badgeStyles'
+import { normalizeRecruitmentBatch } from '../lib/recruitmentBatch'
 
 const STATUS_ACTIONS = [
   { status: '已投递', label: '已投递', color: JOB_STATUS_ACTION_BADGE['已投递'] },
@@ -293,6 +294,7 @@ export default function JobDetailModal({ open, jobId, onClose, onEdit, onDelete,
               <InfoRow label="薪资范围" value={job.salaryRange || '-'} />
               <InfoRow label="工作模式" value={job.workMode || '-'} />
               <InfoRow label="投递渠道" value={job.channel || '-'} />
+              <InfoRow label="投递批次" value={normalizeRecruitmentBatch(job.recruitmentBatch)} />
               <InfoRow label="优先级" value={job.priority || '-'} />
               <InfoRow label="投递日期" value={job.appliedDate || '-'} />
               <InfoRow label="等待天数" value={waitingDays !== null ? `${waitingDays} 天` : '-'} />

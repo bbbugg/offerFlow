@@ -1,3 +1,5 @@
+import { normalizeRecruitmentBatch } from './recruitmentBatch.js'
+
 export const JOB_SHARE_FIELDS = Object.freeze([
   { setting: 'shareJobProgress', field: 'status', hiddenValue: '感兴趣' },
   { setting: 'shareJobSalaryRange', field: 'salaryRange', hiddenValue: '' },
@@ -54,7 +56,8 @@ export function sanitizeSharedJob(job, settings) {
     id: job.id,
     companyName: job.companyName,
     jobTitle: job.jobTitle,
-    city: job.city
+    city: job.city,
+    recruitmentBatch: normalizeRecruitmentBatch(job.recruitmentBatch)
   }
 
   for (const { setting, field, hiddenValue } of JOB_SHARE_FIELDS) {

@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 import { getAuthUser } from '@/lib/auth'
 import { canSelectJobStatus, JOB_STATUSES, JOB_STATUS_TRANSITION_ERROR, statusImpliesApplied, syncInterviewRoundsForStatus } from '@/lib/jobStatus'
 import { formatBeijingDate } from '@/lib/dateUtils'
+import { normalizeRecruitmentBatch } from '@/lib/recruitmentBatch'
 import {
   assertJobUpdateCurrent,
   createStatusChangeTimelineEvent,
@@ -19,6 +20,7 @@ const UPDATABLE_JOB_FIELDS = [
   'salaryRange',
   'workMode',
   'channel',
+  'recruitmentBatch',
   'priority',
   'appliedDate',
   'jobLink',
@@ -52,7 +54,7 @@ export async function POST(request) {
   if (!user) return NextResponse.json({ error: '未登录' }, { status: 401 })
 
   const body = await request.json()
-  const { companyName, jobTitle, status, city, salaryRange, workMode, channel, priority, appliedDate, jobLink, jdText, contactName, contactInfo, nextAction, notes, endReason, shareVisible, interviewRounds } = body
+  const { companyName, jobTitle, status, city, salaryRange, workMode, channel, recruitmentBatch, priority, appliedDate, jobLink, jdText, contactName, contactInfo, nextAction, notes, endReason, shareVisible, interviewRounds } = body
   if (shareVisible !== undefined && typeof shareVisible !== 'boolean') {
     return NextResponse.json({ error: '岗位分享设置格式不正确' }, { status: 400 })
   }
@@ -76,6 +78,7 @@ export async function POST(request) {
       salaryRange: salaryRange || '',
       workMode: workMode || '',
       channel: channel || '',
+      recruitmentBatch: normalizeRecruitmentBatch(recruitmentBatch),
       priority: priority || '中',
       appliedDate: normalizedAppliedDate,
       jobLink: jobLink || '',
@@ -133,6 +136,9 @@ export async function PUT(request) {
       }
 
       const updateData = { ...data }
+      if (Object.hasOwn(updateData, 'recruitmentBatch')) {
+        updateData.recruitmentBatch = normalizeRecruitmentBatch(updateData.recruitmentBatch)
+      }
       if (updateData.status && statusImpliesApplied(updateData.status) && !existing.appliedDate && !updateData.appliedDate) {
         updateData.appliedDate = getBeijingDateString()
       }

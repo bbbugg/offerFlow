@@ -64,6 +64,7 @@ test('shared jobs keep names while replacing each disabled field safely', () => 
     id: 'job-1',
     companyName: '示例公司',
     jobTitle: '前端工程师',
+    recruitmentBatch: '其他',
     status: '感兴趣',
     city: '上海',
     salaryRange: '',
@@ -91,6 +92,7 @@ test('shared jobs preserve enabled fields', () => {
     ['companyName', '示例公司'],
     ['jobTitle', '后端工程师'],
     ['city', '深圳'],
+    ['recruitmentBatch', '秋招'],
     ...JOB_SHARE_FIELDS.map(({ field }) => [field, `${field}-value`])
   ])
 
