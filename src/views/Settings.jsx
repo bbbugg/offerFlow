@@ -250,7 +250,11 @@ export default function Settings() {
                             'sharedRecruitmentBatches',
                             sharedRecruitmentBatches.length === RECRUITMENT_BATCHES.length ? [] : [...RECRUITMENT_BATCHES]
                           )}
-                          className="shrink-0 cursor-pointer text-xs font-medium text-purple-500 transition-colors hover:text-purple-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-purple-300 dark:hover:text-purple-200"
+                          className={`shrink-0 cursor-pointer select-none rounded-lg border px-2 py-1 text-xs font-medium transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 ${
+                            sharedRecruitmentBatches.length === RECRUITMENT_BATCHES.length
+                              ? 'border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20'
+                              : 'border-purple-200 bg-purple-50 text-offer-primary hover:bg-purple-100 dark:border-purple-500/30 dark:bg-purple-500/10 dark:hover:bg-purple-500/20'
+                          }`}
                         >
                           {sharedRecruitmentBatches.length === RECRUITMENT_BATCHES.length ? '清空' : '全选'}
                         </button>
@@ -259,7 +263,7 @@ export default function Settings() {
                         {RECRUITMENT_BATCHES.map((batch) => (
                           <label
                             key={batch}
-                            className="flex cursor-pointer select-none items-center gap-2.5 rounded-xl border border-theme-border bg-theme-glass p-3 transition-colors hover:bg-theme-hover"
+                            className="flex cursor-pointer select-none items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3 transition-colors hover:bg-white/[0.05]"
                           >
                             <input
                               type="checkbox"
