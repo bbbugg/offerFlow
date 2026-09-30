@@ -1,8 +1,10 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useApp } from '../store/AppContext'
 import TaskModal from '../components/TaskModal'
 import ConfirmDialog from '../components/ConfirmDialog'
+import ModalHeader from '../components/ModalHeader'
+import GlowCard from '../components/GlowCard'
 import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
 import useBeijingToday from '../hooks/useBeijingToday'
 import { NEUTRAL_BADGE, TASK_TYPE_BADGE } from '../lib/badgeStyles'
@@ -51,6 +53,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState(null)
   const [defaultDate, setDefaultDate] = useState('')
+  const [selectedDate, setSelectedDate] = useState('')
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
 
@@ -147,6 +150,22 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
     setDefaultDate(dateStr)
     setModalOpen(true)
   }
+
+  const handleDayClick = (dateStr) => {
+    setSelectedDate(dateStr)
+  }
+
+  const handleDayTaskEdit = (task) => {
+    setSelectedDate('')
+    handleEdit(task)
+  }
+
+  const selectedDateTasks = useMemo(() => {
+    if (!selectedDate) return EMPTY_TASKS
+    return filtered
+      .filter((task) => task.date === selectedDate)
+      .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+  }, [filtered, selectedDate])
 
   const handleCloseModal = () => {
     setModalOpen(false)
@@ -317,8 +336,8 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
           {/* Grid */}
           <div className="grid w-full min-w-0 grid-cols-7 border-l border-t border-white/5">
             {monthData.map((cell, i) => (
-              <div key={i} onClick={isReadOnly ? undefined : () => cell && handleDateClick(cell.dateStr)}
-                className={`min-w-0 min-h-[70px] border-r border-b border-white/5 p-1 ${isReadOnly ? '' : 'cursor-pointer'} transition-colors hover:bg-white/[0.04] md:min-h-[95px] md:p-1.5 ${cell?.isToday ? 'bg-offer-primary/10 border-offer-primary/30' : ''}`}>
+              <div key={i} onClick={() => cell && handleDayClick(cell.dateStr)}
+                className={`min-w-0 min-h-[70px] border-r border-b border-white/5 p-1 ${cell ? 'cursor-pointer' : ''} transition-colors hover:bg-white/[0.04] md:min-h-[95px] md:p-1.5 ${cell?.isToday ? 'bg-offer-primary/10 border-offer-primary/30' : ''}`}>
                 {cell && (
                   <>
                     <div className={`mb-1 flex h-5 w-5 items-center justify-center rounded-full text-[11px] md:h-6 md:w-6 md:text-xs ${cell.isToday ? 'bg-offer-primary text-white font-bold' : 'text-offer-muted'}`}>
@@ -344,6 +363,21 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
         </div>
       )}
 
+      <DayScheduleModal
+        date={selectedDate}
+        tasks={selectedDateTasks}
+        jobMap={jobMap}
+        onClose={() => setSelectedDate('')}
+        onToggle={toggleDone}
+        onEdit={handleDayTaskEdit}
+        onDelete={(id) => {
+          setSelectedDate('')
+          setDeletingId(id)
+          setConfirmOpen(true)
+        }}
+        isReadOnly={isReadOnly}
+      />
+
       {!isReadOnly && (
         <>
           <TaskModal open={modalOpen} task={editingTask} defaultDate={defaultDate} onClose={handleCloseModal} />
@@ -351,6 +385,45 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
             onConfirm={handleDelete} onCancel={() => { setConfirmOpen(false); setDeletingId(null) }} />
         </>
       )}
+    </div>
+  )
+}
+
+function DayScheduleModal({ date, tasks, jobMap, onClose, onToggle, onEdit, onDelete, isReadOnly }) {
+  useEffect(() => {
+    if (!date) return
+    const handleKeyDown = (event) => { if (event.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [date, onClose])
+
+  if (!date) return null
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${date} ${formatWeekday(date)}的日程`}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
+      onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
+    >
+      <div className="modal-panel mx-4 flex max-h-[85vh] min-h-0 w-full max-w-lg min-w-0 flex-col border shadow-2xl shadow-black/40" onClick={(event) => event.stopPropagation()}>
+        <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }} className="flex min-h-0 w-full min-w-0 flex-1 flex-col rounded-[22px]">
+          <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col rounded-[22px] bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none">
+            <ModalHeader title={`${date} ${formatWeekday(date)}`} onClose={onClose} />
+            <div className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-5">
+              <TaskCards
+                tasks={tasks}
+                jobMap={jobMap}
+                onToggle={onToggle}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                isReadOnly={isReadOnly}
+              />
+            </div>
+          </div>
+        </GlowCard>
+      </div>
     </div>
   )
 }
