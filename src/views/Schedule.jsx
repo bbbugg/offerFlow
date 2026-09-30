@@ -56,6 +56,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
   const [selectedDate, setSelectedDate] = useState('')
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
+  const [laterTasksOpen, setLaterTasksOpen] = useState(false)
 
   const today = useBeijingToday()
 
@@ -100,6 +101,25 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
     }
     return days
   }, [filtered, today])
+
+  // Incomplete tasks after the next 7 days, grouped by date
+  const laterTaskGroups = useMemo(() => {
+    const endOfNext7Days = addDaysToDateString(today, 7)
+    const groups = new Map()
+
+    filtered
+      .filter((task) => task.date > endOfNext7Days && !task.done)
+      .sort((a, b) => a.date.localeCompare(b.date) || (a.startTime || '').localeCompare(b.startTime || ''))
+      .forEach((task) => {
+        const dayTasks = groups.get(task.date) || []
+        dayTasks.push(task)
+        groups.set(task.date, dayTasks)
+      })
+
+    return Array.from(groups, ([date, dayTasks]) => ({ date, tasks: dayTasks }))
+  }, [filtered, today])
+
+  const laterTaskCount = laterTaskGroups.reduce((count, group) => count + group.tasks.length, 0)
 
   // Month calendar data
   const monthData = useMemo(() => {
@@ -288,6 +308,53 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
               ))}
             </div>
           </div>
+
+          {/* Later Tasks */}
+          {laterTaskCount > 0 && (
+            <div className="card-modern overflow-hidden">
+              <button
+                type="button"
+                aria-expanded={laterTasksOpen}
+                aria-controls="later-schedule-list"
+                onClick={() => setLaterTasksOpen((open) => !open)}
+                className="flex w-full cursor-pointer items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-white/[0.03] md:p-5"
+              >
+                <span>
+                  <span className="block text-base font-semibold text-white">7 天后的日程</span>
+                  <span className="mt-1 block text-sm text-gray-500 dark:text-white/45">共 {laterTaskCount} 项，点击{laterTasksOpen ? '收起' : '展开'}</span>
+                </span>
+                <svg
+                  className={`h-5 w-5 shrink-0 text-offer-muted transition-transform duration-200 ${laterTasksOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {laterTasksOpen && (
+                <div id="later-schedule-list" className="space-y-5 border-t border-white/10 px-4 py-4 md:px-5 md:py-5">
+                  {laterTaskGroups.map(({ date, tasks: dayTasks }) => (
+                    <div key={date}>
+                      <div className="mb-2 flex items-center justify-between">
+                        <h3 className="text-sm font-medium text-offer-muted">
+                          {date} <span className="ml-1 text-offer-muted/60">{formatWeekday(date)}</span>
+                        </h3>
+                        {!isReadOnly && (
+                          <button onClick={() => handleDateClick(date)}
+                            className="cursor-pointer text-xs text-offer-accent transition-colors hover:text-offer-primary">+ 添加</button>
+                        )}
+                      </div>
+                      <TaskCards tasks={dayTasks} jobMap={jobMap} compact onToggle={toggleDone} onEdit={handleEdit}
+                        onDelete={(id) => { setDeletingId(id); setConfirmOpen(true) }} isReadOnly={isReadOnly} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Done */}
           {doneCount > 0 && (
