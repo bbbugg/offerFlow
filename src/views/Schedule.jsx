@@ -411,7 +411,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
                     </div>
                     <div className="space-y-0.5">
                       {cell.tasks.slice(0, 3).map((t) => (
-                        <div key={t.id} onClick={isReadOnly ? undefined : (e) => { e.stopPropagation(); handleEdit(t) }}
+                        <div key={t.id} onClick={(event) => { event.stopPropagation(); handleDayClick(cell.dateStr) }}
                           className={`flex min-w-0 items-center gap-0.5 rounded border px-0.5 py-0.5 text-[9px] leading-tight md:gap-1 md:px-1 md:text-[10px] cursor-pointer ${t.done ? 'opacity-40' : ''} ${TASK_TYPE_BADGE[t.type] || NEUTRAL_BADGE}`}>
                           <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${TYPE_DOT[t.type] || 'bg-gray-500'}`} />
                           <span className="min-w-0 truncate">{t.title}</span>
@@ -434,10 +434,10 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
         tasks={selectedDateTasks}
         jobMap={jobMap}
         onClose={() => setSelectedDate('')}
+        onAdd={isReadOnly ? undefined : () => handleDateClick(selectedDate)}
         onToggle={toggleDone}
         onEdit={handleDayTaskEdit}
         onDelete={(id) => {
-          setSelectedDate('')
           setDeletingId(id)
           setConfirmOpen(true)
         }}
@@ -456,7 +456,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
   )
 }
 
-function DayScheduleModal({ date, tasks, jobMap, onClose, onToggle, onEdit, onDelete, isReadOnly, covered }) {
+function DayScheduleModal({ date, tasks, jobMap, onClose, onAdd, onToggle, onEdit, onDelete, isReadOnly, covered }) {
   useEffect(() => {
     if (!date || covered) return
     const handleKeyDown = (event) => { if (event.key === 'Escape') onClose() }
@@ -477,7 +477,25 @@ function DayScheduleModal({ date, tasks, jobMap, onClose, onToggle, onEdit, onDe
       <div className="modal-panel mx-4 flex max-h-[85vh] min-h-0 w-full max-w-lg min-w-0 flex-col border shadow-2xl shadow-black/40" onClick={(event) => event.stopPropagation()}>
         <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }} className="flex min-h-0 w-full min-w-0 flex-1 flex-col rounded-[22px]">
           <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col rounded-[22px] bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none">
-            <ModalHeader title={`${date} ${formatWeekday(date)}`} onClose={onClose} />
+            <ModalHeader onClose={onClose}>
+              {onAdd && (
+                <button
+                  type="button"
+                  onClick={onAdd}
+                  aria-label="添加当天日程"
+                  title="添加当天日程"
+                  className="absolute left-4 top-1/2 inline-flex h-7 -translate-y-1/2 cursor-pointer items-center gap-1 rounded-lg bg-purple-500 px-2.5 text-xs font-normal text-white focus:outline-none"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  添加
+                </button>
+              )}
+              <h2 className="min-w-0 truncate text-lg font-semibold leading-normal text-slate-950 dark:text-white">
+                {date} {formatWeekday(date)}
+              </h2>
+            </ModalHeader>
             <div className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-5">
               <TaskCards
                 tasks={tasks}
@@ -506,10 +524,13 @@ function TaskCards({ tasks, jobMap, compact, onToggle, onEdit, onDelete, isReadO
       {tasks.map((t) => {
         const job = t.jobId ? jobMap[t.jobId] : null
         return (
-          <div key={t.id}
-            className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3 transition-all hover:border-offer-primary/30 hover:bg-white/[0.04] md:p-4">
+          <div
+            key={t.id}
+            onClick={isReadOnly ? undefined : () => onEdit(t)}
+            className={`group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3 transition-all hover:border-offer-primary/30 hover:bg-white/[0.04] md:p-4 ${isReadOnly ? '' : 'cursor-pointer'}`}
+          >
             {/* Checkbox */}
-            <button onClick={() => onToggle(t.id)}
+            <button onClick={(event) => { event.stopPropagation(); onToggle(t.id) }}
               disabled={isReadOnly}
               className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${t.done ? 'border-offer-primary bg-offer-primary' : 'border-offer-muted'}${isReadOnly ? '' : ' hover:border-offer-accent cursor-pointer'}`}>
               {t.done && (
@@ -520,7 +541,7 @@ function TaskCards({ tasks, jobMap, compact, onToggle, onEdit, onDelete, isReadO
             </button>
 
             {/* Content */}
-            <div className={`flex-1 min-w-0 ${isReadOnly ? '' : 'cursor-pointer'}`} onClick={isReadOnly ? undefined : () => onEdit(t)}>
+            <div className="min-w-0 flex-1">
               <p className={`text-sm truncate ${t.done ? 'text-offer-muted line-through' : 'text-white'}`}>{t.title}</p>
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${TASK_TYPE_BADGE[t.type] || NEUTRAL_BADGE}`}>{t.type}</span>
@@ -540,13 +561,13 @@ function TaskCards({ tasks, jobMap, compact, onToggle, onEdit, onDelete, isReadO
             {/* Actions */}
             {!isReadOnly && (
               <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
-                <button onClick={() => onEdit(t)}
+                <button onClick={(event) => { event.stopPropagation(); onEdit(t) }}
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-offer-muted hover:text-white hover:bg-white/10 transition-all cursor-pointer">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
-                <button onClick={() => onDelete(t.id)}
+                <button onClick={(event) => { event.stopPropagation(); onDelete(t.id) }}
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-offer-muted hover:text-red-400 hover:bg-white/10 transition-all cursor-pointer">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
