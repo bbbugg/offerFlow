@@ -176,7 +176,6 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
   }
 
   const handleDayTaskEdit = (task) => {
-    setSelectedDate('')
     handleEdit(task)
   }
 
@@ -443,6 +442,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
           setConfirmOpen(true)
         }}
         isReadOnly={isReadOnly}
+        covered={modalOpen || confirmOpen}
       />
 
       {!isReadOnly && (
@@ -456,22 +456,22 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
   )
 }
 
-function DayScheduleModal({ date, tasks, jobMap, onClose, onToggle, onEdit, onDelete, isReadOnly }) {
+function DayScheduleModal({ date, tasks, jobMap, onClose, onToggle, onEdit, onDelete, isReadOnly, covered }) {
   useEffect(() => {
-    if (!date) return
+    if (!date || covered) return
     const handleKeyDown = (event) => { if (event.key === 'Escape') onClose() }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [date, onClose])
+  }, [covered, date, onClose])
 
   if (!date) return null
 
   return (
     <div
       role="dialog"
-      aria-modal="true"
+      aria-modal={covered ? undefined : 'true'}
       aria-label={`${date} ${formatWeekday(date)}的日程`}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay ${covered ? 'pointer-events-none' : ''}`}
       onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
     >
       <div className="modal-panel mx-4 flex max-h-[85vh] min-h-0 w-full max-w-lg min-w-0 flex-col border shadow-2xl shadow-black/40" onClick={(event) => event.stopPropagation()}>
