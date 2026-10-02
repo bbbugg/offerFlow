@@ -11,6 +11,7 @@ import { NEUTRAL_BADGE, TASK_TYPE_BADGE } from '../lib/badgeStyles'
 
 const EMPTY_JOBS = []
 const EMPTY_TASKS = []
+const SCHEDULE_VIEW_MODE_STORAGE_KEY = 'offerflow-schedule-view-mode'
 
 const TYPE_DOT = {
   '面试': 'bg-blue-500',
@@ -47,7 +48,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
   const updateTask = isReadOnly ? async () => {} : appContext.updateTask
   const deleteTask = isReadOnly ? async () => {} : appContext.deleteTask
 
-  const [viewMode, setViewMode] = useState('list')
+  const [viewMode, setViewMode] = useState(null)
   const [activeFilter, setActiveFilter] = useState('全部')
   const [currentMonth, setCurrentMonth] = useState(() => getYearMonth(formatBeijingDate()))
   const [modalOpen, setModalOpen] = useState(false)
@@ -59,6 +60,18 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
   const [laterTasksOpen, setLaterTasksOpen] = useState(false)
 
   const today = useBeijingToday()
+
+  useEffect(() => {
+    let savedViewMode = null
+    try {
+      savedViewMode = window.localStorage.getItem(SCHEDULE_VIEW_MODE_STORAGE_KEY)
+    } catch {}
+    if (savedViewMode === 'list' || savedViewMode === 'month') {
+      setViewMode(savedViewMode)
+    } else {
+      setViewMode('list')
+    }
+  }, [])
 
   const jobMap = useMemo(() => {
     const map = {}
@@ -157,6 +170,13 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
     })
   }
 
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode)
+    try {
+      window.localStorage.setItem(SCHEDULE_VIEW_MODE_STORAGE_KEY, mode)
+    } catch {}
+  }
+
   const handleEdit = (task) => {
     if (isReadOnly) return
     setEditingTask(task)
@@ -225,9 +245,9 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
         <div className="flex flex-col items-stretch gap-3 md:flex-row md:flex-wrap md:items-center">
           {/* View toggle */}
           <div className="flex flex-wrap items-center gap-2">
-            <button onClick={() => setViewMode('list')}
+            <button onClick={() => handleViewModeChange('list')}
               className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium cursor-pointer ${viewMode === 'list' ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>列表</button>
-            <button onClick={() => setViewMode('month')}
+            <button onClick={() => handleViewModeChange('month')}
               className={`inline-flex items-center justify-center whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium cursor-pointer ${viewMode === 'month' ? 'border-purple-400/60 bg-purple-600/25 text-white font-semibold shadow-sm shadow-purple-950/20' : 'border-white/10 bg-white/[0.03] text-gray-300 dark:text-white/65 hover:bg-white/[0.07] hover:text-white'}`}>月历</button>
           </div>
 
@@ -253,7 +273,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
         </div>
       </div>
 
-      {viewMode === 'list' ? (
+      {viewMode && (viewMode === 'list' ? (
         <div className="space-y-4 schedule-view">
           {/* Overdue */}
           {overdueTasks.length > 0 && (
@@ -427,7 +447,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
             ))}
           </div>
         </div>
-      )}
+      ))}
 
       <DayScheduleModal
         date={selectedDate}
