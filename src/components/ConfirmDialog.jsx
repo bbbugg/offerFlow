@@ -29,7 +29,12 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = 'ç¡
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={() => { if (!isSubmitting) onCancel() }}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !isSubmitting) onCancel()
+      }}
+    >
       <div className="modal-panel danger border rounded-2xl w-full max-w-sm mx-4 shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
         <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,80,80,0.08)' }} className="rounded-[22px]">
           <div className="rounded-[22px] bg-white/90 p-5 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none md:p-6">

@@ -615,7 +615,10 @@ function InterviewDetailModal({ open, onClose, onSelectJob, stats, jobs, offerCo
   const offerConversionRate = interviewedPeople > 0 ? visibleOfferCount / interviewedPeople : 0
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
+      onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
+    >
       <div className="modal-panel border w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
         <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,255,255,0.03)' }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1">
           <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
@@ -826,7 +829,10 @@ function ReplyDetailModal({ open, onClose, onSelectJob, stats, jobs }) {
   const otherReplyJobs = jobs.filter((job) => job.endReason !== '被拒绝')
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
+      onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
+    >
       <div className="modal-panel border w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
         <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,255,255,0.03)' }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1">
           <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
