@@ -259,6 +259,15 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
             ))}
           </div>
 
+          {activeFilter !== '全部' && (
+            <button
+              onClick={() => setActiveFilter('全部')}
+              className="ml-1 cursor-pointer text-sm text-offer-accent transition-colors hover:text-white"
+            >
+              清除筛选
+            </button>
+          )}
+
           {!isReadOnly && (
             <div className="flex w-full items-center gap-2 md:ml-auto md:w-auto">
               <button onClick={() => handleDateClick(today)}
