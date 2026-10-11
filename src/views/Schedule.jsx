@@ -58,6 +58,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
   const [laterTasksOpen, setLaterTasksOpen] = useState(false)
+  const [doneTasksOpen, setDoneTasksOpen] = useState(false)
 
   const today = useBeijingToday()
 
@@ -386,20 +387,41 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
 
           {/* Done */}
           {doneCount > 0 && (
-            <div className="card-modern p-4 md:p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-semibold text-white">已完成</h2>
-                <span className="text-sm text-gray-500 dark:text-white/45">{doneCount} 项</span>
-              </div>
-              <TaskCards
-                tasks={filtered.filter((t) => t.done).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30)}
-                jobMap={jobMap}
-                showDate
-                onToggle={toggleDone}
-                onEdit={handleEdit}
-                onDelete={(id) => { setDeletingId(id); setConfirmOpen(true) }}
-                isReadOnly={isReadOnly}
-              />
+            <div className="card-modern overflow-hidden">
+              <button
+                type="button"
+                aria-expanded={doneTasksOpen}
+                aria-controls="done-schedule-list"
+                onClick={() => setDoneTasksOpen((open) => !open)}
+                className="flex w-full cursor-pointer items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-white/[0.03] md:p-5"
+              >
+                <span>
+                  <span className="block text-base font-semibold text-white">已完成</span>
+                  <span className="mt-1 block text-sm text-gray-500 dark:text-white/45">共 {doneCount} 项，点击{doneTasksOpen ? '收起' : '展开'}</span>
+                </span>
+                <svg
+                  className={`h-5 w-5 shrink-0 text-offer-muted transition-transform duration-200 ${doneTasksOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {doneTasksOpen && (
+                <div id="done-schedule-list" className="border-t border-white/10 px-4 py-4 md:px-5 md:py-5">
+                  <TaskCards
+                    tasks={filtered.filter((t) => t.done).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30)}
+                    jobMap={jobMap}
+                    showDate
+                    onToggle={toggleDone}
+                    onEdit={handleEdit}
+                    onDelete={(id) => { setDeletingId(id); setConfirmOpen(true) }}
+                    isReadOnly={isReadOnly}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
