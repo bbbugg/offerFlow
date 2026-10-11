@@ -394,6 +394,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
               <TaskCards
                 tasks={filtered.filter((t) => t.done).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30)}
                 jobMap={jobMap}
+                showDate
                 onToggle={toggleDone}
                 onEdit={handleEdit}
                 onDelete={(id) => { setDeletingId(id); setConfirmOpen(true) }}
@@ -543,7 +544,7 @@ function DayScheduleModal({ date, tasks, jobMap, onClose, onAdd, onToggle, onEdi
 }
 
 /* ===== TaskCards component ===== */
-function TaskCards({ tasks, jobMap, compact, onToggle, onEdit, onDelete, isReadOnly = false }) {
+function TaskCards({ tasks, jobMap, compact, showDate = false, onToggle, onEdit, onDelete, isReadOnly = false }) {
   if (tasks.length === 0) {
     return <div className="py-6 text-center text-offer-muted text-sm">暂无待办事项</div>
   }
@@ -574,6 +575,7 @@ function TaskCards({ tasks, jobMap, compact, onToggle, onEdit, onDelete, isReadO
               <p className={`text-sm truncate ${t.done ? 'text-offer-muted line-through' : 'text-white'}`}>{t.title}</p>
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${TASK_TYPE_BADGE[t.type] || NEUTRAL_BADGE}`}>{t.type}</span>
+                {showDate && <time dateTime={t.date} className="text-xs text-offer-muted">{t.date} {formatWeekday(t.date)}</time>}
                 {t.startTime && <span className="text-xs text-offer-muted">{t.startTime}{t.endTime ? `-${t.endTime}` : ''}</span>}
                 {!compact && <span className={`text-[10px] ${PRIORITY_CLASS[t.priority] || 'text-offer-muted'}`}>{t.priority}</span>}
                 {job && (
