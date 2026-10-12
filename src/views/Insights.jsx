@@ -403,7 +403,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
         {data.cityDistribution.length > 0 ? (
           <div className="flex items-start">
             {/* 左侧城市名称文本栏，由 CSS whitespace-nowrap 自动根据文字实际长度撑开 */}
-            <div className="flex flex-col shrink-0 pt-[8px] pb-[32px]">
+            <div className="flex flex-col shrink-0 pt-[5px] pb-[35px]">
               {data.cityDistribution.map((item) => (
                 <div key={item.city} className="flex items-center h-[44px] whitespace-nowrap pr-3 text-[#AAAAAA] text-[11px] max-md:text-[10px] font-normal" title={item.city}>
                   {item.city}
@@ -413,7 +413,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
 
             {/* 右侧 BarChart 柱状图 */}
             <div className="flex-1 min-w-0">
-              <ResponsiveContainer width="100%" height={Math.max(200, data.cityDistribution.length * 44 + 32)}>
+              <ResponsiveContainer width="100%" height={data.cityDistribution.length * 44 + 40}>
                 <BarChart
                   data={data.cityDistribution}
                   layout="vertical"
@@ -421,7 +421,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
                   barSize={24}
                 >
                   <CartesianGrid stroke="rgba(148,163,184,0.2)" horizontal={false} />
-                  <XAxis type="number" domain={[0, 'dataMax']} allowDecimals={false} tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <XAxis type="number" height={30} domain={[0, 'dataMax']} allowDecimals={false} tick={{ fill: '#AAAAAA', fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis dataKey="city" type="category" hide />
                   <Tooltip
                     content={<CustomChartTooltip />}
