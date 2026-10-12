@@ -787,9 +787,9 @@ function getReplyStageBadge(job) {
   )
 }
 
-function ReplyJobsTable({ jobs, onSelectJob, emptyText, rejected = false }) {
+function ReplyJobsTable({ jobs, onSelectJob, emptyText, rejected = false, expanded = false }) {
   return (
-    <div className={`overflow-x-auto max-h-[240px] overflow-y-auto rounded-xl border ${rejected ? 'border-red-200 dark:border-red-400/15' : 'border-slate-200 dark:border-white/[0.06]'}`}>
+    <div className={`overflow-x-auto ${expanded ? 'max-h-[60vh]' : 'max-h-[240px]'} overflow-y-auto rounded-xl border ${rejected ? 'border-red-200 dark:border-red-400/15' : 'border-slate-200 dark:border-white/[0.06]'}`}>
       <table className="w-full text-xs">
         <thead className="sticky top-0 bg-slate-100 dark:bg-gray-950 z-10">
           <tr className={`text-slate-500 dark:text-white/45 border-b ${rejected ? 'border-red-200 dark:border-red-400/15' : 'border-slate-200 dark:border-white/[0.06]'}`}>
@@ -851,12 +851,12 @@ function OutcomeDetailModal({ outcome, onClose, onSelectJob, jobs }) {
       onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
     >
       <div className="modal-panel border w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
-        <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,255,255,0.03)' }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1">
+        <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,255,255,0.03)' }} className="rounded-[22px] w-full max-w-full min-w-0 min-h-0 flex flex-col flex-1">
           <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
             <ModalHeader title={isEnded ? '已结束统计详情' : '总 Offer 详情'} onClose={onClose} />
-            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+            <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-6">
               {isEnded && (
-                <div>
+                <div className="shrink-0">
                   <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">结束原因分布</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {reasons.map(([reason, count]) => (
@@ -872,7 +872,7 @@ function OutcomeDetailModal({ outcome, onClose, onSelectJob, jobs }) {
               )}
               <div>
                 <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">{isEnded ? '已结束岗位' : 'Offer 岗位'}（{jobs.length}）</h3>
-                <ReplyJobsTable jobs={jobs} onSelectJob={onSelectJob} emptyText={isEnded ? '暂无已结束的岗位记录' : '暂无 Offer 岗位记录'} />
+                <ReplyJobsTable jobs={jobs} onSelectJob={onSelectJob} emptyText={isEnded ? '暂无已结束的岗位记录' : '暂无 Offer 岗位记录'} expanded />
               </div>
             </div>
           </div>
