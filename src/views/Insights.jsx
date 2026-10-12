@@ -128,6 +128,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
   const [timeRange, setTimeRange] = useState('全部')
   const [detailOpen, setDetailOpen] = useState(false)
   const [replyDetailOpen, setReplyDetailOpen] = useState(false)
+  const [outcomeDetail, setOutcomeDetail] = useState(null)
   const [detailJobId, setDetailJobId] = useState(null)
   const [editingJob, setEditingJob] = useState(null)
   const [jobModalOpen, setJobModalOpen] = useState(false)
@@ -142,7 +143,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
   }, [])
 
   useEffect(() => {
-    if (!detailOpen && !replyDetailOpen && !detailJobId) return
+    if (!detailOpen && !replyDetailOpen && !outcomeDetail && !detailJobId) return
     const handler = (e) => {
       if (e.key === 'Escape') {
         if (detailJobId) {
@@ -150,12 +151,13 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
         } else {
           setDetailOpen(false)
           setReplyDetailOpen(false)
+          setOutcomeDetail(null)
         }
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [detailOpen, replyDetailOpen, detailJobId])
+  }, [detailOpen, replyDetailOpen, outcomeDetail, detailJobId])
 
   const handleEditFromDetail = (job) => {
     setDetailJobId(null)
@@ -274,6 +276,7 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
       total, appliedCount, activeCount: active.length, repliedCount: replied.length,
       interviewedCount: totalRoundCount, interviewedPeopleCount: interviewed.length,
       offerCount: offers.length, endedCount: ended.length,
+      offerJobs: offers, endedJobs: ended,
       replyRate, interviewRate, offerRate,
       funnel, channels,
       roundCounts, roundPassRates, offerConversionRate,
@@ -314,8 +317,8 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
         <MetricCard label="活跃流程" value={data.activeCount} sub="进行中" />
         <MetricCard label="收到回复" value={data.repliedCount} sub={`${data.replyRate}% 回复率`} onClick={() => setReplyDetailOpen(true)} />
         <MetricCard label="总面试次数" value={data.interviewedCount} sub={`${data.interviewedPeopleCount} 岗位参与 · ${data.interviewRate}% 面试率`} onClick={() => setDetailOpen(true)} />
-        <MetricCard label="总 Offer" value={data.offerCount} sub={`${data.offerRate}% Offer 率`} accent />
-        <MetricCard label="已结束" value={data.endedCount} sub="无结果" danger />
+        <MetricCard label="总 Offer" value={data.offerCount} sub={`${data.offerRate}% Offer 率`} accent onClick={() => setOutcomeDetail('offer')} />
+        <MetricCard label="已结束" value={data.endedCount} sub="无结果" danger onClick={() => setOutcomeDetail('ended')} />
       </div>
 
       {/* ===== Conversion Rates ===== */}
@@ -477,6 +480,13 @@ export default function Insights({ jobs: propJobs, isReadOnly = false }) {
           channels: data.repliedChannels,
         }}
         jobs={data.repliedJobs}
+      />
+
+      <OutcomeDetailModal
+        outcome={outcomeDetail}
+        onClose={() => setOutcomeDetail(null)}
+        onSelectJob={(id) => setDetailJobId(id)}
+        jobs={outcomeDetail === 'ended' ? data.endedJobs : data.offerJobs}
       />
 
       {/* ===== Job Detail Modal ===== */}
@@ -818,6 +828,56 @@ function ReplyJobsTable({ jobs, onSelectJob, emptyText, rejected = false }) {
           )}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+function OutcomeDetailModal({ outcome, onClose, onSelectJob, jobs }) {
+  if (!outcome) return null
+
+  const isEnded = outcome === 'ended'
+  const reasonCounts = new Map()
+  if (isEnded) {
+    jobs.forEach((job) => {
+      const reason = job.endReason?.trim() || '未填写原因'
+      reasonCounts.set(reason, (reasonCounts.get(reason) || 0) + 1)
+    })
+  }
+  const reasons = [...reasonCounts.entries()].sort((a, b) => b[1] - a[1])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
+      onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
+    >
+      <div className="modal-panel border w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
+        <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,255,255,0.03)' }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1">
+          <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
+            <ModalHeader title={isEnded ? '已结束统计详情' : '总 Offer 详情'} onClose={onClose} />
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {isEnded && (
+                <div>
+                  <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">结束原因分布</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {reasons.map(([reason, count]) => (
+                      <div key={reason} className="bento-block">
+                        <p className="text-xs text-slate-500 dark:text-white/45 mb-1 break-words">{reason}</p>
+                        <p className="text-2xl font-bold text-red-600 dark:text-red-400">{count} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
+                        <p className="text-xs text-slate-500 dark:text-white/45 mt-1">占比 {Math.round((count / jobs.length) * 100)}%</p>
+                      </div>
+                    ))}
+                  </div>
+                  {reasons.length === 0 && <p className="text-sm text-slate-500 dark:text-white/45">暂无结束原因统计</p>}
+                </div>
+              )}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">{isEnded ? '已结束岗位' : 'Offer 岗位'}（{jobs.length}）</h3>
+                <ReplyJobsTable jobs={jobs} onSelectJob={onSelectJob} emptyText={isEnded ? '暂无已结束的岗位记录' : '暂无 Offer 岗位记录'} />
+              </div>
+            </div>
+          </div>
+        </GlowCard>
+      </div>
     </div>
   )
 }
