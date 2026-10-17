@@ -836,14 +836,15 @@ function OutcomeDetailModal({ outcome, onClose, onSelectJob, jobs }) {
   if (!outcome) return null
 
   const isEnded = outcome === 'ended'
-  const reasonCounts = new Map()
+  const reasonGroups = new Map()
   if (isEnded) {
     jobs.forEach((job) => {
       const reason = job.endReason?.trim() || '未填写原因'
-      reasonCounts.set(reason, (reasonCounts.get(reason) || 0) + 1)
+      if (!reasonGroups.has(reason)) reasonGroups.set(reason, [])
+      reasonGroups.get(reason).push(job)
     })
   }
-  const reasons = [...reasonCounts.entries()].sort((a, b) => b[1] - a[1])
+  const reasons = [...reasonGroups.entries()].sort((a, b) => b[1].length - a[1].length)
 
   return (
     <div
@@ -859,11 +860,11 @@ function OutcomeDetailModal({ outcome, onClose, onSelectJob, jobs }) {
                 <div className="shrink-0">
                   <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">结束原因分布</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {reasons.map(([reason, count]) => (
+                    {reasons.map(([reason, reasonJobs]) => (
                       <div key={reason} className="bento-block">
                         <p className="text-xs text-slate-500 dark:text-white/45 mb-1 break-words">{reason}</p>
-                        <p className="text-2xl font-bold text-red-600 dark:text-red-400">{count} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
-                        <p className="text-xs text-slate-500 dark:text-white/45 mt-1">占比 {Math.round((count / jobs.length) * 100)}%</p>
+                        <p className="text-2xl font-bold text-red-600 dark:text-red-400">{reasonJobs.length} <span className="text-xs text-slate-500 dark:text-white/45 font-normal">个</span></p>
+                        <p className="text-xs text-slate-500 dark:text-white/45 mt-1">占比 {Math.round((reasonJobs.length / jobs.length) * 100)}%</p>
                       </div>
                     ))}
                   </div>
@@ -874,6 +875,12 @@ function OutcomeDetailModal({ outcome, onClose, onSelectJob, jobs }) {
                 <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3">{isEnded ? '已结束岗位' : 'Offer 岗位'}（{jobs.length}）</h3>
                 <ReplyJobsTable jobs={jobs} onSelectJob={onSelectJob} emptyText={isEnded ? '暂无已结束的岗位记录' : '暂无 Offer 岗位记录'} expanded />
               </div>
+              {isEnded && reasons.map(([reason, reasonJobs]) => (
+                <div key={reason}>
+                  <h3 className="text-xs font-semibold text-slate-500 dark:text-white/45 uppercase tracking-wider mb-3 break-words">{reason}（{reasonJobs.length}）</h3>
+                  <ReplyJobsTable jobs={reasonJobs} onSelectJob={onSelectJob} emptyText="暂无该结束原因的岗位记录" expanded />
+                </div>
+              ))}
             </div>
           </div>
         </GlowCard>
