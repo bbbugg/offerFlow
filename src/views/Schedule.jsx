@@ -412,7 +412,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
               {doneTasksOpen && (
                 <div id="done-schedule-list" className="border-t border-white/10 px-4 py-4 md:px-5 md:py-5">
                   <TaskCards
-                    tasks={filtered.filter((t) => t.done).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30)}
+                    tasks={filtered.filter((t) => t.done).sort((a, b) => b.date.localeCompare(a.date))}
                     jobMap={jobMap}
                     showDate
                     onToggle={toggleDone}
