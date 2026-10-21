@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { useApp } from '../store/AppContext'
 import ModalHeader from './ModalHeader'
 import GlowCard from './GlowCard'
@@ -20,6 +20,19 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
   const [priority, setPriority] = useState('中')
   const [jobId, setJobId] = useState('')
   const [notes, setNotes] = useState('')
+  const notesRef = useRef(null)
+
+  useLayoutEffect(() => {
+    if (!open || !notesRef.current) return
+    const textarea = notesRef.current
+    const resizeNotes = () => {
+      textarea.style.height = 'auto'
+      textarea.style.height = `${textarea.scrollHeight + textarea.offsetHeight - textarea.clientHeight}px`
+    }
+    resizeNotes()
+    window.addEventListener('resize', resizeNotes)
+    return () => window.removeEventListener('resize', resizeNotes)
+  }, [open, notes])
 
   useEffect(() => {
     if (!open) return
@@ -139,7 +152,7 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
         <ModalHeader title={task ? '编辑事项' : '新建事项'} onClose={onClose} />
 
         {/* Body */}
-        <div className="flex-1 min-w-0 space-y-4 overflow-y-auto overflow-x-hidden p-4 pb-6 pt-5 md:p-5 md:pb-7 md:pt-6" onFocus={handleFocusIn}>
+        <div className="flex-1 min-h-0 min-w-0 space-y-4 overflow-y-auto overflow-x-hidden p-4 pb-6 pt-5 md:p-5 md:pb-7 md:pt-6" onFocus={handleFocusIn}>
           <Field label="标题 *">
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="事项标题"
               autoFocus={!task}
@@ -192,13 +205,13 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
           </Field>
 
           <Field label="备注">
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="备注信息..."
-              className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 resize-none" />
+            <textarea ref={notesRef} value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="备注信息..."
+              className="min-h-[84px] w-full overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm leading-6 text-white placeholder:text-gray-500 outline-none transition-[border-color,box-shadow] duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 resize-none" />
           </Field>
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end items-center gap-3 border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
+        <div className="flex shrink-0 justify-end items-center gap-3 border-t border-slate-200 p-4 dark:border-white/10 md:p-5">
           {task && (
             <div className="flex items-center gap-2 mr-auto">
               <button
