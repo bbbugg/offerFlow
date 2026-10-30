@@ -629,7 +629,7 @@ function InterviewDetailModal({ open, onClose, onSelectJob, stats, jobs, offerCo
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
       onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
     >
-      <div className="modal-panel border w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-panel border w-max min-w-[min(48rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
         <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,255,255,0.03)' }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1">
           <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
             {/* Header */}
@@ -851,7 +851,7 @@ function OutcomeDetailModal({ outcome, onClose, onSelectJob, jobs }) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
       onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
     >
-      <div className="modal-panel border w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-panel border w-max min-w-[min(48rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
         <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,255,255,0.03)' }} className="rounded-[22px] w-full max-w-full min-w-0 min-h-0 flex flex-col flex-1">
           <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
             <ModalHeader title={isEnded ? '已结束统计详情' : '总 Offer 详情'} onClose={onClose} />
@@ -900,7 +900,7 @@ function ReplyDetailModal({ open, onClose, onSelectJob, stats, jobs }) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm modal-overlay"
       onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}
     >
-      <div className="modal-panel border w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-panel border w-max min-w-[min(48rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] mx-4 max-h-[90vh] flex flex-col shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
         <GlowCard style={{ background: 'transparent', border: 'none', boxShadow: 'none', padding: 0, '--glow-color': 'rgba(255,255,255,0.03)' }} className="rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1">
           <div className="bg-white/90 backdrop-blur-xl dark:bg-transparent dark:backdrop-filter-none rounded-[22px] w-full max-w-full min-w-0 flex flex-col flex-1 min-h-0">
             {/* Header */}
