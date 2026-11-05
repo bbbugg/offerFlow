@@ -29,9 +29,22 @@ export default function TaskModal({ open, task, defaultDate, onClose }) {
       textarea.style.height = 'auto'
       textarea.style.height = `${textarea.scrollHeight + textarea.offsetHeight - textarea.clientHeight}px`
     }
+    let previousWidth = textarea.clientWidth
+    const observer = new ResizeObserver(() => {
+      const width = textarea.clientWidth
+      if (width === previousWidth) return
+      previousWidth = width
+      resizeNotes()
+    })
     resizeNotes()
+    observer.observe(textarea)
     window.addEventListener('resize', resizeNotes)
-    return () => window.removeEventListener('resize', resizeNotes)
+    document.fonts.addEventListener('loadingdone', resizeNotes)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', resizeNotes)
+      document.fonts.removeEventListener('loadingdone', resizeNotes)
+    }
   }, [open, notes])
 
   useEffect(() => {
