@@ -161,7 +161,7 @@ export default function SharePage({ params: paramsPromise }) {
       case 'board':
         return <Board jobs={visibleJobs} isReadOnly={true} />
       case 'positions':
-        return <Positions jobs={visibleJobs} isReadOnly={true} />
+        return <Positions jobs={visibleJobs} isReadOnly recruitmentBatch={selectedRecruitmentBatch} />
       case 'schedule':
         return shareSchedule
           ? <Schedule jobs={visibleJobs} tasks={visibleTasks} isReadOnly={true} />

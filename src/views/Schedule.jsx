@@ -5,6 +5,7 @@ import TaskModal from '../components/TaskModal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ModalHeader from '../components/ModalHeader'
 import GlowCard from '../components/GlowCard'
+import BackToTopButton from '../components/BackToTopButton'
 import { addDaysToDateString, formatBeijingDate } from '../lib/dateUtils'
 import useBeijingToday from '../hooks/useBeijingToday'
 import { NEUTRAL_BADGE, TASK_TYPE_BADGE } from '../lib/badgeStyles'
@@ -235,7 +236,7 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
   const doneCount = filtered.filter((t) => t.done).length
 
   return (
-    <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
+    <div className="min-w-0 px-0 pt-2 pb-14 md:px-6 md:pt-6 md:pb-16">
       <div className="mb-5">
         <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">日程待办</h1>
         <p className="text-sm text-gray-400 dark:text-white/45 mt-1">管理你的求职日程和任务</p>
@@ -480,6 +481,8 @@ export default function Schedule({ jobs: propJobs, tasks: propTasks, isReadOnly 
           </div>
         </div>
       ))}
+
+      <BackToTopButton />
 
       <DayScheduleModal
         date={selectedDate}

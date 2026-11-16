@@ -1,10 +1,12 @@
 'use client'
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useApp } from '../store/AppContext'
 import JobModal from '../components/JobModal'
 import JobDetailModal from '../components/JobDetailModal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import CustomSelect from '../components/CustomSelect'
+import PositionsPagination from '../components/PositionsPagination'
+import BackToTopButton from '../components/BackToTopButton'
 import SearchOptionsPopover, { DEFAULT_SEARCH_SCOPE } from '../components/SearchOptionsPopover'
 import { formatBeijingDate, getElapsedBeijingDays, parseBeijingDate } from '../lib/dateUtils'
 import { JOB_STATUSES } from '../lib/jobStatus'
@@ -47,19 +49,18 @@ function getMostRecentJob(jobs) {
   return jobs.reduce((best, job) => (compareJobRecency(job, best) < 0 ? job : best), jobs[0])
 }
 
-export default function Positions({ jobs: propJobs, isReadOnly = false }) {
+export default function Positions({ jobs: propJobs, isReadOnly = false, recruitmentBatch = null }) {
   const appContext = useApp()
   const jobs = isReadOnly ? (propJobs || EMPTY_JOBS) : appContext.jobs
   const addToast = isReadOnly ? () => {} : appContext.addToast
   const deleteJob = isReadOnly ? async () => {} : appContext.deleteJob
-  const selectedRecruitmentBatch = isReadOnly ? null : appContext.selectedRecruitmentBatch
+  const selectedRecruitmentBatch = isReadOnly ? recruitmentBatch : appContext.selectedRecruitmentBatch
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState(new Set())
-
-  useEffect(() => {
-    setSelectedIds(new Set())
-  }, [selectedRecruitmentBatch])
+  const [pageSize, setPageSize] = useState(10)
+  const [requestedPage, setRequestedPage] = useState(1)
+  const viewRef = useRef(null)
 
   // Filter state
   const [search, setSearch] = useState('')
@@ -70,6 +71,11 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
   const [priorityFilter, setPriorityFilter] = useState('全部')
   const [shareVisibilityFilter, setShareVisibilityFilter] = useState('全部')
   const [hasNextActionFilter, setHasNextActionFilter] = useState(false)
+
+  useEffect(() => {
+    setRequestedPage(1)
+    setSelectedIds(new Set())
+  }, [selectedRecruitmentBatch, search, searchScope, statusFilter, channelFilter, cityFilter, priorityFilter, shareVisibilityFilter, hasNextActionFilter])
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false)
@@ -140,12 +146,56 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
       }))
   }, [filteredJobs])
 
+  const totalPages = Math.max(1, Math.ceil(filteredJobs.length / pageSize))
+  const page = Math.min(requestedPage, totalPages)
+  const start = (page - 1) * pageSize
+  const pagedGroups = []
+  let groupStart = 0
+  for (const group of groupedJobs) {
+    const groupEnd = groupStart + group.jobs.length
+    if (groupStart >= start + pageSize) break
+    if (groupEnd > start) {
+      pagedGroups.push({
+        company: group.company,
+        totalJobs: group.jobs.length,
+        jobs: group.jobs.slice(Math.max(0, start - groupStart), start + pageSize - groupStart),
+      })
+    }
+    groupStart = groupEnd
+  }
+
+  useEffect(() => {
+    setRequestedPage((current) => Math.min(current, totalPages))
+  }, [totalPages])
+
+  function scrollToTop() {
+    viewRef.current?.closest('main')?.scrollTo({ top: 0 })
+  }
+
+  function changePage(nextPage) {
+    setRequestedPage(Math.max(1, Math.min(nextPage, totalPages)))
+    scrollToTop()
+  }
+
+  function changePageSize(nextSize) {
+    setRequestedPage(Math.floor(start / nextSize) + 1)
+    setPageSize(nextSize)
+    scrollToTop()
+  }
+
   // Selection helpers
-  const allSelected = filteredJobs.length > 0 && selectedIds.size === filteredJobs.length
+  const pageJobs = pagedGroups.flatMap((group) => group.jobs)
+  const allSelected = pageJobs.length > 0 && pageJobs.every((job) => selectedIds.has(job.id))
   const toggleAll = () => {
     if (isReadOnly) return
-    if (allSelected) setSelectedIds(new Set())
-    else setSelectedIds(new Set(filteredJobs.map((j) => j.id)))
+    setSelectedIds((current) => {
+      const next = new Set(current)
+      for (const job of pageJobs) {
+        if (allSelected) next.delete(job.id)
+        else next.add(job.id)
+      }
+      return next
+    })
   }
   const toggleOne = (id) => {
     if (isReadOnly) return
@@ -315,7 +365,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
     (shareVisibilityFilter !== '全部' ? 1 : 0) + (hasNextActionFilter ? 1 : 0)
 
   return (
-    <div className="min-w-0 px-0 py-2 md:px-6 md:py-6">
+    <div ref={viewRef} className="min-w-0 px-0 pt-2 pb-14 md:px-6 md:pt-6 md:pb-16">
       <div className="mb-5">
         <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">岗位库</h1>
         <p className="text-sm text-gray-400 dark:text-white/45 mt-1">管理所有投递岗位，共 {jobs.length} 个记录</p>
@@ -334,14 +384,14 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                 type="text"
                 placeholder="搜索公司、岗位、城市、渠道..."
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setSelectedIds(new Set()) }}
+                onChange={(e) => setSearch(e.target.value)}
                 className="min-h-[40px] w-full rounded-xl border border-white/10 bg-white/[0.03] py-2.5 !pl-12 pr-4 text-sm text-white placeholder:text-gray-500 dark:placeholder:text-white/45 outline-none transition-all duration-200 focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20"
               />
             </div>
             <SearchOptionsPopover
               searchScope={searchScope}
               onScopeChange={setSearchScope}
-              onClear={() => { setSearch(''); setSelectedIds(new Set()) }}
+              onClear={() => setSearch('')}
               hasQuery={!!search.trim()}
             />
           </div>
@@ -481,6 +531,9 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                     <input
                       type="checkbox"
                       checked={allSelected}
+                      disabled={pageJobs.length === 0}
+                      aria-label="全选当前页岗位"
+                      title="全选当前页岗位"
                       onChange={toggleAll}
                       className="w-4 h-4 rounded border-white/20 bg-black/40 accent-offer-primary cursor-pointer"
                     />
@@ -502,7 +555,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
               </tr>
             </thead>
             <tbody onMouseLeave={() => setHoveredRowId(null)}>
-              {groupedJobs.map(({ company, jobs }) =>
+              {pagedGroups.map(({ company, jobs, totalJobs }) =>
                 jobs.map((j, idx) => {
                   const days = getElapsedBeijingDays(j.appliedDate)
                   const isCompanyHovered = jobs.some((job) => job.id === hoveredRowId)
@@ -561,7 +614,7 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
                                 <div className="text-[10px] font-semibold text-purple-400/70 uppercase tracking-wider mb-1">公司</div>
                                 <div className="text-base font-bold text-theme-text transition-colors">{company}</div>
                                 <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-purple-500/10 px-2.5 py-0.5 text-xs text-purple-300 font-medium">
-                                  {jobs.length} 个岗位
+                                  {totalJobs} 个岗位
                                 </div>
                               </div>
                             </div>
@@ -627,12 +680,18 @@ export default function Positions({ jobs: propJobs, isReadOnly = false }) {
           </div>
         )}
 
-        {/* Footer count */}
-        <div className="px-5 py-3 border-t border-white/10 text-xs text-gray-500 dark:text-white/45 flex items-center justify-between">
-          <span>显示 {filteredJobs.length} / {jobs.length} 条</span>
-          {!isReadOnly && selectedIds.size > 0 && <span>已选 {selectedIds.size} 条</span>}
-        </div>
+        <PositionsPagination
+          page={page}
+          pageSize={pageSize}
+          matchedCount={filteredJobs.length}
+          jobCount={jobs.length}
+          selectedCount={isReadOnly ? 0 : selectedIds.size}
+          onPageChange={changePage}
+          onPageSizeChange={changePageSize}
+        />
       </div>
+
+      <BackToTopButton />
 
       {/* ===== Modals ===== */}
       <JobDetailModal
